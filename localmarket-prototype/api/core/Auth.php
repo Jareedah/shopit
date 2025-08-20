@@ -1,5 +1,7 @@
 <?php
 // api/core/Auth.php
+require_once 'DataManager.php';
+
 class Auth {
     private $dataManager;
     
@@ -53,17 +55,22 @@ class Auth {
         $usersData = $this->dataManager->readData('users.json');
         $users = $usersData['data'] ?? [];
         
-        foreach ($users as $user) {
+        foreach ($users as $key => $user) {
             if ($user['username'] === $username) {
                 // Update last login
-                $user['last_login'] = date('c');
+                $users[$key]['last_login'] = date('c');
+                
+                // Save updated user data
+                $usersData['data'] = $users;
+                $usersData['metadata']['last_updated'] = date('c');
+                $this->dataManager->writeData('users.json', $usersData);
                 
                 // Start session with timeout tracking
-                $_SESSION['user'] = $user;
+                $_SESSION['user'] = $users[$key];
                 $_SESSION['last_activity'] = time();
                 $_SESSION['session_timeout'] = 3600; // 1 hour
                 
-                return $user;
+                return $users[$key];
             }
         }
         
