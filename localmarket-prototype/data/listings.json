@@ -26,6 +26,7 @@
       "description": "Experienced house cleaning service available for residential properties. We provide thorough cleaning including bathrooms, kitchens, bedrooms, and common areas. Eco-friendly products available upon request. Flexible scheduling and competitive rates.",
       "category": "services",
       "price": 120.00,
+      "stock": 10,
       "tags": ["cleaning", "house", "professional", "service"],
       "location": {
         "address": "Brooklyn, New York, NY",
@@ -45,6 +46,7 @@
       "description": "Authentic vintage leather jacket from the 1980s. Size medium, fits true to size. Made from genuine leather with classic styling. Some minor wear that adds character but overall in great condition. Perfect for vintage enthusiasts.",
       "category": "clothing",
       "price": 85.00,
+      "stock": 1,
       "tags": ["vintage", "leather", "jacket", "fashion", "80s"],
       "location": {
         "address": "Queens, New York, NY",

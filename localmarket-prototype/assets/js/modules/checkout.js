@@ -106,8 +106,11 @@ const Checkout = (function() {
                                 <div class="quantity-controls">
                                     <button class="quantity-btn" onclick="Checkout.updateQuantity(${currentQuantity - 1})">-</button>
                                     <input type="number" class="quantity-input" value="${currentQuantity}" 
-                                           min="1" max="99" onchange="Checkout.updateQuantity(this.value)">
+                                           min="1" max="${currentListing.stock || 99}" onchange="Checkout.updateQuantity(this.value)">
                                     <button class="quantity-btn" onclick="Checkout.updateQuantity(${currentQuantity + 1})">+</button>
+                                </div>
+                                <div class="stock-info" style="font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;">
+                                    📦 ${currentListing.stock || 0} units available
                                 </div>
                                 <div class="item-total">$${(currentListing.price * currentQuantity).toFixed(2)}</div>
                             </div>
@@ -237,11 +240,18 @@ const Checkout = (function() {
             });
         },
 
-        // Update quantity
+        // Update quantity with stock checking
         updateQuantity(newQuantity) {
             newQuantity = parseInt(newQuantity);
             if (isNaN(newQuantity)) newQuantity = 1;
-            newQuantity = Math.max(1, Math.min(99, newQuantity));
+            
+            const maxStock = currentListing.stock || 99;
+            newQuantity = Math.max(1, Math.min(maxStock, newQuantity));
+            
+            // Show warning if user tried to exceed stock
+            if (newQuantity === maxStock && parseInt(document.querySelector('.quantity-input').value) > maxStock) {
+                showNotification(`⚠️ Only ${maxStock} units available in stock`, 'warning');
+            }
             
             currentQuantity = newQuantity;
             this.showReviewStep();
@@ -267,6 +277,9 @@ const Checkout = (function() {
                 
                 if (response.success) {
                     const orderId = response.order.id;
+                    
+                    // Deplete stock after successful order
+                    await this.depleteStock(currentListing.id, currentQuantity);
                     
                     // Store order for seller notification
                     this.storeOrderForSeller(response.order, user, currentListing);
@@ -336,6 +349,51 @@ const Checkout = (function() {
                 
             } catch (error) {
                 console.error('Error storing order for seller:', error);
+            }
+        },
+        
+        // Deplete stock after purchase (playacting - simulate stock reduction)
+        async depleteStock(listingId, quantityPurchased) {
+            try {
+                // In a real system, this would update the database
+                // For playacting, we'll update localStorage representation
+                
+                // Get current listings data
+                const response = await fetch('../api/search/query.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: '', limit: 100 })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        const listing = result.data.find(l => l.id === listingId);
+                        if (listing && listing.stock) {
+                            const newStock = Math.max(0, listing.stock - quantityPurchased);
+                            
+                            // Store stock depletion info
+                            const stockUpdates = JSON.parse(localStorage.getItem('stockUpdates') || '{}');
+                            stockUpdates[listingId] = {
+                                originalStock: listing.stock,
+                                currentStock: newStock,
+                                lastPurchase: {
+                                    quantity: quantityPurchased,
+                                    timestamp: new Date().toISOString()
+                                }
+                            };
+                            localStorage.setItem('stockUpdates', JSON.stringify(stockUpdates));
+                            
+                            console.log(`Stock depleted for ${listingId}: ${listing.stock} → ${newStock}`);
+                            
+                            if (newStock === 0) {
+                                showNotification('⚠️ Item is now out of stock for other buyers', 'info');
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error depleting stock:', error);
             }
         }
     };

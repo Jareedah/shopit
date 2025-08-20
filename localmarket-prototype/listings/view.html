@@ -84,6 +84,10 @@
                                     <span class="detail-label">Tags:</span>
                                     <span id="detailTags"></span>
                                 </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Stock Available:</span>
+                                    <span id="detailStock" class="stock-indicator"></span>
+                                </div>
                             </div>
                         </div>
                         
@@ -183,6 +187,17 @@
                 document.getElementById('detailTags').textContent = listing.tags.join(', ');
             } else {
                 document.getElementById('detailTags').textContent = 'No tags';
+            }
+            
+            // Set stock information
+            const stock = listing.stock || 0;
+            const stockElement = document.getElementById('detailStock');
+            if (stock > 0) {
+                stockElement.innerHTML = `<span style="color: #28a745; font-weight: bold;">${stock} units available</span>`;
+                stockElement.className = 'stock-indicator in-stock';
+            } else {
+                stockElement.innerHTML = `<span style="color: #dc3545; font-weight: bold;">Out of Stock</span>`;
+                stockElement.className = 'stock-indicator out-of-stock';
             }
             
             // Set distance if available
@@ -298,21 +313,46 @@
                 });
                 
             } else {
-                // Show buyer actions
-                actionsDiv.innerHTML = `
-                    <button id="contactSeller" class="btn btn-primary">💬 Contact Seller</button>
-                    <button id="purchaseItem" class="btn btn-success">🛒 Purchase Item</button>
-                    <button id="addToFavorites" class="btn btn-secondary">❤️ Add to Favorites</button>
-                `;
+                // Check stock availability for buyer actions
+                const stock = listing.stock || 0;
+                const isOutOfStock = stock <= 0;
+                
+                // Show buyer actions based on stock availability
+                if (isOutOfStock) {
+                    actionsDiv.innerHTML = `
+                        <div class="out-of-stock-notice">
+                            <p style="color: #dc3545; font-weight: bold; margin-bottom: 1rem;">❌ Out of Stock</p>
+                            <button id="contactSeller" class="btn btn-primary">💬 Contact Seller</button>
+                            <button class="btn btn-secondary" disabled>🛒 Purchase Unavailable</button>
+                            <button id="addToFavorites" class="btn btn-secondary">❤️ Add to Favorites</button>
+                        </div>
+                    `;
+                } else {
+                    actionsDiv.innerHTML = `
+                        <div class="stock-info" style="margin-bottom: 1rem;">
+                            <p style="color: #28a745; font-weight: bold;">✅ ${stock} units available</p>
+                        </div>
+                        <button id="contactSeller" class="btn btn-primary">💬 Contact Seller</button>
+                        <button id="purchaseItem" class="btn btn-success">🛒 Purchase Item</button>
+                        <button id="addToFavorites" class="btn btn-secondary">❤️ Add to Favorites</button>
+                    `;
+                }
                 
                 // Set up buyer action handlers
                 document.getElementById('contactSeller').addEventListener('click', function() {
                     showNotification('Contact functionality will be implemented in the next phase.', 'info');
                 });
                 
-                document.getElementById('purchaseItem').addEventListener('click', function() {
-                    window.location.href = `../orders/checkout.html?id=${listing.id}`;
-                });
+                if (!isOutOfStock) {
+                    document.getElementById('purchaseItem').addEventListener('click', function() {
+                        // Check stock one more time before redirecting
+                        if (stock > 0) {
+                            window.location.href = `../orders/checkout.html?id=${listing.id}&maxQuantity=${stock}`;
+                        } else {
+                            showNotification('❌ Item is out of stock!', 'error');
+                        }
+                    });
+                }
                 
                 document.getElementById('addToFavorites').addEventListener('click', function() {
                     showNotification('Added to favorites! (Feature will be enhanced later)', 'success');

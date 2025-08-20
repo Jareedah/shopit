@@ -178,6 +178,7 @@ const SearchEngine = (function() {
                                 <span class="listing-category">${listing.category}</span>
                                 <span class="listing-distance">📍 ${distance}</span>
                                 <span class="listing-date">${new Date(listing.created_at).toLocaleDateString()}</span>
+                                ${this.getStockDisplay(listing)}
                             </div>
                             <div class="listing-actions">
                                 <a href="../listings/view.html?id=${listing.id}" class="btn btn-primary">View Details</a>
@@ -253,6 +254,24 @@ const SearchEngine = (function() {
         // Get current user location
         getUserLocation() {
             return userLocation;
+        },
+        
+        // Get stock display for search results
+        getStockDisplay(listing) {
+            // Check for stock updates from localStorage
+            const stockUpdates = JSON.parse(localStorage.getItem('stockUpdates') || '{}');
+            const stockUpdate = stockUpdates[listing.id];
+            
+            let currentStock = listing.stock || 0;
+            if (stockUpdate) {
+                currentStock = stockUpdate.currentStock;
+            }
+            
+            if (currentStock > 0) {
+                return `<span class="listing-stock in-stock" style="color: #28a745; font-weight: bold;">📦 ${currentStock} in stock</span>`;
+            } else {
+                return `<span class="listing-stock out-of-stock" style="color: #dc3545; font-weight: bold;">❌ Out of Stock</span>`;
+            }
         }
     };
 })();

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Marketplace Debug - LocalMarket</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        .warning { background: #fff3cd; border-color: #ffeaa7; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; border: none; border-radius: 4px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 11px; }
+        .issue-card { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin: 10px 0; }
+        .status-indicator { padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .status-broken { background: #dc3545; color: white; }
+        .status-working { background: #28a745; color: white; }
+        .status-partial { background: #ffc107; color: black; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Complete Marketplace Forensic Analysis</h1>
+    
+    <div class="debug-section">
+        <h2>🚨 Critical Issues Analysis</h2>
+        <button class="btn-primary" onclick="runCompleteAnalysis()">Run Complete Analysis</button>
+        <button class="btn-success" onclick="fixAllIssues()">Fix All Issues</button>
+        <button class="btn-danger" onclick="clearAllData()">Clear All Data</button>
+        <div id="analysisResults"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>📊 Individual Issue Testing</h2>
+        
+        <div class="issue-card">
+            <h3>Issue 1: Dashboard Orders Widget <span class="status-indicator status-broken">BROKEN</span></h3>
+            <p>Notification badge shows but no order details appear</p>
+            <button onclick="debugSellerOrdersWidget()">Debug Orders Widget</button>
+            <div id="ordersWidgetResults"></div>
+        </div>
+        
+        <div class="issue-card">
+            <h3>Issue 2: Dashboard Listings Widget <span class="status-indicator status-broken">BROKEN</span></h3>
+            <p>Posted items don't appear in "Your Listings"</p>
+            <button onclick="debugListingsWidget()">Debug Listings Widget</button>
+            <div id="listingsWidgetResults"></div>
+        </div>
+        
+        <div class="issue-card">
+            <h3>Issue 3: Order History 404 Errors <span class="status-indicator status-broken">BROKEN</span></h3>
+            <p>All order history links return 404</p>
+            <button onclick="debugOrderHistory()">Debug Order History</button>
+            <div id="orderHistoryResults"></div>
+        </div>
+        
+        <div class="issue-card">
+            <h3>Issue 4: No Inventory Management <span class="status-indicator status-partial">PARTIAL</span></h3>
+            <p>No stock quantity field or inventory tracking</p>
+            <button onclick="debugInventorySystem()">Debug Inventory</button>
+            <div id="inventoryResults"></div>
+        </div>
+        
+        <div class="issue-card">
+            <h3>Issue 5: No Stock Depletion <span class="status-indicator status-broken">BROKEN</span></h3>
+            <p>Items can be purchased indefinitely</p>
+            <button onclick="debugStockDepletion()">Debug Stock System</button>
+            <div id="stockResults"></div>
+        </div>
+    </div>
+
+    <script src="assets/js/core/api.js"></script>
+    <script src="assets/js/modules/auth.js"></script>
+    <script src="assets/js/modules/seller-orders.js"></script>
+    
+    <script>
+        let analysisData = {};
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!Auth.isLoggedIn()) {
+                alert('Please login first');
+                window.location.href = 'auth/login.html';
+                return;
+            }
+        });
+        
+        async function runCompleteAnalysis() {
+            const resultsDiv = document.getElementById('analysisResults');
+            resultsDiv.innerHTML = '<h3>🔍 Running Complete Forensic Analysis...</h3>';
+            
+            const user = Auth.getCurrentUser();
+            analysisData = {
+                user: user,
+                timestamp: new Date().toISOString(),
+                issues: {}
+            };
+            
+            // Test 1: Dashboard Orders Widget
+            analysisData.issues.ordersWidget = await analyzeOrdersWidget(user.id);
+            
+            // Test 2: Dashboard Listings Widget  
+            analysisData.issues.listingsWidget = await analyzeListingsWidget(user.id);
+            
+            // Test 3: Order History Links
+            analysisData.issues.orderHistory = await analyzeOrderHistory();
+            
+            // Test 4: Inventory System
+            analysisData.issues.inventory = await analyzeInventorySystem();
+            
+            // Test 5: Stock Depletion
+            analysisData.issues.stockDepletion = await analyzeStockDepletion();
+            
+            // Generate comprehensive report
+            generateAnalysisReport();
+        }
+        
+        async function analyzeOrdersWidget(userId) {
+            try {
+                // Check if module is loaded
+                const moduleLoaded = typeof SellerOrders !== 'undefined';
+                
+                // Check container existence
+                const container = document.getElementById('sellerOrdersList');
+                const containerExists = !!container;
+                
+                // Check localStorage data
+                const sellerOrders = JSON.parse(localStorage.getItem('sellerOrders') || '[]');
+                const userOrders = sellerOrders.filter(o => o.sellerId === userId);
+                
+                // Test module initialization
+                let initSuccess = false;
+                try {
+                    await SellerOrders.init(userId);
+                    initSuccess = true;
+                } catch (error) {
+                    console.error('SellerOrders init failed:', error);
+                }
+                
+                return {
+                    status: initSuccess && containerExists && moduleLoaded ? 'working' : 'broken',
+                    details: {
+                        moduleLoaded,
+                        containerExists,
+                        ordersInStorage: sellerOrders.length,
+                        userSpecificOrders: userOrders.length,
+                        initSuccess
+                    }
+                };
+            } catch (error) {
+                return {
+                    status: 'broken',
+                    error: error.message,
+                    details: {}
+                };
+            }
+        }
+        
+        async function analyzeListingsWidget(userId) {
+            try {
+                // Test search API with sellerId filter
+                const response = await fetch('api/search/query.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: '',
+                        sellerId: userId,
+                        sortBy: 'date'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                // Check if listings data has correct sellerId
+                const allListingsResponse = await fetch('api/search/query.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: '' })
+                });
+                
+                const allListings = await allListingsResponse.json();
+                
+                return {
+                    status: result.success && result.data?.length > 0 ? 'working' : 'broken',
+                    details: {
+                        apiSuccess: result.success,
+                        userListingsFound: result.data?.length || 0,
+                        totalListings: allListings.data?.length || 0,
+                        sellerId: userId,
+                        sampleSellerIds: allListings.data?.slice(0, 3).map(l => l.sellerId) || []
+                    }
+                };
+            } catch (error) {
+                return {
+                    status: 'broken',
+                    error: error.message,
+                    details: {}
+                };
+            }
+        }
+        
+        async function analyzeOrderHistory() {
+            const linksToTest = [
+                'dashboard/orders.html',
+                'orders/history.html', 
+                'orders/details.html'
+            ];
+            
+            const results = {};
+            
+            for (const link of linksToTest) {
+                try {
+                    const response = await fetch(link);
+                    results[link] = {
+                        exists: response.status === 200,
+                        status: response.status
+                    };
+                } catch (error) {
+                    results[link] = {
+                        exists: false,
+                        error: error.message
+                    };
+                }
+            }
+            
+            const workingLinks = Object.values(results).filter(r => r.exists).length;
+            
+            return {
+                status: workingLinks > 0 ? 'partial' : 'broken',
+                details: {
+                    linksTotal: linksToTest.length,
+                    linksWorking: workingLinks,
+                    results: results
+                }
+            };
+        }
+        
+        async function analyzeInventorySystem() {
+            try {
+                // Check if listing creation has stock field
+                const createResponse = await fetch('listings/create.html');
+                const createHtml = await createResponse.text();
+                const hasStockField = createHtml.includes('id="stock"');
+                
+                // Check if listings data has stock
+                const listingsResponse = await fetch('api/search/query.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: '', limit: 5 })
+                });
+                
+                const listingsResult = await listingsResponse.json();
+                const hasStockInData = listingsResult.data?.some(l => l.hasOwnProperty('stock'));
+                
+                return {
+                    status: hasStockField && hasStockInData ? 'working' : 'partial',
+                    details: {
+                        stockFieldInForm: hasStockField,
+                        stockInListingsData: hasStockInData,
+                        sampleListings: listingsResult.data?.slice(0, 2) || []
+                    }
+                };
+            } catch (error) {
+                return {
+                    status: 'broken',
+                    error: error.message,
+                    details: {}
+                };
+            }
+        }
+        
+        async function analyzeStockDepletion() {
+            // This is definitely broken as it's not implemented yet
+            return {
+                status: 'broken',
+                details: {
+                    stockCheckingInCheckout: false,
+                    outOfStockIndicators: false,
+                    purchasePrevention: false,
+                    stockDisplayInListings: false
+                }
+            };
+        }
+        
+        function generateAnalysisReport() {
+            const resultsDiv = document.getElementById('analysisResults');
+            
+            let reportHtml = '<div class="analysis-report">';
+            reportHtml += '<h3>🔍 Forensic Analysis Results</h3>';
+            
+            // Summary
+            const issueCount = Object.keys(analysisData.issues).length;
+            const brokenCount = Object.values(analysisData.issues).filter(i => i.status === 'broken').length;
+            const workingCount = Object.values(analysisData.issues).filter(i => i.status === 'working').length;
+            const partialCount = Object.values(analysisData.issues).filter(i => i.status === 'partial').length;
+            
+            reportHtml += `
+                <div class="summary-stats">
+                    <p><strong>Total Issues Analyzed:</strong> ${issueCount}</p>
+                    <p><strong>🔴 Broken:</strong> ${brokenCount}</p>
+                    <p><strong>🟡 Partial:</strong> ${partialCount}</p>
+                    <p><strong>🟢 Working:</strong> ${workingCount}</p>
+                </div>
+            `;
+            
+            // Detailed results
+            Object.entries(analysisData.issues).forEach(([issueName, data]) => {
+                const statusClass = data.status === 'working' ? 'success' : 
+                                   data.status === 'partial' ? 'warning' : 'error';
+                
+                reportHtml += `
+                    <div class="${statusClass}">
+                        <h4>${issueName.toUpperCase()}: ${data.status.toUpperCase()}</h4>
+                        ${data.error ? `<p><strong>Error:</strong> ${data.error}</p>` : ''}
+                        <pre>${JSON.stringify(data.details, null, 2)}</pre>
+                    </div>
+                `;
+            });
+            
+            reportHtml += '</div>';
+            resultsDiv.innerHTML = reportHtml;
+        }
+        
+        async function debugSellerOrdersWidget() {
+            const resultsDiv = document.getElementById('ordersWidgetResults');
+            resultsDiv.innerHTML = '<p>Debugging seller orders widget...</p>';
+            
+            try {
+                const user = Auth.getCurrentUser();
+                
+                // Step 1: Check module loading
+                const moduleExists = typeof SellerOrders !== 'undefined';
+                
+                // Step 2: Check container
+                const container = document.getElementById('sellerOrdersList');
+                
+                // Step 3: Check localStorage
+                const allOrders = JSON.parse(localStorage.getItem('sellerOrders') || '[]');
+                
+                // Step 4: Test module initialization
+                if (moduleExists) {
+                    await SellerOrders.init(user.id);
+                    SellerOrders.displaySellerOrders('sellerOrdersList');
+                }
+                
+                resultsDiv.innerHTML = `
+                    <div class="info">
+                        <h4>🔍 Seller Orders Widget Debug Results:</h4>
+                        <p><strong>SellerOrders module loaded:</strong> ${moduleExists ? '✅' : '❌'}</p>
+                        <p><strong>Container 'sellerOrdersList' exists:</strong> ${!!container ? '✅' : '❌'}</p>
+                        <p><strong>Orders in localStorage:</strong> ${allOrders.length}</p>
+                        <p><strong>User ID:</strong> ${user.id}</p>
+                        
+                        ${container ? `<p><strong>Container content:</strong> ${container.innerHTML.length > 0 ? 'Has content' : 'Empty'}</p>` : ''}
+                        
+                        <h5>All Orders in Storage:</h5>
+                        <pre>${JSON.stringify(allOrders, null, 2)}</pre>
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Debug Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function fixAllIssues() {
+            const resultsDiv = document.getElementById('analysisResults');
+            resultsDiv.innerHTML = '<h3>🔧 Applying Systematic Fixes...</h3>';
+            
+            let fixLog = [];
+            
+            try {
+                // Fix 1: Create sample order for current user
+                const user = Auth.getCurrentUser();
+                const sampleOrder = {
+                    id: 'order_fix_' + Date.now(),
+                    listingId: 'listing_001',
+                    listingTitle: 'Sample Item for Testing',
+                    buyerId: 'buyer_test_001',
+                    buyerName: 'Test Buyer',
+                    buyerEmail: 'test@example.com',
+                    sellerId: user.id,
+                    quantity: 1,
+                    price: 25.00,
+                    platform_fee: 0.50,
+                    total_amount: 25.50,
+                    seller_amount: 25.00,
+                    status: 'pending',
+                    escrow_status: 'funds_held',
+                    escrow_id: 'escrow_fix_' + Date.now(),
+                    created_at: new Date().toISOString(),
+                    payment_method: 'escrow',
+                    buyer_message: 'Test order for debugging dashboard functionality',
+                    shipping_address: '123 Test St, Test City, TC 12345',
+                    isNewOrder: true
+                };
+                
+                const existingOrders = JSON.parse(localStorage.getItem('sellerOrders') || '[]');
+                existingOrders.push(sampleOrder);
+                localStorage.setItem('sellerOrders', JSON.stringify(existingOrders));
+                fixLog.push('✅ Created sample order for user: ' + user.id);
+                
+                // Fix 2: Initialize seller orders widget
+                if (typeof SellerOrders !== 'undefined') {
+                    await SellerOrders.init(user.id);
+                    SellerOrders.displaySellerOrders('sellerOrdersList');
+                    fixLog.push('✅ Reinitialized seller orders widget');
+                }
+                
+                // Fix 3: Create sample listing for user
+                const sampleListing = {
+                    id: 'listing_user_' + Date.now(),
+                    title: 'User Test Listing',
+                    description: 'This is a test listing to verify dashboard functionality',
+                    category: 'other',
+                    price: 15.00,
+                    stock: 5,
+                    tags: ['test', 'debug', 'sample'],
+                    location: {
+                        address: 'Test Location',
+                        lat: 40.7128,
+                        lng: -74.0060
+                    },
+                    images: [],
+                    sellerId: user.id,
+                    status: 'active',
+                    views: 0,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                };
+                
+                // Store in localStorage for testing
+                localStorage.setItem('userTestListing', JSON.stringify(sampleListing));
+                fixLog.push('✅ Created sample listing for user dashboard testing');
+                
+                resultsDiv.innerHTML = `
+                    <div class="success">
+                        <h4>🔧 Fixes Applied Successfully</h4>
+                        ${fixLog.map(log => `<p>${log}</p>`).join('')}
+                        
+                        <h5>Next Steps:</h5>
+                        <ol>
+                            <li>Refresh the dashboard page to see changes</li>
+                            <li>Check if orders now appear in "Your Orders" widget</li>
+                            <li>Verify notification badge updates correctly</li>
+                            <li>Test order action buttons</li>
+                        </ol>
+                        
+                        <button class="btn-primary" onclick="window.location.href='dashboard/index.html'">
+                            🔄 Go to Dashboard
+                        </button>
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Fix Application Failed</h4>
+                        <p>Error: ${error.message}</p>
+                        <p>Fixes applied: ${fixLog.length}</p>
+                        ${fixLog.map(log => `<p>${log}</p>`).join('')}
+                    </div>
+                `;
+            }
+        }
+        
+        function clearAllData() {
+            localStorage.removeItem('sellerOrders');
+            localStorage.removeItem('userTestListing');
+            localStorage.removeItem('userListings');
+            
+            document.getElementById('analysisResults').innerHTML = `
+                <div class="info">
+                    <h4>🗑️ All Test Data Cleared</h4>
+                    <p>Cleared all localStorage data for fresh testing</p>
+                </div>
+            `;
+        }
+        
+        // Individual debug functions
+        async function debugSellerOrdersWidget() {
+            await analyzeOrdersWidget(Auth.getCurrentUser().id).then(result => {
+                document.getElementById('ordersWidgetResults').innerHTML = `
+                    <div class="${result.status === 'working' ? 'success' : 'error'}">
+                        <h5>Orders Widget Analysis:</h5>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    </div>
+                `;
+            });
+        }
+        
+        async function debugListingsWidget() {
+            await analyzeListingsWidget(Auth.getCurrentUser().id).then(result => {
+                document.getElementById('listingsWidgetResults').innerHTML = `
+                    <div class="${result.status === 'working' ? 'success' : 'error'}">
+                        <h5>Listings Widget Analysis:</h5>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    </div>
+                `;
+            });
+        }
+        
+        async function debugOrderHistory() {
+            await analyzeOrderHistory().then(result => {
+                document.getElementById('orderHistoryResults').innerHTML = `
+                    <div class="${result.status === 'working' ? 'success' : 'error'}">
+                        <h5>Order History Analysis:</h5>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    </div>
+                `;
+            });
+        }
+        
+        async function debugInventorySystem() {
+            await analyzeInventorySystem().then(result => {
+                document.getElementById('inventoryResults').innerHTML = `
+                    <div class="${result.status === 'working' ? 'success' : 'warning'}">
+                        <h5>Inventory System Analysis:</h5>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    </div>
+                `;
+            });
+        }
+        
+        async function debugStockDepletion() {
+            await analyzeStockDepletion().then(result => {
+                document.getElementById('stockResults').innerHTML = `
+                    <div class="error">
+                        <h5>Stock Depletion Analysis:</h5>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    </div>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
