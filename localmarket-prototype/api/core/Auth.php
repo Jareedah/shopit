@@ -28,7 +28,7 @@ class Auth {
         $newUser = [
             'id' => uniqid('user_'),
             'username' => $username,
-            'role' => 'user',
+            'role' => $this->isAdmin($username) ? 'admin' : 'user',
             'profile' => $userData,
             'created_at' => date('c'),
             'last_login' => null
@@ -58,8 +58,10 @@ class Auth {
                 // Update last login
                 $user['last_login'] = date('c');
                 
-                // Start session
+                // Start session with timeout tracking
                 $_SESSION['user'] = $user;
+                $_SESSION['last_activity'] = time();
+                $_SESSION['session_timeout'] = 3600; // 1 hour
                 
                 return $user;
             }
@@ -72,6 +74,50 @@ class Auth {
         // Pre-configured admin accounts
         $adminAccounts = ['admin1', 'admin2'];
         return in_array($username, $adminAccounts);
+    }
+    
+    public function validateSession() {
+        if (!isset($_SESSION['user']) || !isset($_SESSION['last_activity'])) {
+            return false;
+        }
+        
+        $timeout = $_SESSION['session_timeout'] ?? 3600;
+        if (time() - $_SESSION['last_activity'] > $timeout) {
+            session_destroy();
+            return false;
+        }
+        
+        $_SESSION['last_activity'] = time();
+        return true;
+    }
+    
+    public function getCurrentUser() {
+        if (!$this->validateSession()) {
+            return null;
+        }
+        return $_SESSION['user'] ?? null;
+    }
+    
+    public function isLoggedIn() {
+        return $this->validateSession() && isset($_SESSION['user']);
+    }
+    
+    public function logout() {
+        session_destroy();
+    }
+    
+    public function requireAuth() {
+        if (!$this->isLoggedIn()) {
+            throw new Exception('Authentication required');
+        }
+    }
+    
+    public function requireAdmin() {
+        $this->requireAuth();
+        $user = $this->getCurrentUser();
+        if (!$user || $user['role'] !== 'admin') {
+            throw new Exception('Admin privileges required');
+        }
     }
 }
 ?>
