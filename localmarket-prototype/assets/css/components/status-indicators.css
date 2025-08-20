@@ -1,0 +1,354 @@
+/* Status Indicators for Playacting Demonstrations */
+
+/* Base Status Badge */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    border: 1px solid transparent;
+}
+
+/* Escrow Status Indicators */
+.status-payment-pending {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #f59e0b;
+}
+
+.status-funds-held-escrow {
+    background: #dbeafe;
+    color: #1e40af;
+    border-color: #3b82f6;
+}
+
+.status-release-requested {
+    background: #fed7aa;
+    color: #c2410c;
+    border-color: #ea580c;
+}
+
+.status-funds-released {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #10b981;
+}
+
+.status-in-dispute {
+    background: #fee2e2;
+    color: #b91c1c;
+    border-color: #ef4444;
+}
+
+/* Approval Status Indicators */
+.status-pending-approval {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #f59e0b;
+}
+
+.status-approved {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #10b981;
+}
+
+.status-rejected {
+    background: #fee2e2;
+    color: #b91c1c;
+    border-color: #ef4444;
+}
+
+.status-auto-approved {
+    background: #e0e7ff;
+    color: #3730a3;
+    border-color: #6366f1;
+}
+
+/* Service Booking Status */
+.status-booking-available {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #10b981;
+}
+
+.status-booking-pending {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #f59e0b;
+}
+
+.status-booking-confirmed {
+    background: #dbeafe;
+    color: #1e40af;
+    border-color: #3b82f6;
+}
+
+.status-booking-completed {
+    background: #f3e8ff;
+    color: #6b21a8;
+    border-color: #8b5cf6;
+}
+
+/* Timeline Components */
+.status-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.timeline-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
+    transition: background-color 0.2s ease;
+}
+
+.timeline-item.current {
+    background: var(--bg-secondary);
+    border-left: 4px solid var(--primary-color);
+}
+
+.timeline-item.completed {
+    opacity: 0.7;
+}
+
+.timeline-item.pending {
+    opacity: 0.5;
+}
+
+.timeline-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.timeline-icon.completed {
+    background: var(--success-color);
+    color: white;
+}
+
+.timeline-icon.current {
+    background: var(--primary-color);
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+.timeline-icon.pending {
+    background: var(--bg-secondary);
+    color: var(--text-light);
+    border: 2px solid var(--border-color);
+}
+
+.timeline-content {
+    flex: 1;
+}
+
+.timeline-title {
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.timeline-description {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.timeline-time {
+    font-size: var(--font-size-xs);
+    color: var(--text-light);
+    margin-top: var(--spacing-xs);
+}
+
+/* Countdown Timers */
+.countdown-timer {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: linear-gradient(135deg, #fef3c7, #fed7aa);
+    border-radius: var(--border-radius);
+    border: 1px solid #f59e0b;
+}
+
+.countdown-icon {
+    font-size: 1.25rem;
+    color: #92400e;
+}
+
+.countdown-text {
+    flex: 1;
+    color: #92400e;
+    font-weight: var(--font-weight-medium);
+}
+
+.countdown-value {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: #92400e;
+}
+
+/* Progress Bars */
+.escrow-progress {
+    margin: var(--spacing-md) 0;
+}
+
+.escrow-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.escrow-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+/* Interactive Status Cards */
+.status-card {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.status-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.status-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+}
+
+.status-card-icon {
+    font-size: 2rem;
+    margin-right: var(--spacing-md);
+}
+
+.status-card-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+}
+
+.status-card-content {
+    margin-bottom: var(--spacing-md);
+}
+
+.status-card-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+/* Notification Badges */
+.notification-badge {
+    position: relative;
+}
+
+.notification-badge::after {
+    content: attr(data-count);
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--error-color);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--font-weight-bold);
+}
+
+/* Success Celebrations */
+.celebration-animation {
+    animation: celebrate 0.6s ease-in-out;
+}
+
+@keyframes celebrate {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.1) rotate(-5deg); }
+    75% { transform: scale(1.1) rotate(5deg); }
+}
+
+/* Demo Mode Indicators */
+.demo-mode-banner {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    color: white;
+    padding: var(--spacing-sm);
+    text-align: center;
+    font-weight: var(--font-weight-medium);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.demo-watermark {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(139, 92, 246, 0.9);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-xs);
+    z-index: 1000;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .status-timeline {
+        padding: var(--spacing-md);
+    }
+    
+    .timeline-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+    
+    .status-card-actions {
+        flex-direction: column;
+    }
+    
+    .countdown-timer {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-xs);
+    }
+}

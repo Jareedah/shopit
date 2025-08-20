@@ -70,7 +70,7 @@ try {
         }
         
         // Location filter
-        if ($userLocation && $radius > 0) {
+        if ($userLocation && $radius > 0 && isset($listing['location'])) {
             $distance = calculateDistance(
                 $userLocation['lat'], $userLocation['lng'],
                 $listing['location']['lat'] ?? 0,
