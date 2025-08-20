@@ -33,6 +33,7 @@ try {
     $category = $input['category'] ?? '';
     $priceMin = $input['priceMin'] ?? null;
     $priceMax = $input['priceMax'] ?? null;
+    $sellerId = $input['sellerId'] ?? null;
     $radius = $input['radius'] ?? 10;
     $sortBy = $input['sortBy'] ?? 'distance';
     $page = $input['page'] ?? 1;
@@ -49,7 +50,7 @@ try {
     });
     
     // Apply filters
-    $filteredListings = array_filter($listings, function($listing) use ($query, $category, $priceMin, $priceMax, $radius, $userLocation) {
+    $filteredListings = array_filter($listings, function($listing) use ($query, $category, $priceMin, $priceMax, $radius, $userLocation, $sellerId) {
         // Text search
         if ($query && !matchesQuery($listing, $query)) {
             return false;
@@ -66,6 +67,11 @@ try {
         }
         
         if ($priceMax !== null && $listing['price'] > $priceMax) {
+            return false;
+        }
+        
+        // Seller filter (for dashboard listings)
+        if ($sellerId && $listing['sellerId'] !== $sellerId) {
             return false;
         }
         

@@ -410,18 +410,77 @@
         
         async function loadUserListings(userId) {
             try {
-                // This would normally call an API endpoint
-                // For now, show placeholder
                 const listingsContainer = document.getElementById('userListings');
+                listingsContainer.innerHTML = '<div class="loading-state">Loading your listings...</div>';
                 
-                setTimeout(() => {
+                // Load listings from listings.json
+                const response = await fetch('../api/search/query.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: '',
+                        sellerId: userId, // Filter by seller ID
+                        sortBy: 'date'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    const userListings = result.data;
+                    
+                    let listingsHtml = '<div class="user-listings-grid">';
+                    
+                    userListings.slice(0, 3).forEach(listing => {
+                        listingsHtml += `
+                            <div class="listing-card">
+                                <div class="listing-image">
+                                    <img src="../uploads/${listing.images[0] || 'placeholder.jpg'}" 
+                                         alt="${listing.title}" 
+                                         onerror="this.src='../assets/images/placeholder.jpg'">
+                                </div>
+                                <div class="listing-info">
+                                    <h4>${listing.title}</h4>
+                                    <p class="listing-price">$${listing.price}</p>
+                                    <p class="listing-status">Status: ${listing.status || 'Active'}</p>
+                                    <div class="listing-actions">
+                                        <button class="btn btn-sm btn-primary" onclick="window.location.href='../listings/view.html?id=${listing.id}'">
+                                            👁️ View
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary" onclick="editListing('${listing.id}')">
+                                            ✏️ Edit
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    listingsHtml += '</div>';
+                    
+                    if (userListings.length > 3) {
+                        listingsHtml += `
+                            <div class="view-all-listings">
+                                <button class="btn btn-secondary" onclick="window.location.href='../search/index.html?seller=${userId}'">
+                                    View All Listings (${userListings.length})
+                                </button>
+                            </div>
+                        `;
+                    }
+                    
+                    listingsContainer.innerHTML = listingsHtml;
+                    
+                    // Update stats
+                    document.getElementById('userListingsCount').textContent = userListings.length;
+                    
+                } else {
                     listingsContainer.innerHTML = `
                         <div class="empty-state">You haven't created any listings yet.</div>
                         <div class="action-prompt">
                             <a href="../listings/create.html" class="btn btn-secondary">Create your first listing</a>
                         </div>
                     `;
-                }, 1000);
+                }
                 
             } catch (error) {
                 console.error('Error loading listings:', error);

@@ -6,6 +6,7 @@
       "description": "Selling my iPhone 13 Pro in excellent condition. No scratches, always kept in a case. Includes original charger and box. Battery health at 95%. Perfect for someone looking for a premium phone at a great price.",
       "category": "electronics",
       "price": 650.00,
+      "stock": 1,
       "tags": ["iphone", "smartphone", "apple", "mobile"],
       "location": {
         "address": "Manhattan, New York, NY",
