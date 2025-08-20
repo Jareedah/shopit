@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - LocalMarket</title>
+    <link rel="stylesheet" href="../assets/css/base/reset.css">
+    <link rel="stylesheet" href="../assets/css/base/variables.css">
+    <link rel="stylesheet" href="../assets/css/base/typography.css">
+    <link rel="stylesheet" href="../assets/css/layout/header.css">
+    <link rel="stylesheet" href="../assets/css/components/buttons.css">
+    <link rel="stylesheet" href="../assets/css/components/forms.css">
+    <link rel="stylesheet" href="../assets/css/components/cards.css">
+    <style>
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 4rem);
+            padding: var(--spacing-xl) 0;
+        }
+        
+        .auth-card {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: var(--spacing-xl);
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .auth-card h2 {
+            text-align: center;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
+        }
+        
+        .auth-card > p {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .auth-form {
+            margin: var(--spacing-xl) 0;
+        }
+        
+        .auth-links {
+            text-align: center;
+            margin-top: var(--spacing-lg);
+        }
+        
+        .auth-links p {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+        
+        .auth-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .form-help {
+            font-size: var(--font-size-xs);
+            color: var(--text-light);
+            margin-top: var(--spacing-xs);
+        }
+        
+        .error {
+            border-color: var(--error-color) !important;
+        }
+        
+        .success {
+            border-color: var(--success-color) !important;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">LocalMarket</h1>
+            <nav class="navigation">
+                <a href="../index.html" class="nav-link">Home</a>
+                <a href="login.html" class="nav-link">Login</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h2>Create an Account</h2>
+                    <p>Join LocalMarket to start buying and selling in your community</p>
+                    
+                    <form id="registerForm" class="auth-form">
+                        <div class="form-group">
+                            <label for="username" class="required">Choose a Username</label>
+                            <input type="text" id="username" name="username" required 
+                                   placeholder="Enter a unique username" autocomplete="username"
+                                   minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]+">
+                            <div class="form-help">Must be 3-20 characters long and contain only letters, numbers, and underscores</div>
+                            <div id="usernameError" class="form-error hidden"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="name" class="required">Full Name</label>
+                            <input type="text" id="name" name="name" required 
+                                   placeholder="Enter your full name" autocomplete="name"
+                                   maxlength="50">
+                            <div id="nameError" class="form-error hidden"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" 
+                                   placeholder="Enter your email address" autocomplete="email"
+                                   maxlength="100">
+                            <div class="form-help">Optional - used for notifications and account recovery</div>
+                            <div id="emailError" class="form-error hidden"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="location">Your Location</label>
+                            <input type="text" id="location" name="location" 
+                                   placeholder="City, State" autocomplete="address-level2"
+                                   maxlength="100">
+                            <div class="form-help">Helps buyers find local products and services</div>
+                            <div id="locationError" class="form-error hidden"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" 
+                                   placeholder="Enter your phone number" autocomplete="tel"
+                                   maxlength="20">
+                            <div class="form-help">Optional - for direct contact with buyers/sellers</div>
+                            <div id="phoneError" class="form-error hidden"></div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-full" id="registerButton">
+                            Create Account
+                        </button>
+                    </form>
+                    
+                    <div class="auth-links">
+                        <p>Already have an account? <a href="login.html">Login here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../assets/js/core/app.js"></script>
+    <script src="../assets/js/core/api.js"></script>
+    <script src="../assets/js/core/utils.js"></script>
+    <script src="../assets/js/modules/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const registerForm = document.getElementById('registerForm');
+            const registerButton = document.getElementById('registerButton');
+            
+            // Check if already logged in
+            if (Auth.isLoggedIn()) {
+                window.location.href = '../dashboard/index.html';
+                return;
+            }
+            
+            // Form submission
+            registerForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Clear previous errors
+                clearErrors();
+                
+                // Get form data
+                const formData = new FormData(registerForm);
+                const username = formData.get('username').trim();
+                const name = formData.get('name').trim();
+                const email = formData.get('email').trim();
+                const location = formData.get('location').trim();
+                const phone = formData.get('phone').trim();
+                
+                // Client-side validation
+                if (!validateForm(username, name, email, phone)) {
+                    return;
+                }
+                
+                // Set loading state
+                setLoadingState(true);
+                
+                try {
+                    const userData = {
+                        name: name,
+                        email: email,
+                        location: location,
+                        phone: phone
+                    };
+                    
+                    const response = await Auth.register(username, userData);
+                    
+                    if (response.success) {
+                        showNotification('Registration successful! Redirecting to login...', 'success');
+                        
+                        // Clear form
+                        registerForm.reset();
+                        
+                        // Redirect to login
+                        setTimeout(() => {
+                            window.location.href = 'login.html?registered=1';
+                        }, 1500);
+                    } else {
+                        showNotification(response.message || 'Registration failed', 'error');
+                    }
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    showNotification(error.message || 'Registration failed. Please try again.', 'error');
+                } finally {
+                    setLoadingState(false);
+                }
+            });
+            
+            // Real-time validation
+            document.getElementById('username').addEventListener('input', function() {
+                validateUsername(this.value.trim());
+            });
+            
+            document.getElementById('email').addEventListener('input', function() {
+                validateEmail(this.value.trim());
+            });
+            
+            document.getElementById('phone').addEventListener('input', function() {
+                validatePhone(this.value.trim());
+            });
+            
+            // Focus on username field
+            document.getElementById('username').focus();
+            
+            // Validation functions
+            function validateForm(username, name, email, phone) {
+                let isValid = true;
+                
+                // Username validation
+                if (!username) {
+                    showFieldError('username', 'Username is required');
+                    isValid = false;
+                } else if (!validateUsername(username)) {
+                    isValid = false;
+                }
+                
+                // Name validation
+                if (!name) {
+                    showFieldError('name', 'Full name is required');
+                    isValid = false;
+                } else if (name.length < 2) {
+                    showFieldError('name', 'Name must be at least 2 characters');
+                    isValid = false;
+                }
+                
+                // Email validation (optional)
+                if (email && !validateEmail(email)) {
+                    isValid = false;
+                }
+                
+                // Phone validation (optional)
+                if (phone && !validatePhone(phone)) {
+                    isValid = false;
+                }
+                
+                return isValid;
+            }
+            
+            function validateUsername(username) {
+                clearFieldError('username');
+                
+                if (!username) return true; // Will be caught by required validation
+                
+                if (username.length < 3) {
+                    showFieldError('username', 'Username must be at least 3 characters');
+                    return false;
+                }
+                
+                if (username.length > 20) {
+                    showFieldError('username', 'Username must be 20 characters or less');
+                    return false;
+                }
+                
+                if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                    showFieldError('username', 'Username can only contain letters, numbers, and underscores');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            function validateEmail(email) {
+                clearFieldError('email');
+                
+                if (!email) return true; // Email is optional
+                
+                if (!Utils.isValidEmail(email)) {
+                    showFieldError('email', 'Please enter a valid email address');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            function validatePhone(phone) {
+                clearFieldError('phone');
+                
+                if (!phone) return true; // Phone is optional
+                
+                if (!Utils.isValidPhone(phone)) {
+                    showFieldError('phone', 'Please enter a valid phone number');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Helper functions
+            function setLoadingState(loading) {
+                registerButton.disabled = loading;
+                registerButton.textContent = loading ? 'Creating Account...' : 'Create Account';
+                registerButton.classList.toggle('btn-loading', loading);
+                
+                // Disable form inputs
+                const inputs = registerForm.querySelectorAll('input');
+                inputs.forEach(input => input.disabled = loading);
+                
+                if (loading) {
+                    registerForm.classList.add('form-loading');
+                } else {
+                    registerForm.classList.remove('form-loading');
+                }
+            }
+            
+            function showFieldError(fieldName, message) {
+                const errorElement = document.getElementById(fieldName + 'Error');
+                const inputElement = document.getElementById(fieldName);
+                
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.classList.remove('hidden');
+                }
+                
+                if (inputElement) {
+                    inputElement.classList.add('error');
+                }
+            }
+            
+            function clearFieldError(fieldName) {
+                const errorElement = document.getElementById(fieldName + 'Error');
+                const inputElement = document.getElementById(fieldName);
+                
+                if (errorElement) {
+                    errorElement.classList.add('hidden');
+                }
+                
+                if (inputElement) {
+                    inputElement.classList.remove('error');
+                }
+            }
+            
+            function clearErrors() {
+                const errorElements = document.querySelectorAll('.form-error');
+                const inputElements = document.querySelectorAll('.error');
+                
+                errorElements.forEach(el => el.classList.add('hidden'));
+                inputElements.forEach(el => el.classList.remove('error'));
+            }
+        });
+    </script>
+</body>
+</html>

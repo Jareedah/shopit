@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - LocalMarket</title>
+    <link rel="stylesheet" href="../assets/css/base/reset.css">
+    <link rel="stylesheet" href="../assets/css/base/variables.css">
+    <link rel="stylesheet" href="../assets/css/base/typography.css">
+    <link rel="stylesheet" href="../assets/css/layout/header.css">
+    <link rel="stylesheet" href="../assets/css/components/buttons.css">
+    <link rel="stylesheet" href="../assets/css/components/forms.css">
+    <link rel="stylesheet" href="../assets/css/components/cards.css">
+    <style>
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 4rem);
+            padding: var(--spacing-xl) 0;
+        }
+        
+        .auth-card {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: var(--spacing-xl);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .auth-card h2 {
+            text-align: center;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
+        }
+        
+        .auth-card > p {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .auth-form {
+            margin: var(--spacing-xl) 0;
+        }
+        
+        .auth-links {
+            text-align: center;
+            margin-top: var(--spacing-lg);
+        }
+        
+        .auth-links p {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+        
+        .auth-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .demo-accounts {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+            border: 1px solid var(--border-color);
+        }
+        
+        .demo-accounts h3 {
+            font-size: var(--font-size-base);
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
+        }
+        
+        .demo-accounts p {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .demo-accounts ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .demo-accounts li {
+            font-size: var(--font-size-sm);
+            padding: var(--spacing-xs) 0;
+            color: var(--text-primary);
+        }
+        
+        .demo-accounts strong {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">LocalMarket</h1>
+            <nav class="navigation">
+                <a href="../index.html" class="nav-link">Home</a>
+                <a href="register.html" class="nav-link">Register</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h2>Login to LocalMarket</h2>
+                    <p>Access your account to start buying and selling</p>
+                    
+                    <form id="loginForm" class="auth-form">
+                        <div class="form-group">
+                            <label for="username" class="required">Username</label>
+                            <input type="text" id="username" name="username" required 
+                                   placeholder="Enter your username" autocomplete="username">
+                            <div id="usernameError" class="form-error hidden"></div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-full" id="loginButton">
+                            Login
+                        </button>
+                    </form>
+                    
+                    <div class="auth-links">
+                        <p>Don't have an account? <a href="register.html">Register here</a></p>
+                    </div>
+                    
+                    <div class="demo-accounts">
+                        <h3>Demo Accounts</h3>
+                        <p>Try these pre-configured admin accounts:</p>
+                        <ul>
+                            <li><strong>Username:</strong> admin1</li>
+                            <li><strong>Username:</strong> admin2</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../assets/js/core/app.js"></script>
+    <script src="../assets/js/core/api.js"></script>
+    <script src="../assets/js/core/utils.js"></script>
+    <script src="../assets/js/modules/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const usernameInput = document.getElementById('username');
+            const loginButton = document.getElementById('loginButton');
+            const usernameError = document.getElementById('usernameError');
+            
+            // Check if already logged in
+            if (Auth.isLoggedIn()) {
+                window.location.href = '../dashboard/index.html';
+                return;
+            }
+            
+            // Form submission
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Clear previous errors
+                clearErrors();
+                
+                const username = usernameInput.value.trim();
+                
+                // Client-side validation
+                if (!username) {
+                    showFieldError('username', 'Username is required');
+                    return;
+                }
+                
+                if (username.length < 3) {
+                    showFieldError('username', 'Username must be at least 3 characters');
+                    return;
+                }
+                
+                // Set loading state
+                setLoadingState(true);
+                
+                try {
+                    const response = await Auth.login(username);
+                    
+                    if (response.success) {
+                        showNotification('Login successful! Redirecting...', 'success');
+                        
+                        // Redirect based on user role
+                        setTimeout(() => {
+                            if (Auth.isAdmin()) {
+                                window.location.href = '../admin/dashboard.html';
+                            } else {
+                                window.location.href = '../dashboard/index.html';
+                            }
+                        }, 1000);
+                    } else {
+                        showNotification(response.message || 'Login failed', 'error');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showNotification(error.message || 'Login failed. Please try again.', 'error');
+                } finally {
+                    setLoadingState(false);
+                }
+            });
+            
+            // Real-time username validation
+            usernameInput.addEventListener('input', function() {
+                clearFieldError('username');
+                
+                const username = this.value.trim();
+                if (username && username.length < 3) {
+                    showFieldError('username', 'Username must be at least 3 characters');
+                }
+            });
+            
+            // Focus on username field
+            usernameInput.focus();
+            
+            // Helper functions
+            function setLoadingState(loading) {
+                loginButton.disabled = loading;
+                loginButton.textContent = loading ? 'Logging in...' : 'Login';
+                loginButton.classList.toggle('btn-loading', loading);
+                
+                if (loading) {
+                    loginForm.classList.add('form-loading');
+                } else {
+                    loginForm.classList.remove('form-loading');
+                }
+            }
+            
+            function showFieldError(fieldName, message) {
+                const errorElement = document.getElementById(fieldName + 'Error');
+                const inputElement = document.getElementById(fieldName);
+                
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.classList.remove('hidden');
+                }
+                
+                if (inputElement) {
+                    inputElement.classList.add('error');
+                }
+            }
+            
+            function clearFieldError(fieldName) {
+                const errorElement = document.getElementById(fieldName + 'Error');
+                const inputElement = document.getElementById(fieldName);
+                
+                if (errorElement) {
+                    errorElement.classList.add('hidden');
+                }
+                
+                if (inputElement) {
+                    inputElement.classList.remove('error');
+                }
+            }
+            
+            function clearErrors() {
+                const errorElements = document.querySelectorAll('.form-error');
+                const inputElements = document.querySelectorAll('.error');
+                
+                errorElements.forEach(el => el.classList.add('hidden'));
+                inputElements.forEach(el => el.classList.remove('error'));
+            }
+        });
+    </script>
+</body>
+</html>
