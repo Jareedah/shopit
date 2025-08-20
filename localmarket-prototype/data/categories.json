@@ -1,0 +1,44 @@
+{
+  "data": [
+    {
+      "id": "electronics",
+      "name": "Electronics",
+      "description": "Computers, phones, gadgets, and electronic devices",
+      "icon": "📱"
+    },
+    {
+      "id": "clothing",
+      "name": "Clothing & Accessories",
+      "description": "Clothes, shoes, jewelry, and fashion accessories",
+      "icon": "👕"
+    },
+    {
+      "id": "home",
+      "name": "Home & Garden",
+      "description": "Furniture, home decor, appliances, and garden items",
+      "icon": "🏠"
+    },
+    {
+      "id": "vehicles",
+      "name": "Vehicles",
+      "description": "Cars, motorcycles, bicycles, and vehicle accessories",
+      "icon": "🚗"
+    },
+    {
+      "id": "services",
+      "name": "Services",
+      "description": "Professional services, repairs, and personal services",
+      "icon": "🔧"
+    },
+    {
+      "id": "other",
+      "name": "Other",
+      "description": "Items that don't fit in other categories",
+      "icon": "📦"
+    }
+  ],
+  "metadata": {
+    "last_updated": "2024-01-01T00:00:00+00:00",
+    "total_categories": 6
+  }
+}

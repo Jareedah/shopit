@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - LocalMarket</title>
+    <link rel="stylesheet" href="../assets/css/base/reset.css">
+    <link rel="stylesheet" href="../assets/css/base/variables.css">
+    <link rel="stylesheet" href="../assets/css/base/typography.css">
+    <link rel="stylesheet" href="../assets/css/layout/header.css">
+    <link rel="stylesheet" href="../assets/css/components/buttons.css">
+    <link rel="stylesheet" href="../assets/css/components/forms.css">
+    <link rel="stylesheet" href="../assets/css/components/cards.css">
+    <style>
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        
+        .dashboard-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .dashboard-card {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
+            padding: var(--spacing-lg);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dashboard-card h3 {
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .dashboard-card p {
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .card-content {
+            margin-top: var(--spacing-lg);
+        }
+        
+        .empty-state {
+            color: var(--text-light);
+            font-style: italic;
+            text-align: center;
+            padding: var(--spacing-xl) 0;
+        }
+        
+        .action-prompt {
+            text-align: center;
+            margin-top: var(--spacing-md);
+        }
+        
+        .admin-section {
+            background: var(--bg-secondary);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            margin-top: var(--spacing-xl);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+        
+        .stat-card {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .quick-action {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-md);
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            border: 1px solid var(--border-color);
+        }
+        
+        .quick-action:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+            text-decoration: none;
+        }
+        
+        .quick-action-icon {
+            font-size: var(--font-size-xl);
+            margin-right: var(--spacing-md);
+        }
+        
+        .quick-action-text {
+            flex: 1;
+        }
+        
+        .quick-action-title {
+            font-weight: var(--font-weight-medium);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .quick-action-desc {
+            font-size: var(--font-size-sm);
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .dashboard-actions {
+                justify-content: center;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-actions {
+                flex-direction: column;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">LocalMarket</h1>
+            <nav class="navigation">
+                <a href="../search/index.html" class="nav-link" data-auth-user>Browse</a>
+                <a href="../index.html" class="nav-link">Home</a>
+                <span id="userWelcome" class="nav-user"></span>
+                <a href="#" id="logoutLink" class="nav-link" data-auth-user>Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="dashboard-header">
+                <div>
+                    <h2>Your Dashboard</h2>
+                    <p>Welcome back! Here's what's happening with your account.</p>
+                </div>
+                <div class="dashboard-actions">
+                    <a href="../listings/create.html" class="btn btn-primary">Create New Listing</a>
+                    <a href="../search/index.html" class="btn btn-secondary">Browse Marketplace</a>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="dashboard-card">
+                <h3>🚀 Quick Actions</h3>
+                <p>Get started with these common tasks</p>
+                <div class="quick-actions">
+                    <a href="../listings/create.html" class="quick-action">
+                        <div class="quick-action-icon">📝</div>
+                        <div class="quick-action-text">
+                            <div class="quick-action-title">Create Listing</div>
+                            <div class="quick-action-desc">Sell a product or service</div>
+                        </div>
+                    </a>
+                    <a href="../search/index.html" class="quick-action">
+                        <div class="quick-action-icon">🔍</div>
+                        <div class="quick-action-text">
+                            <div class="quick-action-title">Search Marketplace</div>
+                            <div class="quick-action-desc">Find products near you</div>
+                        </div>
+                    </a>
+                    <a href="../orders/history.html" class="quick-action">
+                        <div class="quick-action-icon">📦</div>
+                        <div class="quick-action-text">
+                            <div class="quick-action-title">Order History</div>
+                            <div class="quick-action-desc">View your purchases</div>
+                        </div>
+                    </a>
+                    <a href="#" id="profileLink" class="quick-action">
+                        <div class="quick-action-icon">👤</div>
+                        <div class="quick-action-text">
+                            <div class="quick-action-title">Edit Profile</div>
+                            <div class="quick-action-desc">Update your information</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="dashboard-grid">
+                <!-- Statistics Card -->
+                <div class="dashboard-card stat-card">
+                    <h3>📊 Your Stats</h3>
+                    <div class="card-content">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg);">
+                            <div>
+                                <span class="stat-value" id="userListingsCount">0</span>
+                                <div class="stat-label">Active Listings</div>
+                            </div>
+                            <div>
+                                <span class="stat-value" id="userOrdersCount">0</span>
+                                <div class="stat-label">Orders</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Listings -->
+                <div class="dashboard-card">
+                    <h3>📝 Your Listings</h3>
+                    <p>Manage your products and services</p>
+                    <div id="userListings" class="card-content">
+                        <div class="empty-state">You haven't created any listings yet.</div>
+                        <div class="action-prompt">
+                            <a href="../listings/create.html" class="btn btn-secondary">Create your first listing</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="dashboard-card">
+                    <h3>📈 Recent Activity</h3>
+                    <p>Your recent marketplace actions</p>
+                    <div id="recentActivity" class="card-content">
+                        <div class="empty-state">No recent activity.</div>
+                    </div>
+                </div>
+                
+                <!-- Account Info -->
+                <div class="dashboard-card">
+                    <h3>👤 Account Info</h3>
+                    <div id="userInfo" class="card-content">
+                        <p>Loading your information...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Admin Section -->
+            <div id="adminSection" class="admin-section hidden" data-auth-admin>
+                <h3>🔧 Administrator Tools</h3>
+                <p>Administrative functions and system management</p>
+                <div class="admin-actions">
+                    <a href="../admin/dashboard.html" class="btn btn-secondary">Admin Dashboard</a>
+                    <a href="../admin/users.html" class="btn btn-secondary">Manage Users</a>
+                    <a href="../admin/listings.html" class="btn btn-secondary">Manage Listings</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../assets/js/core/app.js"></script>
+    <script src="../assets/js/core/api.js"></script>
+    <script src="../assets/js/core/utils.js"></script>
+    <script src="../assets/js/modules/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            if (!Auth.isLoggedIn()) {
+                window.location.href = '../auth/login.html';
+                return;
+            }
+            
+            const user = Auth.getCurrentUser();
+            document.getElementById('userWelcome').textContent = `Welcome, ${user.username}`;
+            
+            // Display user info
+            displayUserInfo(user);
+            
+            // Show admin tools if user is admin
+            if (user.role === 'admin') {
+                document.getElementById('adminSection').classList.remove('hidden');
+            }
+            
+            // Load user data
+            loadUserStats(user.id);
+            loadUserListings(user.id);
+            loadRecentActivity(user.id);
+            
+            // Logout functionality
+            document.getElementById('logoutLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                handleLogout();
+            });
+            
+            // Profile link (placeholder for now)
+            document.getElementById('profileLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                showNotification('Profile editing will be available in a future update', 'info');
+            });
+        });
+        
+        function displayUserInfo(user) {
+            const userInfoDiv = document.getElementById('userInfo');
+            const memberSince = new Date(user.created_at).toLocaleDateString();
+            const lastLogin = user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never';
+            
+            userInfoDiv.innerHTML = `
+                <div style="display: grid; gap: var(--spacing-sm);">
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>Username:</strong> 
+                        <span>${user.username}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>Name:</strong> 
+                        <span>${user.profile?.name || 'Not provided'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>Email:</strong> 
+                        <span>${user.profile?.email || 'Not provided'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>Location:</strong> 
+                        <span>${user.profile?.location || 'Not provided'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>Member since:</strong> 
+                        <span>${memberSince}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>Role:</strong> 
+                        <span style="color: ${user.role === 'admin' ? 'var(--primary-color)' : 'var(--text-primary)'}; text-transform: capitalize;">${user.role}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function loadUserStats(userId) {
+            try {
+                // For now, use the stats from user object
+                const user = Auth.getCurrentUser();
+                const stats = user.stats || {};
+                
+                document.getElementById('userListingsCount').textContent = stats.listingsCount || 0;
+                document.getElementById('userOrdersCount').textContent = stats.ordersCount || 0;
+                
+            } catch (error) {
+                console.error('Error loading user stats:', error);
+            }
+        }
+        
+        async function loadUserListings(userId) {
+            try {
+                // This would normally call an API endpoint
+                // For now, show placeholder
+                const listingsContainer = document.getElementById('userListings');
+                
+                setTimeout(() => {
+                    listingsContainer.innerHTML = `
+                        <div class="empty-state">You haven't created any listings yet.</div>
+                        <div class="action-prompt">
+                            <a href="../listings/create.html" class="btn btn-secondary">Create your first listing</a>
+                        </div>
+                    `;
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error loading listings:', error);
+                document.getElementById('userListings').innerHTML = `
+                    <div class="empty-state">Error loading listings</div>
+                `;
+            }
+        }
+        
+        async function loadRecentActivity(userId) {
+            try {
+                const activityContainer = document.getElementById('recentActivity');
+                
+                // Simulate loading delay
+                setTimeout(() => {
+                    const activities = [
+                        {
+                            type: 'account_created',
+                            message: 'Welcome to LocalMarket!',
+                            time: new Date().toISOString()
+                        }
+                    ];
+                    
+                    if (activities.length === 0) {
+                        activityContainer.innerHTML = '<div class="empty-state">No recent activity.</div>';
+                    } else {
+                        let html = '<div style="display: grid; gap: var(--spacing-sm);">';
+                        activities.forEach(activity => {
+                            html += `
+                                <div style="padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--border-radius); border-left: 3px solid var(--primary-color);">
+                                    <div style="font-weight: var(--font-weight-medium);">${activity.message}</div>
+                                    <div style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                                        ${Utils.getRelativeTime(activity.time)}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                        activityContainer.innerHTML = html;
+                    }
+                }, 800);
+                
+            } catch (error) {
+                console.error('Error loading activity:', error);
+                document.getElementById('recentActivity').innerHTML = `
+                    <div class="empty-state">Error loading activity</div>
+                `;
+            }
+        }
+        
+        async function handleLogout() {
+            try {
+                await Auth.logout();
+                showNotification('Logged out successfully', 'success');
+                setTimeout(() => {
+                    window.location.href = '../auth/login.html';
+                }, 1000);
+            } catch (error) {
+                console.error('Logout error:', error);
+                showNotification('Logout failed', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

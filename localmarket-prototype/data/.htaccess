@@ -1,0 +1,18 @@
+# Protect data directory
+Order Allow,Deny
+Deny from all
+
+# Prevent access to JSON files
+<Files "*.json">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Prevent access to log files
+<Files "*.log">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Prevent directory listing
+Options -Indexes
