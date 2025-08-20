@@ -247,29 +247,95 @@ const Checkout = (function() {
             this.showReviewStep();
         },
 
-        // Complete purchase
+        // Complete purchase with escrow and seller notification
         async completePurchase() {
             try {
                 const user = Auth.getCurrentUser();
+                const totalAmount = currentListing.price * currentQuantity + Math.max(1, currentListing.price * currentQuantity * 0.02);
                 
                 const orderData = {
                     listingId: currentListing.id,
                     sellerId: currentListing.sellerId,
                     quantity: currentQuantity,
-                    total_amount: currentListing.price * currentQuantity + Math.max(1, currentListing.price * currentQuantity * 0.02)
+                    total_amount: totalAmount,
+                    payment_method: 'escrow',
+                    escrow_status: 'pending'
                 };
                 
+                // Create order first
                 const response = await API.post('../api/orders/create.php', orderData);
                 
                 if (response.success) {
+                    const orderId = response.order.id;
+                    
+                    // Store order for seller notification
+                    this.storeOrderForSeller(response.order, user, currentListing);
+                    
+                    // Simulate escrow payment processing if available
+                    if (typeof EscrowPlayacting !== 'undefined') {
+                        const escrowResult = await EscrowPlayacting.simulatePayment(orderId, totalAmount);
+                        
+                        if (escrowResult.success) {
+                            response.order.escrow_status = escrowResult.status;
+                            response.order.escrow_id = escrowResult.escrowId;
+                        }
+                    }
+                    
                     this.showCompletionStep(response.order);
-                    showNotification('Purchase completed successfully!', 'success');
+                    showNotification('🔒 Purchase completed with escrow protection!', 'success');
                 } else {
                     throw new Error(response.message);
                 }
             } catch (error) {
                 console.error('Purchase error:', error);
                 showNotification('Error completing purchase: ' + error.message, 'error');
+            }
+        },
+        
+        // Store order for seller notification (playacting)
+        storeOrderForSeller(order, buyer, listing) {
+            try {
+                const sellerOrder = {
+                    id: order.id,
+                    listingId: listing.id,
+                    listingTitle: listing.title,
+                    buyerId: buyer.id,
+                    buyerName: buyer.username,
+                    buyerEmail: buyer.email || `${buyer.username}@example.com`,
+                    sellerId: listing.sellerId,
+                    quantity: order.quantity,
+                    price: listing.price,
+                    platform_fee: order.total_amount - (listing.price * order.quantity),
+                    total_amount: order.total_amount,
+                    seller_amount: listing.price * order.quantity,
+                    status: 'pending',
+                    escrow_status: 'funds_held',
+                    escrow_id: `escrow_${Date.now()}`,
+                    created_at: new Date().toISOString(),
+                    payment_method: 'escrow',
+                    buyer_message: 'Thank you for your item! Looking forward to receiving it.',
+                    shipping_address: '123 Sample St, Sample City, SC 12345',
+                    isNewOrder: true
+                };
+                
+                // Get existing seller orders from localStorage
+                const existingOrders = JSON.parse(localStorage.getItem('sellerOrders') || '[]');
+                
+                // Add new order
+                existingOrders.push(sellerOrder);
+                
+                // Store back to localStorage
+                localStorage.setItem('sellerOrders', JSON.stringify(existingOrders));
+                
+                console.log('Order stored for seller:', sellerOrder);
+                
+                // Show notification about seller notification
+                setTimeout(() => {
+                    showNotification('📧 Seller has been notified of your purchase!', 'info');
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error storing order for seller:', error);
             }
         }
     };
