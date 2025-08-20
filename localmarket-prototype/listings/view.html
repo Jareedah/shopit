@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listing Details - LocalMarket</title>
+    <link rel="stylesheet" href="../assets/css/base/reset.css">
+    <link rel="stylesheet" href="../assets/css/base/variables.css">
+    <link rel="stylesheet" href="../assets/css/base/typography.css">
+    <link rel="stylesheet" href="../assets/css/layout/header.css">
+    <link rel="stylesheet" href="../assets/css/components/buttons.css">
+    <link rel="stylesheet" href="../assets/css/components/forms.css">
+    <link rel="stylesheet" href="../assets/css/components/cards.css">
+    <link rel="stylesheet" href="../assets/css/pages/listing-detail.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">LocalMarket</h1>
+            <nav class="navigation">
+                <a href="../dashboard/index.html" class="nav-link">Dashboard</a>
+                <a href="../search/index.html" class="nav-link">Search</a>
+                <a href="../index.html" class="nav-link">Home</a>
+                <span id="userWelcome"></span>
+                <a href="#" id="logoutLink" class="nav-link">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div id="loadingState" class="loading-state">
+                <p>Loading listing details...</p>
+            </div>
+            
+            <div id="listingDetail" class="listing-detail hidden">
+                <div class="listing-header">
+                    <a href="../search/index.html" class="back-link">← Back to Search</a>
+                    <h1 id="listingTitle"></h1>
+                    <div class="listing-meta">
+                        <span id="listingCategory" class="category-badge"></span>
+                        <span id="listingDate"></span>
+                        <span id="listingDistance" class="distance"></span>
+                    </div>
+                </div>
+                
+                <div class="listing-content">
+                    <div class="listing-gallery">
+                        <div id="mainImage" class="main-image">
+                            <img src="" alt="Main listing image">
+                        </div>
+                        <div id="thumbnails" class="thumbnails"></div>
+                    </div>
+                    
+                    <div class="listing-info">
+                        <div class="price-section">
+                            <h2 id="listingPrice"></h2>
+                            <button id="contactSeller" class="btn btn-primary">Contact Seller</button>
+                            <button id="purchaseItem" class="btn btn-success">Purchase Item</button>
+                        </div>
+                        
+                        <div class="description-section">
+                            <h3>Description</h3>
+                            <p id="listingDescription"></p>
+                        </div>
+                        
+                        <div class="details-section">
+                            <h3>Details</h3>
+                            <div class="details-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">Category:</span>
+                                    <span id="detailCategory"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Posted:</span>
+                                    <span id="detailDate"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Location:</span>
+                                    <span id="detailLocation"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Tags:</span>
+                                    <span id="detailTags"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="seller-section">
+                            <h3>Seller Information</h3>
+                            <div id="sellerInfo" class="seller-card">
+                                <p>Loading seller information...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="errorState" class="error-state hidden">
+                <h2>Listing Not Found</h2>
+                <p>The listing you're looking for doesn't exist or has been removed.</p>
+                <a href="../search/index.html" class="btn btn-primary">Browse Other Listings</a>
+            </div>
+        </div>
+    </main>
+
+    <div id="notification" class="notification hidden"></div>
+
+    <script src="../assets/js/core/api.js"></script>
+    <script src="../assets/js/core/utils.js"></script>
+    <script src="../assets/js/modules/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            if (!Auth.isLoggedIn()) {
+                window.location.href = '../auth/login.html';
+                return;
+            }
+            
+            const user = Auth.getCurrentUser();
+            document.getElementById('userWelcome').textContent = `Welcome, ${user.username}`;
+            
+            // Logout functionality
+            document.getElementById('logoutLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                Auth.logout();
+                window.location.href = '../auth/login.html';
+            });
+            
+            // Get listing ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const listingId = urlParams.get('id');
+            
+            if (!listingId) {
+                showError('No listing ID provided');
+                return;
+            }
+            
+            // Load listing details
+            loadListingDetails(listingId);
+        });
+        
+        async function loadListingDetails(listingId) {
+            try {
+                const response = await API.post('../api/listings/get.php', { id: listingId });
+                
+                if (response.success) {
+                    displayListingDetails(response.listing);
+                } else {
+                    throw new Error(response.message);
+                }
+            } catch (error) {
+                console.error('Error loading listing details:', error);
+                showError(error.message);
+            }
+        }
+        
+        function displayListingDetails(listing) {
+            // Hide loading state, show listing detail
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('listingDetail').classList.remove('hidden');
+            
+            // Set basic information
+            document.getElementById('listingTitle').textContent = listing.title;
+            document.getElementById('listingDescription').textContent = listing.description;
+            document.getElementById('listingPrice').textContent = `$${listing.price}`;
+            document.getElementById('listingCategory').textContent = listing.category;
+            document.getElementById('detailCategory').textContent = listing.category;
+            
+            // Format date
+            const postedDate = new Date(listing.created_at);
+            document.getElementById('listingDate').textContent = `Posted ${postedDate.toLocaleDateString()}`;
+            document.getElementById('detailDate').textContent = postedDate.toLocaleDateString();
+            
+            // Set location
+            if (listing.location) {
+                document.getElementById('detailLocation').textContent = listing.location.address || 'Location not specified';
+            }
+            
+            // Set tags
+            if (listing.tags && listing.tags.length > 0) {
+                document.getElementById('detailTags').textContent = listing.tags.join(', ');
+            } else {
+                document.getElementById('detailTags').textContent = 'No tags';
+            }
+            
+            // Set distance if available
+            if (listing.distance) {
+                document.getElementById('listingDistance').textContent = `${listing.distance.toFixed(1)} km away`;
+            }
+            
+            // Load images
+            loadListingImages(listing.images || []);
+            
+            // Load seller information
+            loadSellerInfo(listing.sellerId);
+            
+            // Set up action buttons
+            document.getElementById('contactSeller').addEventListener('click', function() {
+                alert('Contact functionality will be implemented in the next phase.');
+            });
+            
+            document.getElementById('purchaseItem').addEventListener('click', function() {
+                alert('Purchase functionality will be implemented in the next phase.');
+            });
+        }
+        
+        function loadListingImages(images) {
+            const mainImage = document.querySelector('#mainImage img');
+            const thumbnailsContainer = document.getElementById('thumbnails');
+            
+            if (images.length === 0) {
+                // Use placeholder image
+                mainImage.src = '../assets/images/placeholder.jpg';
+                mainImage.alt = 'No image available';
+                return;
+            }
+            
+            // Set main image to first image
+            mainImage.src = `../uploads/${images[0]}`;
+            mainImage.alt = 'Main listing image';
+            
+            // Create thumbnails
+            thumbnailsContainer.innerHTML = '';
+            
+            images.forEach((image, index) => {
+                const thumb = document.createElement('div');
+                thumb.className = 'thumbnail';
+                
+                const img = document.createElement('img');
+                img.src = `../uploads/${image}`;
+                img.alt = `Thumbnail ${index + 1}`;
+                
+                img.addEventListener('click', () => {
+                    mainImage.src = `../uploads/${image}`;
+                    // Update active thumbnail
+                    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+                    thumb.classList.add('active');
+                });
+                
+                thumb.appendChild(img);
+                thumbnailsContainer.appendChild(thumb);
+            });
+            
+            // Set first thumbnail as active
+            if (thumbnailsContainer.firstChild) {
+                thumbnailsContainer.firstChild.classList.add('active');
+            }
+        }
+        
+        async function loadSellerInfo(sellerId) {
+            try {
+                const response = await API.post('../api/users/get.php', { id: sellerId });
+                
+                if (response.success) {
+                    const sellerInfo = document.getElementById('sellerInfo');
+                    const seller = response.user;
+                    
+                    sellerInfo.innerHTML = `
+                        <h4>${seller.username}</h4>
+                        <p>Member since ${new Date(seller.created_at).toLocaleDateString()}</p>
+                        ${seller.profile && seller.profile.location ? `<p>📍 ${seller.profile.location}</p>` : ''}
+                        <button class="btn btn-secondary">View Profile</button>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading seller info:', error);
+                document.getElementById('sellerInfo').innerHTML = '<p>Unable to load seller information</p>';
+            }
+        }
+        
+        function showError(message) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('errorState').classList.remove('hidden');
+            
+            if (message) {
+                document.querySelector('#errorState p').textContent = message;
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            
+            setTimeout(() => {
+                notification.className = 'notification hidden';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+/* Simple Forms CSS - Exact from AI-draft */
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.auth-form {
+    margin: var(--spacing-xl) 0;
+}
+
+.btn-full {
+    width: 100%;
+    margin-top: var(--spacing-lg);
+}
+
+small {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
