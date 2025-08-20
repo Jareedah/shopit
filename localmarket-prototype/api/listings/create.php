@@ -43,9 +43,10 @@ try {
     // Add image paths to listing data
     $listingData['images'] = $imagePaths;
     
-    // Add metadata
+    // Add metadata to match default listing structure
     $listingData['id'] = uniqid('listing_');
     $listingData['created_at'] = date('c');
+    $listingData['updated_at'] = date('c');
     $listingData['status'] = 'active';
     $listingData['views'] = 0;
     
