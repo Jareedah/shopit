@@ -247,44 +247,23 @@ const Checkout = (function() {
             this.showReviewStep();
         },
 
-        // Complete purchase with escrow integration
+        // Complete purchase
         async completePurchase() {
             try {
                 const user = Auth.getCurrentUser();
-                const totalAmount = currentListing.price * currentQuantity + Math.max(1, currentListing.price * currentQuantity * 0.02);
-                
-                // Show payment processing step
-                this.showPaymentProcessingStep(totalAmount);
                 
                 const orderData = {
                     listingId: currentListing.id,
                     sellerId: currentListing.sellerId,
                     quantity: currentQuantity,
-                    total_amount: totalAmount,
-                    payment_method: 'escrow',
-                    escrow_status: 'pending'
+                    total_amount: currentListing.price * currentQuantity + Math.max(1, currentListing.price * currentQuantity * 0.02)
                 };
                 
-                // Create order first
                 const response = await API.post('../api/orders/create.php', orderData);
                 
                 if (response.success) {
-                    const orderId = response.order.id;
-                    
-                    // Simulate escrow payment processing
-                    const escrowResult = await EscrowPlayacting.simulatePayment(orderId, totalAmount);
-                    
-                    if (escrowResult.success) {
-                        // Update order with escrow details
-                        response.order.escrow_status = escrowResult.status;
-                        response.order.escrow_id = escrowResult.escrowId;
-                        
-                        // Show completion with escrow information
-                        this.showEscrowCompletionStep(response.order, escrowResult);
-                        showNotification('🔒 Payment secured in escrow!', 'success');
-                    } else {
-                        throw new Error('Escrow payment failed');
-                    }
+                    this.showCompletionStep(response.order);
+                    showNotification('Purchase completed successfully!', 'success');
                 } else {
                     throw new Error(response.message);
                 }
@@ -292,132 +271,6 @@ const Checkout = (function() {
                 console.error('Purchase error:', error);
                 showNotification('Error completing purchase: ' + error.message, 'error');
             }
-        },
-        
-        // Show payment processing step
-        showPaymentProcessingStep(amount) {
-            const checkoutContent = document.getElementById('checkoutContent');
-            
-            // Update checkout steps
-            document.querySelectorAll('.step').forEach((step, index) => {
-                step.classList.toggle('active', index === 1);
-                step.classList.toggle('completed', index < 1);
-            });
-            
-            checkoutContent.innerHTML = `
-                <div class="payment-processing">
-                    <div class="processing-header">
-                        <h3>🔒 Securing Your Payment</h3>
-                        <p>Your payment of $${amount.toFixed(2)} is being processed securely...</p>
-                    </div>
-                    
-                    <div id="paymentConfirmation" class="payment-confirmation-container">
-                        <!-- Escrow payment confirmation will be inserted here -->
-                    </div>
-                    
-                    <div class="escrow-info">
-                        <h4>🛡️ Protected by Escrow</h4>
-                        <ul>
-                            <li>✅ Your money is held safely until delivery</li>
-                            <li>✅ Seller gets paid only after you confirm receipt</li>
-                            <li>✅ 72-hour dispute window for your protection</li>
-                            <li>✅ Full refund if item not as described</li>
-                        </ul>
-                    </div>
-                </div>
-            `;
-        },
-        
-        // Show escrow completion step
-        showEscrowCompletionStep(order, escrowResult) {
-            const checkoutContent = document.getElementById('checkoutContent');
-            
-            // Update checkout steps
-            document.querySelectorAll('.step').forEach((step, index) => {
-                step.classList.toggle('active', index === 2);
-                step.classList.toggle('completed', index < 2);
-            });
-            
-            checkoutContent.innerHTML = `
-                <div class="escrow-completion">
-                    <div class="completion-header">
-                        <div class="success-icon">🎉</div>
-                        <h3>Order Placed Successfully!</h3>
-                        <p>Your payment is safely secured in escrow</p>
-                    </div>
-                    
-                    <div class="order-summary-card">
-                        <h4>Order Details</h4>
-                        <div class="detail-row">
-                            <strong>Order ID:</strong>
-                            <span>${order.id}</span>
-                        </div>
-                        <div class="detail-row">
-                            <strong>Item:</strong>
-                            <span>${currentListing.title}</span>
-                        </div>
-                        <div class="detail-row">
-                            <strong>Quantity:</strong>
-                            <span>${order.quantity}</span>
-                        </div>
-                        <div class="detail-row">
-                            <strong>Total Amount:</strong>
-                            <span>$${order.total_amount.toFixed(2)}</span>
-                        </div>
-                        <div class="detail-row">
-                            <strong>Payment Status:</strong>
-                            ${EscrowPlayacting.createStatusBadge(escrowResult.status)}
-                        </div>
-                        <div class="detail-row">
-                            <strong>Escrow ID:</strong>
-                            <span>${escrowResult.escrowId}</span>
-                        </div>
-                    </div>
-                    
-                    <div id="escrowCountdown" class="escrow-countdown-container">
-                        <!-- Countdown timer will be inserted here -->
-                    </div>
-                    
-                    <div class="escrow-timeline-container">
-                        <h4>📋 Transaction Timeline</h4>
-                        ${EscrowPlayacting.createEscrowTimeline(order.id, escrowResult.status)}
-                    </div>
-                    
-                    <div class="completion-actions">
-                        <button class="btn btn-primary" onclick="window.location.href='../dashboard/orders.html'">
-                            📦 View Order Details
-                        </button>
-                        <button class="btn btn-secondary" onclick="window.location.href='../search/index.html'">
-                            🛍️ Continue Shopping
-                        </button>
-                    </div>
-                    
-                    <div class="next-steps">
-                        <h4>🚀 What happens next?</h4>
-                        <ul>
-                            <li>💰 <strong>Your payment is secured</strong> - Funds held safely in escrow</li>
-                            <li>📧 <strong>Seller notified</strong> - They'll prepare your item for delivery</li>
-                            <li>📦 <strong>Item delivery</strong> - Seller will mark as delivered when shipped</li>
-                            <li>✅ <strong>Confirm receipt</strong> - You have 72 hours to confirm or dispute</li>
-                            <li>🎉 <strong>Funds released</strong> - Payment goes to seller after confirmation</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="escrow-actions">
-                        <button class="btn btn-outline" onclick="EscrowPlayacting.viewDisputeDetails('${order.id}')">
-                            ❓ How Disputes Work
-                        </button>
-                        <button class="btn btn-outline" onclick="EscrowPlayacting.contactSupport('${order.id}')">
-                            📞 Contact Support
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            // Start the escrow countdown
-            setTimeout(() => {
-                EscrowPlayacting.startEscrowCountdown(order.id, 72);
-            }, 1000);
         }
     };
 })();
