@@ -1,0 +1,42 @@
+{
+  "system": {
+    "name": "LocalMarket Prototype",
+    "version": "1.0.0",
+    "environment": "demo",
+    "debug": true
+  },
+  "settings": {
+    "platformFee": 2.0,
+    "minWithdrawal": 10.0,
+    "autoApprove": true,
+    "maxImages": 5,
+    "maxFileSize": 5242880,
+    "allowedImageTypes": ["image/jpeg", "image/png", "image/gif", "image/webp"],
+    "sessionTimeout": 3600,
+    "maxSearchRadius": 100,
+    "defaultSearchRadius": 10,
+    "itemsPerPage": 10,
+    "maxItemsPerPage": 50
+  },
+  "features": {
+    "userRegistration": true,
+    "imageUpload": true,
+    "cameraCapture": true,
+    "locationServices": true,
+    "mapIntegration": true,
+    "messaging": false,
+    "payments": false,
+    "reviews": false
+  },
+  "security": {
+    "requireEmailVerification": false,
+    "allowGuestBrowsing": true,
+    "enableFileUploadSecurity": true,
+    "enableInputSanitization": true,
+    "enableSessionSecurity": true
+  },
+  "metadata": {
+    "created_at": "2024-01-01T00:00:00+00:00",
+    "last_updated": "2024-01-01T00:00:00+00:00"
+  }
+}

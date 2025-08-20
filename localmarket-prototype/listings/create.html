@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Listing - LocalMarket</title>
+    <link rel="stylesheet" href="../assets/css/base/reset.css">
+    <link rel="stylesheet" href="../assets/css/base/variables.css">
+    <link rel="stylesheet" href="../assets/css/base/typography.css">
+    <link rel="stylesheet" href="../assets/css/layout/header.css">
+    <link rel="stylesheet" href="../assets/css/components/buttons.css">
+    <link rel="stylesheet" href="../assets/css/components/forms.css">
+    <link rel="stylesheet" href="../assets/css/components/cards.css">
+    <link rel="stylesheet" href="../assets/css/pages/listing-create.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">LocalMarket</h1>
+            <nav class="navigation">
+                <a href="../dashboard/index.html" class="nav-link">Dashboard</a>
+                <a href="../index.html" class="nav-link">Home</a>
+                <span id="userWelcome"></span>
+                <a href="#" id="logoutLink" class="nav-link">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h2>Create New Listing</h2>
+                <p>Add a product or service to the marketplace</p>
+            </div>
+            
+            <form id="createListingForm" class="listing-form">
+                <div class="form-section">
+                    <h3>Basic Information</h3>
+                    
+                    <div class="form-group">
+                        <label for="title">Listing Title*</label>
+                        <input type="text" id="title" name="title" required maxlength="100">
+                        <small>Clear, descriptive titles work best (max 100 characters)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description*</label>
+                        <textarea id="description" name="description" rows="4" required maxlength="500"></textarea>
+                        <small>Describe your item or service in detail (max 500 characters)</small>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category">Category*</label>
+                            <select id="category" name="category" required>
+                                <option value="">Select a category</option>
+                                <option value="electronics">Electronics</option>
+                                <option value="clothing">Clothing & Accessories</option>
+                                <option value="home">Home & Garden</option>
+                                <option value="vehicles">Vehicles</option>
+                                <option value="services">Services</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="price">Price* ($)</label>
+                            <input type="number" id="price" name="price" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tags">Tags</label>
+                        <input type="text" id="tags" name="tags" placeholder="e.g., vintage, handmade, professional">
+                        <small>Add up to 5 tags separated by commas</small>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Images</h3>
+                    <p>Add up to 5 photos of your item or service</p>
+                    
+                    <div class="image-upload-options">
+                        <div class="upload-option">
+                            <input type="file" id="fileUpload" accept="image/*" multiple style="display: none;">
+                            <label for="fileUpload" class="btn btn-secondary">
+                                <span>Upload from Device</span>
+                            </label>
+                        </div>
+                        
+                        <div class="upload-option">
+                            <button type="button" id="cameraCapture" class="btn btn-secondary">
+                                <span>Take Photo</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="imagePreview" class="image-preview">
+                        <p class="empty-state">No images added yet</p>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Location</h3>
+                    
+                    <div class="form-group">
+                        <label for="location">Your Location</label>
+                        <div class="location-input-group">
+                            <input type="text" id="location" name="location" readonly>
+                            <button type="button" id="detectLocation" class="btn btn-secondary">Detect Location</button>
+                            <button type="button" id="manualLocation" class="btn btn-secondary">Enter Manually</button>
+                        </div>
+                        <small>Buyers will see approximate location, not exact address</small>
+                    </div>
+                    
+                    <div id="manualLocationForm" class="manual-location-form hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="address">Address</label>
+                                <input type="text" id="address" name="address">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="city">City</label>
+                                <input type="text" id="city" name="city">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="state">State</label>
+                                <input type="text" id="state" name="state">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="zipcode">ZIP Code</label>
+                                <input type="text" id="zipcode" name="zipcode">
+                            </div>
+                        </div>
+                        
+                        <button type="button" id="saveManualLocation" class="btn btn-secondary">Save Location</button>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Listing</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Camera Modal -->
+    <div id="cameraModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Take a Photo</h3>
+                <button type="button" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <video id="cameraFeed" autoplay playsinline></video>
+                <div class="camera-controls">
+                    <button id="capturePhoto" class="btn btn-primary">Capture</button>
+                </div>
+                <canvas id="photoCanvas" style="display: none;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification hidden"></div>
+
+    <script src="../assets/js/core/api.js"></script>
+    <script src="../assets/js/core/utils.js"></script>
+    <script src="../assets/js/modules/auth.js"></script>
+    <script src="../assets/js/modules/location.js"></script>
+    <script src="../assets/js/modules/camera.js"></script>
+    <script src="../assets/js/modules/image-upload.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            if (!Auth.isLoggedIn()) {
+                window.location.href = '../auth/login.html';
+                return;
+            }
+            
+            const user = Auth.getCurrentUser();
+            document.getElementById('userWelcome').textContent = `Welcome, ${user.username}`;
+            
+            // Set default location from user profile if available
+            if (user.profile && user.profile.location) {
+                document.getElementById('location').value = user.profile.location;
+            }
+            
+            // Logout functionality
+            document.getElementById('logoutLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                Auth.logout();
+                window.location.href = '../auth/login.html';
+            });
+            
+            // Form submission
+            document.getElementById('createListingForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData();
+                const listingData = {
+                    title: document.getElementById('title').value,
+                    description: document.getElementById('description').value,
+                    category: document.getElementById('category').value,
+                    price: parseFloat(document.getElementById('price').value),
+                    tags: document.getElementById('tags').value.split(',').map(tag => tag.trim()).filter(tag => tag),
+                    location: document.getElementById('location').value,
+                    sellerId: user.id
+                };
+                
+                // Get uploaded images
+                const imageFiles = ImageUpload.getFiles();
+                imageFiles.forEach(file => {
+                    formData.append('images[]', file);
+                });
+                
+                formData.append('listingData', JSON.stringify(listingData));
+                
+                try {
+                    const response = await fetch('../api/listings/create.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('Listing created successfully!', 'success');
+                        setTimeout(() => {
+                            window.location.href = '../dashboard/index.html';
+                        }, 1500);
+                    } else {
+                        showNotification('Error: ' + result.message, 'error');
+                    }
+                } catch (error) {
+                    showNotification('Error creating listing: ' + error.message, 'error');
+                }
+            });
+            
+            function showNotification(message, type = 'info') {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${type}`;
+                
+                setTimeout(() => {
+                    notification.className = 'notification hidden';
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

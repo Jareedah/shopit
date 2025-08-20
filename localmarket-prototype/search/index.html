@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Listings - LocalMarket</title>
+    <link rel="stylesheet" href="../assets/css/base/reset.css">
+    <link rel="stylesheet" href="../assets/css/base/variables.css">
+    <link rel="stylesheet" href="../assets/css/base/typography.css">
+    <link rel="stylesheet" href="../assets/css/layout/header.css">
+    <link rel="stylesheet" href="../assets/css/components/buttons.css">
+    <link rel="stylesheet" href="../assets/css/components/forms.css">
+    <link rel="stylesheet" href="../assets/css/components/cards.css">
+    <link rel="stylesheet" href="../assets/css/pages/search.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">LocalMarket</h1>
+            <nav class="navigation">
+                <a href="../dashboard/index.html" class="nav-link">Dashboard</a>
+                <a href="../index.html" class="nav-link">Home</a>
+                <span id="userWelcome"></span>
+                <a href="#" id="logoutLink" class="nav-link">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="search-header">
+                <h2>Find Products & Services</h2>
+                <p>Discover amazing local offerings near you</p>
+            </div>
+
+            <div class="search-interface">
+                <div class="search-filters">
+                    <div class="filter-section">
+                        <h3>Filters</h3>
+                        
+                        <div class="form-group">
+                            <label for="searchQuery">Search</label>
+                            <input type="text" id="searchQuery" placeholder="What are you looking for?">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="categoryFilter">Category</label>
+                            <select id="categoryFilter">
+                                <option value="">All Categories</option>
+                                <option value="electronics">Electronics</option>
+                                <option value="clothing">Clothing & Accessories</option>
+                                <option value="home">Home & Garden</option>
+                                <option value="vehicles">Vehicles</option>
+                                <option value="services">Services</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="priceRange">Price Range</label>
+                            <div class="price-range">
+                                <input type="number" id="priceMin" placeholder="Min" min="0">
+                                <span>to</span>
+                                <input type="number" id="priceMax" placeholder="Max" min="0">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="radius">Distance (km)</label>
+                            <select id="radius">
+                                <option value="5">5 km</option>
+                                <option value="10" selected>10 km</option>
+                                <option value="25">25 km</option>
+                                <option value="50">50 km</option>
+                                <option value="100">100 km</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sortBy">Sort By</label>
+                            <select id="sortBy">
+                                <option value="distance">Distance (nearest first)</option>
+                                <option value="price_low">Price (low to high)</option>
+                                <option value="price_high">Price (high to low)</option>
+                                <option value="newest">Newest first</option>
+                            </select>
+                        </div>
+
+                        <button id="applyFilters" class="btn btn-primary">Apply Filters</button>
+                        <button id="resetFilters" class="btn btn-secondary">Reset</button>
+                    </div>
+                </div>
+
+                <div class="search-results">
+                    <div class="results-header">
+                        <h3>Results</h3>
+                        <div class="view-toggle">
+                            <button id="listView" class="btn btn-secondary active">List</button>
+                            <button id="mapView" class="btn btn-secondary">Map</button>
+                        </div>
+                    </div>
+
+                    <div id="resultsList" class="results-list">
+                        <div class="loading-state">
+                            <p>Loading listings...</p>
+                        </div>
+                    </div>
+
+                    <div id="resultsMap" class="results-map hidden">
+                        <div id="map" style="height: 500px; width: 100%;"></div>
+                    </div>
+
+                    <div id="pagination" class="pagination hidden">
+                        <button id="prevPage" class="btn btn-secondary">Previous</button>
+                        <span id="pageInfo">Page 1 of 1</span>
+                        <button id="nextPage" class="btn btn-secondary">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="notification" class="notification hidden"></div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="../assets/js/core/api.js"></script>
+    <script src="../assets/js/core/utils.js"></script>
+    <script src="../assets/js/modules/auth.js"></script>
+    <script src="../assets/js/modules/location.js"></script>
+    <script src="../assets/js/modules/search.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            if (!Auth.isLoggedIn()) {
+                window.location.href = '../auth/login.html';
+                return;
+            }
+            
+            const user = Auth.getCurrentUser();
+            document.getElementById('userWelcome').textContent = `Welcome, ${user.username}`;
+            
+            // Logout functionality
+            document.getElementById('logoutLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                Auth.logout();
+                window.location.href = '../auth/login.html';
+            });
+            
+            // Initialize search
+            SearchEngine.init();
+            
+            // View toggle
+            document.getElementById('listView').addEventListener('click', function() {
+                this.classList.add('active');
+                document.getElementById('mapView').classList.remove('active');
+                document.getElementById('resultsList').classList.remove('hidden');
+                document.getElementById('resultsMap').classList.add('hidden');
+            });
+            
+            document.getElementById('mapView').addEventListener('click', function() {
+                this.classList.add('active');
+                document.getElementById('listView').classList.remove('active');
+                document.getElementById('resultsList').classList.add('hidden');
+                document.getElementById('resultsMap').classList.remove('hidden');
+                SearchEngine.showMap();
+            });
+            
+            // Filter application
+            document.getElementById('applyFilters').addEventListener('click', function() {
+                SearchEngine.applyFilters();
+            });
+            
+            document.getElementById('resetFilters').addEventListener('click', function() {
+                SearchEngine.resetFilters();
+            });
+            
+            // Real-time search
+            document.getElementById('searchQuery').addEventListener('input', Utils.debounce(function() {
+                SearchEngine.applyFilters();
+            }, 300));
+            
+            // Load initial results
+            SearchEngine.loadResults();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+/* Dashboard Layout */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.dashboard-card {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--border-color);
+}
+
+.dashboard-card h3 {
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-primary);
+}
+
+.dashboard-card p {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+.card-content {
+    margin-top: var(--spacing-lg);
+}
+
+.empty-state {
+    color: var(--text-light);
+    font-style: italic;
+    text-align: center;
+    padding: var(--spacing-xl) 0;
+}
+
+.action-prompt {
+    text-align: center;
+    margin-top: var(--spacing-md);
+}
+
+.admin-section {
+    background: var(--bg-secondary);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    margin-top: var(--spacing-xl);
+    border-left: 4px solid var(--primary-color);
+}
+
+.admin-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    flex-wrap: wrap;
+}
