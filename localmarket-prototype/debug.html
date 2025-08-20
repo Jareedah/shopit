@@ -25,6 +25,7 @@
         <button onclick="testDataFiles()">Test Data Files</button>
         <button onclick="testFullWorkflow()">Test Complete Workflow</button>
         <button onclick="testListingCreation()">Test Listing Creation</button>
+        <button onclick="testSearchLocation()">Test Search & Location</button>
         <div id="apiResults"></div>
     </div>
     
@@ -389,6 +390,91 @@
                 resultsDiv.innerHTML = `
                     <div class="error">
                         <h3>❌ Listing Creation Test: FAILED</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testSearchLocation() {
+            const resultsDiv = document.getElementById('apiResults');
+            resultsDiv.innerHTML = '<p>Testing search and location functionality...</p>';
+            
+            try {
+                // First, try to get user location
+                let userLocation = null;
+                try {
+                    if (navigator.geolocation) {
+                        const position = await new Promise((resolve, reject) => {
+                            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                                enableHighAccuracy: true,
+                                timeout: 5000,
+                                maximumAge: 60000
+                            });
+                        });
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            address: `${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`
+                        };
+                    }
+                } catch (locationError) {
+                    // Use fallback location for testing
+                    userLocation = { lat: 40.7128, lng: -74.0060, address: 'New York, NY (fallback)' };
+                }
+                
+                // Test search with location
+                const searchData = {
+                    query: '',
+                    category: '',
+                    priceMin: null,
+                    priceMax: null,
+                    radius: 10,
+                    sortBy: 'distance',
+                    userLocation: userLocation
+                };
+                
+                const searchResponse = await fetch('api/debug/test-search.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(searchData)
+                });
+                
+                const searchResult = await searchResponse.json();
+                
+                let html = `<div class="${searchResult.success ? 'success' : 'error'}">`;
+                html += `<h3>${searchResult.success ? '✅' : '❌'} Search & Location Test</h3>`;
+                
+                if (searchResult.success && searchResult.debug) {
+                    const debug = searchResult.debug;
+                    html += '<h4>Location Status:</h4>';
+                    html += `<p>📍 User location: ${userLocation ? userLocation.address : 'Not available'}</p>`;
+                    html += `<p>📊 Total listings: ${debug.total_listings}</p>`;
+                    html += `<p>🗺️ Listings with coordinates: ${debug.listings_with_location}</p>`;
+                    html += `<p>📐 Distance calculations: ${debug.distance_calculations?.length || 0}</p>`;
+                    
+                    if (debug.listings_sample?.length > 0) {
+                        html += '<h4>Sample Listings:</h4>';
+                        debug.listings_sample.forEach(listing => {
+                            html += `<p>📝 ${listing.title}: ${listing.has_coordinates ? '✅ Has coordinates' : '❌ Missing coordinates'}</p>`;
+                        });
+                    }
+                    
+                    if (debug.distance_calculations?.length > 0) {
+                        html += '<h4>Distance Calculations:</h4>';
+                        debug.distance_calculations.forEach(calc => {
+                            html += `<p>📍 ${calc.listing_title}: ${calc.distance_km} km away</p>`;
+                        });
+                    }
+                }
+                
+                html += '</div>';
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Search & Location Test: FAILED</h3>
                         <p>Error: ${error.message}</p>
                     </div>
                 `;

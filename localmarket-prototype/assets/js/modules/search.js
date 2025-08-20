@@ -226,6 +226,33 @@ const SearchEngine = (function() {
             
             this.loadResults(filters);
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+        
+        // Update user location
+        updateUserLocation(location) {
+            userLocation = location;
+            
+            // Reinitialize map with new location
+            if (map) {
+                map.setView([location.lat, location.lng], 13);
+                
+                // Clear existing markers and re-add user location
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.Marker) {
+                        map.removeLayer(layer);
+                    }
+                });
+                
+                L.marker([location.lat, location.lng])
+                    .addTo(map)
+                    .bindPopup('Your Location')
+                    .openPopup();
+            }
+        },
+        
+        // Get current user location
+        getUserLocation() {
+            return userLocation;
         }
     };
 })();
