@@ -76,6 +76,12 @@
                                 <option value="100">100 km</option>
                             </select>
                         </div>
+                        
+                        <div class="form-group">
+                            <label for="userLocation">Your Location</label>
+                            <input type="text" id="userLocation" readonly placeholder="Detecting location...">
+                            <button type="button" id="updateLocation" class="btn btn-secondary btn-sm">Update Location</button>
+                        </div>
 
                         <div class="form-group">
                             <label for="sortBy">Sort By</label>
@@ -150,6 +156,29 @@
             // Initialize search
             SearchEngine.init();
             
+            // Update location display
+            updateLocationDisplay();
+            
+            // Location update handler
+            document.getElementById('updateLocation').addEventListener('click', async function() {
+                try {
+                    this.disabled = true;
+                    this.textContent = 'Detecting...';
+                    
+                    const location = await LocationService.detectLocation();
+                    SearchEngine.updateUserLocation(location);
+                    updateLocationDisplay();
+                    SearchEngine.applyFilters(); // Refresh search with new location
+                    
+                    showNotification('Location updated successfully!', 'success');
+                } catch (error) {
+                    showNotification('Error detecting location: ' + error.message, 'error');
+                } finally {
+                    this.disabled = false;
+                    this.textContent = 'Update Location';
+                }
+            });
+            
             // View toggle
             document.getElementById('listView').addEventListener('click', function() {
                 this.classList.add('active');
@@ -183,6 +212,26 @@
             // Load initial results
             SearchEngine.loadResults();
         });
+        
+        function updateLocationDisplay() {
+            const userLocationInput = document.getElementById('userLocation');
+            const currentLocation = SearchEngine.getUserLocation();
+            
+            if (currentLocation) {
+                userLocationInput.value = currentLocation.address || `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
+            } else {
+                userLocationInput.value = 'Location not detected';
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Use the global notification system
+            if (typeof showNotification !== 'undefined') {
+                window.showNotification(message, type);
+            } else {
+                alert(message);
+            }
+        }
     </script>
 </body>
 </html>

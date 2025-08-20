@@ -55,8 +55,9 @@
                     <div class="listing-info">
                         <div class="price-section">
                             <h2 id="listingPrice"></h2>
-                            <button id="contactSeller" class="btn btn-primary">Contact Seller</button>
-                            <button id="purchaseItem" class="btn btn-success">Purchase Item</button>
+                            <div id="listingActions" class="listing-actions">
+                                <!-- Actions will be populated based on ownership -->
+                            </div>
                         </div>
                         
                         <div class="description-section">
@@ -195,14 +196,8 @@
             // Load seller information
             loadSellerInfo(listing.sellerId);
             
-            // Set up action buttons
-            document.getElementById('contactSeller').addEventListener('click', function() {
-                alert('Contact functionality will be implemented in the next phase.');
-            });
-            
-            document.getElementById('purchaseItem').addEventListener('click', function() {
-                alert('Purchase functionality will be implemented in the next phase.');
-            });
+            // Set up action buttons based on ownership
+            setupActionButtons(listing);
         }
         
         function loadListingImages(images) {
@@ -266,6 +261,62 @@
             } catch (error) {
                 console.error('Error loading seller info:', error);
                 document.getElementById('sellerInfo').innerHTML = '<p>Unable to load seller information</p>';
+            }
+        }
+        
+        function setupActionButtons(listing) {
+            const actionsDiv = document.getElementById('listingActions');
+            const currentUser = Auth.getCurrentUser();
+            
+            if (!currentUser) {
+                actionsDiv.innerHTML = '<p>Please login to interact with this listing</p>';
+                return;
+            }
+            
+            // Check if current user owns this listing
+            const isOwner = currentUser.id === listing.sellerId;
+            
+            if (isOwner) {
+                // Show owner actions
+                actionsDiv.innerHTML = `
+                    <button id="editListing" class="btn btn-primary">✏️ Edit Listing</button>
+                    <button id="manageBids" class="btn btn-secondary">📊 Manage Bids</button>
+                    <button id="viewAnalytics" class="btn btn-secondary">📈 View Analytics</button>
+                `;
+                
+                // Set up owner action handlers
+                document.getElementById('editListing').addEventListener('click', function() {
+                    window.location.href = `../listings/edit.html?id=${listing.id}`;
+                });
+                
+                document.getElementById('manageBids').addEventListener('click', function() {
+                    showNotification('Bid management will be available after purchase functionality is implemented', 'info');
+                });
+                
+                document.getElementById('viewAnalytics').addEventListener('click', function() {
+                    showNotification('Analytics: Views: ' + (listing.views || 0) + ', Interest: High', 'info');
+                });
+                
+            } else {
+                // Show buyer actions
+                actionsDiv.innerHTML = `
+                    <button id="contactSeller" class="btn btn-primary">💬 Contact Seller</button>
+                    <button id="purchaseItem" class="btn btn-success">🛒 Purchase Item</button>
+                    <button id="addToFavorites" class="btn btn-secondary">❤️ Add to Favorites</button>
+                `;
+                
+                // Set up buyer action handlers
+                document.getElementById('contactSeller').addEventListener('click', function() {
+                    showNotification('Contact functionality will be implemented in the next phase.', 'info');
+                });
+                
+                document.getElementById('purchaseItem').addEventListener('click', function() {
+                    window.location.href = `../orders/checkout.html?id=${listing.id}`;
+                });
+                
+                document.getElementById('addToFavorites').addEventListener('click', function() {
+                    showNotification('Added to favorites! (Feature will be enhanced later)', 'success');
+                });
             }
         }
         
