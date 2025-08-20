@@ -99,6 +99,20 @@ const ImageUpload = (function() {
             }
         },
         
+        // Add captured image from camera
+        addCapturedImage(file) {
+            if (uploadedFiles.length >= MAX_FILES) {
+                throw new Error(`You can only upload up to ${MAX_FILES} images`);
+            }
+            
+            if (!this.validateFile(file)) {
+                throw new Error(`Invalid captured image`);
+            }
+            
+            uploadedFiles.push(file);
+            this.createPreview(file);
+        },
+        
         // Get all uploaded files
         getFiles() {
             return uploadedFiles;

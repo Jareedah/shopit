@@ -198,18 +198,114 @@
                 window.location.href = '../auth/login.html';
             });
             
+            // Image upload event handlers
+            document.getElementById('fileUpload').addEventListener('change', function(e) {
+                try {
+                    ImageUpload.handleFileSelect(e);
+                } catch (error) {
+                    showNotification('Error uploading images: ' + error.message, 'error');
+                }
+            });
+            
+            // Camera capture event handler
+            document.getElementById('cameraCapture').addEventListener('click', async function() {
+                try {
+                    if (!CameraService.isCameraAvailable()) {
+                        showNotification('Camera not available on this device', 'error');
+                        return;
+                    }
+                    
+                    document.getElementById('cameraModal').classList.remove('hidden');
+                    await CameraService.initCamera();
+                } catch (error) {
+                    showNotification('Error accessing camera: ' + error.message, 'error');
+                    document.getElementById('cameraModal').classList.add('hidden');
+                }
+            });
+            
+            // Camera capture photo button
+            document.getElementById('capturePhoto').addEventListener('click', async function() {
+                try {
+                    const photoBlob = await CameraService.capturePhoto();
+                    const file = new File([photoBlob], 'camera_capture.jpg', { type: 'image/jpeg' });
+                    
+                    // Add to image upload system
+                    ImageUpload.addCapturedImage(file);
+                    
+                    // Close camera modal
+                    CameraService.stopCamera();
+                    document.getElementById('cameraModal').classList.add('hidden');
+                    
+                    showNotification('Photo captured successfully!', 'success');
+                } catch (error) {
+                    showNotification('Error capturing photo: ' + error.message, 'error');
+                }
+            });
+            
+            // Location detection event handler
+            document.getElementById('detectLocation').addEventListener('click', async function() {
+                try {
+                    showNotification('Detecting your location...', 'info');
+                    this.disabled = true;
+                    this.textContent = 'Detecting...';
+                    
+                    const location = await LocationService.detectLocation();
+                    
+                    document.getElementById('location').value = location.address || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
+                    showNotification('Location detected successfully!', 'success');
+                } catch (error) {
+                    showNotification('Error detecting location: ' + error.message + '. Please enter manually.', 'error');
+                } finally {
+                    this.disabled = false;
+                    this.textContent = 'Detect Location';
+                }
+            });
+            
+            // Manual location event handler
+            document.getElementById('manualLocation').addEventListener('click', function() {
+                const manualForm = document.getElementById('manualLocationForm');
+                manualForm.classList.toggle('hidden');
+            });
+            
+            // Save manual location event handler
+            document.getElementById('saveManualLocation').addEventListener('click', function() {
+                const address = document.getElementById('address').value;
+                const city = document.getElementById('city').value;
+                const state = document.getElementById('state').value;
+                const zipcode = document.getElementById('zipcode').value;
+                
+                if (!address && !city) {
+                    showNotification('Please enter at least an address or city', 'error');
+                    return;
+                }
+                
+                const location = LocationService.setManualLocation(address, city, state, zipcode);
+                document.getElementById('location').value = location.address;
+                document.getElementById('manualLocationForm').classList.add('hidden');
+                
+                showNotification('Location saved successfully!', 'success');
+            });
+            
             // Form submission
             document.getElementById('createListingForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 const formData = new FormData();
+                // Get location data properly structured
+                const locationData = LocationService.getCurrentLocation();
+                const locationValue = document.getElementById('location').value;
+                
                 const listingData = {
                     title: document.getElementById('title').value,
                     description: document.getElementById('description').value,
                     category: document.getElementById('category').value,
                     price: parseFloat(document.getElementById('price').value),
                     tags: document.getElementById('tags').value.split(',').map(tag => tag.trim()).filter(tag => tag),
-                    location: document.getElementById('location').value,
+                    location: locationData || {
+                        address: locationValue || 'Location not specified',
+                        lat: 0,
+                        lng: 0
+                    },
                     sellerId: user.id
                 };
                 
