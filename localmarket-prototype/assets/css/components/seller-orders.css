@@ -1,0 +1,288 @@
+/* Seller Orders Management Styles */
+
+/* Notification Badge */
+.notification-badge {
+    background: #dc2626;
+    color: white;
+    border-radius: 50%;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-left: 0.5rem;
+    min-width: 1.5rem;
+    text-align: center;
+    animation: pulse 2s infinite;
+}
+
+/* Seller Orders List */
+.seller-orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.order-item {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.order-item:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+}
+
+.order-item.new-order {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+}
+
+.new-badge {
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+    background: #10b981;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Order Header */
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.order-info h4 {
+    margin: 0 0 0.25rem 0;
+    color: #111827;
+    font-size: 1rem;
+}
+
+.buyer-info {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.order-status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.escrow-badge-small {
+    font-size: 0.625rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+/* Order Details */
+.order-details {
+    margin-bottom: 1rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.detail-value {
+    color: #111827;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.buyer-message {
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.buyer-message strong {
+    color: #1e40af;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.buyer-message p {
+    color: #1e3a8a;
+    font-style: italic;
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+/* Order Actions */
+.order-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1;
+}
+
+/* Seller Stats Grid */
+.seller-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+    position: relative;
+}
+
+.stat-number {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #111827;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    color: #6b7280;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.stat-indicator {
+    position: absolute;
+    top: -0.25rem;
+    right: -0.25rem;
+    background: #10b981;
+    color: white;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-size: 0.625rem;
+    font-weight: bold;
+}
+
+/* View All Orders */
+.view-all-orders {
+    text-align: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Loading State */
+.loading-state {
+    text-align: center;
+    color: #6b7280;
+    padding: 2rem;
+    font-style: italic;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    color: #9ca3af;
+    padding: 2rem;
+}
+
+.empty-state p {
+    margin-bottom: 0.5rem;
+}
+
+.empty-state small {
+    color: #d1d5db;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .order-status {
+        align-items: flex-start;
+        flex-direction: row;
+        gap: 0.75rem;
+    }
+    
+    .order-actions {
+        flex-direction: column;
+    }
+    
+    .order-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+        padding: 0.5rem 0;
+    }
+    
+    .seller-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .stat-number {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .order-item {
+        padding: 0.75rem;
+    }
+    
+    .new-badge {
+        top: -0.375rem;
+        right: -0.375rem;
+        padding: 0.125rem 0.375rem;
+    }
+    
+    .seller-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
