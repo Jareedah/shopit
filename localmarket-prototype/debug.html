@@ -23,6 +23,7 @@
         <button onclick="testLogin()">Test Login API</button>
         <button onclick="testRegister()">Test Register API</button>
         <button onclick="testDataFiles()">Test Data Files</button>
+        <button onclick="testFullWorkflow()">Test Complete Workflow</button>
         <div id="apiResults"></div>
     </div>
     
@@ -144,7 +145,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        username: 'testuser_' + Date.now(),
+                        username: 'test' + Math.floor(Math.random() * 1000),
                         userData: {
                             name: 'Test User',
                             email: 'test@example.com'
@@ -165,6 +166,162 @@
                         <h3>❌ Register Test: FAILED</h3>
                         <p>Error: ${error.message}</p>
                         <p>This indicates the register API endpoint has issues.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testDataFiles() {
+            const resultsDiv = document.getElementById('apiResults');
+            resultsDiv.innerHTML = '<p>Testing data file access...</p>';
+            
+            try {
+                // Test reading users.json
+                const response = await fetch('api/debug/test.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({test: 'data_files'})
+                });
+                
+                const data = await response.json();
+                
+                let statusClass = 'success';
+                let statusIcon = '✅';
+                let statusText = 'SUCCESS';
+                
+                if (!data.success || !data.data_dir_exists || !data.users_file_exists) {
+                    statusClass = 'error';
+                    statusIcon = '❌';
+                    statusText = 'FAILED';
+                }
+                
+                resultsDiv.innerHTML = `
+                    <div class="${statusClass}">
+                        <h3>${statusIcon} Data Files Test: ${statusText}</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                        ${!data.data_dir_exists ? '<p><strong>Issue:</strong> Data directory not found</p>' : ''}
+                        ${!data.users_file_exists ? '<p><strong>Issue:</strong> users.json file not found</p>' : ''}
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Data Files Test: FAILED</h3>
+                        <p>Error: ${error.message}</p>
+                        <p>Cannot access data files or PHP endpoint.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testDataFiles() {
+            const resultsDiv = document.getElementById('apiResults');
+            resultsDiv.innerHTML = '<p>Testing data file access and structure...</p>';
+            
+            try {
+                // Test basic data file access first
+                const basicTest = await fetch('api/debug/test.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({test: 'data_access'})
+                });
+                
+                const basicData = await basicTest.json();
+                
+                // Test actual data reading
+                const dataTest = await fetch('api/debug/simple-login.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({username: 'admin1'})
+                });
+                
+                const loginData = await dataTest.json();
+                
+                let html = '<div class="success"><h3>✅ Data Files Test: SUCCESS</h3>';
+                html += '<h4>File Access Status:</h4>';
+                html += `<p>📁 Data directory exists: ${basicData.data_dir_exists ? '✅' : '❌'}</p>`;
+                html += `<p>📄 users.json exists: ${basicData.users_file_exists ? '✅' : '❌'}</p>`;
+                html += '<h4>Data Reading Test:</h4>';
+                html += `<p>📖 User data readable: ${loginData.success ? '✅' : '❌'}</p>`;
+                if (loginData.success && loginData.debug) {
+                    html += `<p>👥 Users in database: ${loginData.debug.users_count || 'Unknown'}</p>`;
+                }
+                html += '</div>';
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Data Files Test: FAILED</h3>
+                        <p>Error: ${error.message}</p>
+                        <p>Cannot access or read data files.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testFullWorkflow() {
+            const resultsDiv = document.getElementById('apiResults');
+            resultsDiv.innerHTML = '<p>Testing complete user workflow...</p>';
+            
+            try {
+                let html = '<div class="success"><h3>🔄 Complete Workflow Test</h3>';
+                
+                // Test 1: Register new user
+                const randomUser = 'demo' + Math.floor(Math.random() * 1000);
+                const registerResponse = await fetch('api/auth/register.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: randomUser,
+                        userData: { name: 'Demo User', email: 'demo@test.com' }
+                    })
+                });
+                const registerData = await registerResponse.json();
+                
+                html += `<p>1. Registration: ${registerData.success ? '✅' : '❌'} (${randomUser})</p>`;
+                
+                if (registerData.success) {
+                    // Test 2: Login with new user
+                    const loginResponse = await fetch('api/auth/login.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({username: randomUser})
+                    });
+                    const loginData = await loginResponse.json();
+                    
+                    html += `<p>2. Login: ${loginData.success ? '✅' : '❌'}</p>`;
+                    
+                    if (loginData.success) {
+                        html += `<p>3. User Role: ${loginData.user.role}</p>`;
+                        html += `<p>4. Session Created: ✅</p>`;
+                    }
+                }
+                
+                // Test 3: Admin login
+                const adminResponse = await fetch('api/auth/login.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({username: 'admin1'})
+                });
+                const adminData = await adminResponse.json();
+                
+                html += `<p>5. Admin Login: ${adminData.success ? '✅' : '❌'}</p>`;
+                if (adminData.success) {
+                    html += `<p>6. Admin Role: ${adminData.user.role === 'admin' ? '✅' : '❌'}</p>`;
+                }
+                
+                html += '</div>';
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Workflow Test: FAILED</h3>
+                        <p>Error: ${error.message}</p>
                     </div>
                 `;
             }
