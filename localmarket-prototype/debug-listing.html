@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Listing Creation - LocalMarket</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; border: none; border-radius: 4px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .success { background: #d4edda; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .error { background: #f8d7da; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .hidden { display: none; }
+        .image-preview { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+        .preview-item { position: relative; width: 100px; height: 100px; }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+        .remove-btn { position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Debug: Create Listing</h1>
+    
+    <div id="loginStatus"></div>
+    
+    <form id="debugListingForm">
+        <div class="form-group">
+            <label for="title">Title*</label>
+            <input type="text" id="title" required placeholder="Enter listing title">
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Description*</label>
+            <textarea id="description" required placeholder="Describe your item or service"></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="category">Category*</label>
+            <select id="category" required>
+                <option value="">Select category</option>
+                <option value="electronics">Electronics</option>
+                <option value="clothing">Clothing</option>
+                <option value="home">Home & Garden</option>
+                <option value="vehicles">Vehicles</option>
+                <option value="services">Services</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="price">Price*</label>
+            <input type="number" id="price" step="0.01" min="0" required placeholder="0.00">
+        </div>
+        
+        <div class="form-group">
+            <label for="tags">Tags</label>
+            <input type="text" id="tags" placeholder="tag1, tag2, tag3">
+        </div>
+        
+        <div class="form-group">
+            <label for="images">Images</label>
+            <input type="file" id="images" multiple accept="image/*">
+            <div id="imagePreview" class="image-preview"></div>
+        </div>
+        
+        <div class="form-group">
+            <label for="location">Location</label>
+            <input type="text" id="location" placeholder="Enter location or click detect">
+            <button type="button" id="detectLocationBtn" class="btn-secondary">Detect Location</button>
+            <button type="button" id="manualLocationBtn" class="btn-secondary">Enter Manually</button>
+        </div>
+        
+        <div id="manualLocationDiv" class="hidden">
+            <div class="form-group">
+                <label for="address">Address</label>
+                <input type="text" id="address" placeholder="Street address">
+            </div>
+            <div class="form-group">
+                <label for="city">City</label>
+                <input type="text" id="city" placeholder="City">
+            </div>
+            <div class="form-group">
+                <label for="state">State</label>
+                <input type="text" id="state" placeholder="State">
+            </div>
+            <button type="button" id="saveLocationBtn" class="btn-secondary">Save Location</button>
+        </div>
+        
+        <button type="submit" class="btn-primary">Create Listing</button>
+    </form>
+    
+    <div id="results"></div>
+
+    <script src="assets/js/core/api.js"></script>
+    <script src="assets/js/modules/auth.js"></script>
+    <script>
+        let selectedFiles = [];
+        let currentLocation = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check login status
+            checkLoginStatus();
+            
+            // Set up event handlers
+            setupEventHandlers();
+        });
+        
+        function checkLoginStatus() {
+            const statusDiv = document.getElementById('loginStatus');
+            if (Auth.isLoggedIn()) {
+                const user = Auth.getCurrentUser();
+                statusDiv.innerHTML = `<div class="success">✅ Logged in as: ${user.username} (${user.role})</div>`;
+            } else {
+                statusDiv.innerHTML = `<div class="error">❌ Not logged in. <a href="auth/login.html">Login here</a></div>`;
+            }
+        }
+        
+        function setupEventHandlers() {
+            // Image upload
+            document.getElementById('images').addEventListener('change', function(e) {
+                selectedFiles = Array.from(e.target.files);
+                updateImagePreview();
+            });
+            
+            // Location detection
+            document.getElementById('detectLocationBtn').addEventListener('click', detectLocation);
+            
+            // Manual location
+            document.getElementById('manualLocationBtn').addEventListener('click', function() {
+                document.getElementById('manualLocationDiv').classList.toggle('hidden');
+            });
+            
+            document.getElementById('saveLocationBtn').addEventListener('click', saveManualLocation);
+            
+            // Form submission
+            document.getElementById('debugListingForm').addEventListener('submit', submitListing);
+        }
+        
+        function updateImagePreview() {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            
+            selectedFiles.forEach((file, index) => {
+                const div = document.createElement('div');
+                div.className = 'preview-item';
+                
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.innerHTML = '×';
+                removeBtn.onclick = () => removeImage(index);
+                
+                div.appendChild(img);
+                div.appendChild(removeBtn);
+                preview.appendChild(div);
+            });
+        }
+        
+        function removeImage(index) {
+            selectedFiles.splice(index, 1);
+            updateImagePreview();
+        }
+        
+        async function detectLocation() {
+            const btn = document.getElementById('detectLocationBtn');
+            const originalText = btn.textContent;
+            
+            try {
+                btn.disabled = true;
+                btn.textContent = 'Detecting...';
+                
+                if (!navigator.geolocation) {
+                    throw new Error('Geolocation not supported');
+                }
+                
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    });
+                });
+                
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                currentLocation = { lat, lng, address: `${lat.toFixed(4)}, ${lng.toFixed(4)}` };
+                document.getElementById('location').value = currentLocation.address;
+                
+                showResult('Location detected successfully!', 'success');
+                
+            } catch (error) {
+                showResult('Error detecting location: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        function saveManualLocation() {
+            const address = document.getElementById('address').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            
+            if (!address && !city) {
+                showResult('Please enter at least an address or city', 'error');
+                return;
+            }
+            
+            const parts = [];
+            if (address) parts.push(address);
+            if (city) parts.push(city);
+            if (state) parts.push(state);
+            
+            currentLocation = {
+                address: parts.join(', '),
+                lat: 0,
+                lng: 0,
+                manual: true
+            };
+            
+            document.getElementById('location').value = currentLocation.address;
+            document.getElementById('manualLocationDiv').classList.add('hidden');
+            showResult('Location saved successfully!', 'success');
+        }
+        
+        async function submitListing(e) {
+            e.preventDefault();
+            
+            if (!Auth.isLoggedIn()) {
+                showResult('Please login first', 'error');
+                return;
+            }
+            
+            const user = Auth.getCurrentUser();
+            const formData = new FormData();
+            
+            // Prepare listing data
+            const listingData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                category: document.getElementById('category').value,
+                price: parseFloat(document.getElementById('price').value),
+                tags: document.getElementById('tags').value.split(',').map(s => s.trim()).filter(s => s),
+                location: currentLocation || {
+                    address: document.getElementById('location').value || 'Unknown',
+                    lat: 0,
+                    lng: 0
+                },
+                sellerId: user.id
+            };
+            
+            // Add listing data
+            formData.append('listingData', JSON.stringify(listingData));
+            
+            // Add images
+            selectedFiles.forEach(file => {
+                formData.append('images[]', file);
+            });
+            
+            try {
+                showResult('Creating listing...', 'info');
+                
+                const response = await fetch('api/debug/simple-listing.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult('✅ Listing created successfully! ID: ' + result.listing.id, 'success');
+                    document.getElementById('debugListingForm').reset();
+                    selectedFiles = [];
+                    updateImagePreview();
+                } else {
+                    showResult('❌ Error: ' + result.message, 'error');
+                    if (result.debug) {
+                        console.log('Debug info:', result.debug);
+                    }
+                }
+                
+            } catch (error) {
+                showResult('❌ Error creating listing: ' + error.message, 'error');
+            }
+        }
+        
+        function showResult(message, type) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+    </script>
+</body>
+</html>

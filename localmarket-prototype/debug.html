@@ -24,6 +24,7 @@
         <button onclick="testRegister()">Test Register API</button>
         <button onclick="testDataFiles()">Test Data Files</button>
         <button onclick="testFullWorkflow()">Test Complete Workflow</button>
+        <button onclick="testListingCreation()">Test Listing Creation</button>
         <div id="apiResults"></div>
     </div>
     
@@ -321,6 +322,73 @@
                 resultsDiv.innerHTML = `
                     <div class="error">
                         <h3>❌ Workflow Test: FAILED</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testListingCreation() {
+            const resultsDiv = document.getElementById('apiResults');
+            resultsDiv.innerHTML = '<p>Testing listing creation system...</p>';
+            
+            try {
+                // First login to get session
+                const loginResponse = await fetch('api/auth/login.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({username: 'admin1'})
+                });
+                const loginData = await loginResponse.json();
+                
+                if (!loginData.success) {
+                    throw new Error('Login failed: ' + loginData.message);
+                }
+                
+                // Test listing creation debug endpoint
+                const testData = {
+                    title: 'Test Product Debug',
+                    description: 'Testing listing creation functionality',
+                    category: 'electronics',
+                    price: 99.99,
+                    tags: ['test', 'debug'],
+                    location: 'Test Location'
+                };
+                
+                const debugResponse = await fetch('api/debug/test-listing.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+                
+                const debugData = await debugResponse.json();
+                
+                let html = `<div class="${debugData.success ? 'success' : 'error'}">`;
+                html += `<h3>${debugData.success ? '✅' : '❌'} Listing Creation Debug</h3>`;
+                html += '<h4>System Status:</h4>';
+                html += `<p>📁 Uploads directory exists: ${debugData.debug?.uploads_dir_exists ? '✅' : '❌'}</p>`;
+                html += `<p>✏️ Uploads directory writable: ${debugData.debug?.uploads_dir_writable ? '✅' : '❌'}</p>`;
+                html += `<p>📄 Listings file exists: ${debugData.debug?.listings_file_exists ? '✅' : '❌'}</p>`;
+                html += `<p>💾 Data directory writable: ${debugData.debug?.data_dir_writable ? '✅' : '❌'}</p>`;
+                html += `<p>👤 User session: ${debugData.debug?.session_user || 'None'}</p>`;
+                
+                if (debugData.debug?.parsed_listing_data) {
+                    html += '<h4>Data Parsing:</h4>';
+                    html += `<p>📝 Data received: ✅</p>`;
+                    html += `<p>❌ Missing fields: ${debugData.debug.missing_fields?.length || 0}</p>`;
+                    html += `<p>✅ Validation: ${debugData.debug.validation_passed ? 'Passed' : 'Failed'}</p>`;
+                }
+                
+                html += '<h4>Debug Details:</h4>';
+                html += `<pre>${JSON.stringify(debugData.debug, null, 2)}</pre>`;
+                html += '</div>';
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Listing Creation Test: FAILED</h3>
                         <p>Error: ${error.message}</p>
                     </div>
                 `;
