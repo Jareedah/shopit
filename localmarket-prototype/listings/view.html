@@ -189,16 +189,28 @@
                 document.getElementById('detailTags').textContent = 'No tags';
             }
             
-            // Set stock information
-            const stock = listing.stock || 0;
+            // Set stock information with real-time updates
+            let currentStock = listing.stock || 0;
+            
+            // Check for stock updates from localStorage
+            const stockUpdates = JSON.parse(localStorage.getItem('stockUpdates') || '{}');
+            const stockUpdate = stockUpdates[listing.id];
+            
+            if (stockUpdate) {
+                currentStock = stockUpdate.currentStock;
+            }
+            
             const stockElement = document.getElementById('detailStock');
-            if (stock > 0) {
-                stockElement.innerHTML = `<span style="color: #28a745; font-weight: bold;">${stock} units available</span>`;
+            if (currentStock > 0) {
+                stockElement.innerHTML = `<span style="color: #28a745; font-weight: bold;">${currentStock} units available</span>`;
                 stockElement.className = 'stock-indicator in-stock';
             } else {
                 stockElement.innerHTML = `<span style="color: #dc3545; font-weight: bold;">Out of Stock</span>`;
                 stockElement.className = 'stock-indicator out-of-stock';
             }
+            
+            // Update the listing object for action buttons
+            listing.stock = currentStock;
             
             // Set distance if available
             if (listing.distance) {

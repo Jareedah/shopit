@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History - LocalMarket</title>
+    <link rel="stylesheet" href="../assets/css/base/reset.css">
+    <link rel="stylesheet" href="../assets/css/base/variables.css">
+    <link rel="stylesheet" href="../assets/css/base/typography.css">
+    <link rel="stylesheet" href="../assets/css/layout/header.css">
+    <link rel="stylesheet" href="../assets/css/components/buttons.css">
+    <link rel="stylesheet" href="../assets/css/components/forms.css">
+    <link rel="stylesheet" href="../assets/css/components/cards.css">
+    <link rel="stylesheet" href="../assets/css/pages/orders.css">
+    <link rel="stylesheet" href="../assets/css/components/escrow.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">LocalMarket</h1>
+            <nav class="navigation">
+                <a href="../dashboard/index.html" class="nav-link">Dashboard</a>
+                <a href="../search/index.html" class="nav-link">Search</a>
+                <a href="../index.html" class="nav-link">Home</a>
+                <span id="userWelcome"></span>
+                <a href="#" id="logoutLink" class="nav-link">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h2>📦 My Order History</h2>
+                <p>Track all your purchases and their status</p>
+            </div>
+
+            <div class="order-history-container">
+                <div class="orders-header">
+                    <h3>🛒 Your Purchases</h3>
+                    <div class="orders-filters">
+                        <select id="statusFilter" onchange="filterBuyerOrders()">
+                            <option value="">All Orders</option>
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="refreshBuyerOrders()">🔄 Refresh</button>
+                    </div>
+                </div>
+                
+                <div id="buyerOrdersList" class="orders-container">
+                    <div class="loading-state">Loading your order history...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../assets/js/core/api.js"></script>
+    <script src="../assets/js/core/utils.js"></script>
+    <script src="../assets/js/modules/auth.js"></script>
+    <script src="../assets/js/modules/escrow.js"></script>
+    
+    <script>
+        let buyerOrders = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            if (!Auth.isLoggedIn()) {
+                window.location.href = '../auth/login.html';
+                return;
+            }
+            
+            const user = Auth.getCurrentUser();
+            document.getElementById('userWelcome').textContent = `Welcome, ${user.username}`;
+            
+            // Load buyer orders
+            loadBuyerOrders(user.id);
+            
+            // Logout functionality
+            document.getElementById('logoutLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                Auth.logout();
+                window.location.href = '../auth/login.html';
+            });
+        });
+        
+        async function loadBuyerOrders(buyerId) {
+            try {
+                const container = document.getElementById('buyerOrdersList');
+                container.innerHTML = '<div class="loading-state">Loading your orders...</div>';
+                
+                // Get buyer orders from localStorage
+                const allOrders = JSON.parse(localStorage.getItem('buyerOrders') || '[]');
+                const userOrders = allOrders.filter(order => order.buyerId === buyerId);
+                
+                buyerOrders = userOrders;
+                
+                if (userOrders.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No Orders Yet</h3>
+                            <p>You haven't made any purchases yet.</p>
+                            <a href="../search/index.html" class="btn btn-primary">Start Shopping</a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Display orders
+                displayBuyerOrders(userOrders);
+                
+            } catch (error) {
+                console.error('Error loading buyer orders:', error);
+                document.getElementById('buyerOrdersList').innerHTML = `
+                    <div class="error-state">
+                        <p>Error loading orders: ${error.message}</p>
+                        <button class="btn btn-primary" onclick="location.reload()">Retry</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function displayBuyerOrders(orders) {
+            const container = document.getElementById('buyerOrdersList');
+            
+            let ordersHtml = '<div class="buyer-orders-list">';
+            
+            orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).forEach(order => {
+                const statusColor = getOrderStatusColor(order.status);
+                const escrowStatus = order.escrow_status || 'pending';
+                
+                ordersHtml += `
+                    <div class="order-card" data-order-id="${order.id}">
+                        <div class="order-header">
+                            <div class="order-info">
+                                <h4>${order.listingTitle}</h4>
+                                <p class="seller-info">Sold by: ${order.sellerName || order.sellerId}</p>
+                            </div>
+                            <div class="order-status">
+                                <span class="status-badge" style="background-color: ${statusColor}; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem;">
+                                    ${formatOrderStatus(order.status)}
+                                </span>
+                                ${EscrowPlayacting ? EscrowPlayacting.createStatusBadge(escrowStatus) : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="order-details">
+                            <div class="detail-row">
+                                <span>Order ID:</span>
+                                <span>${order.id}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Quantity:</span>
+                                <span>${order.quantity}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Total Paid:</span>
+                                <span>$${order.total_amount.toFixed(2)}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Order Date:</span>
+                                <span>${new Date(order.created_at).toLocaleDateString()}</span>
+                            </div>
+                            ${order.tracking_number ? `
+                                <div class="detail-row">
+                                    <span>Tracking:</span>
+                                    <span>${order.tracking_number}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="order-actions">
+                            ${generateBuyerOrderActions(order)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            ordersHtml += '</div>';
+            container.innerHTML = ordersHtml;
+        }
+        
+        function generateBuyerOrderActions(order) {
+            let actions = [];
+            
+            switch (order.status) {
+                case 'pending':
+                    actions.push(`<button class="btn btn-secondary btn-sm" onclick="contactSeller('${order.id}')">💬 Contact Seller</button>`);
+                    actions.push(`<button class="btn btn-danger btn-sm" onclick="cancelOrder('${order.id}')">❌ Cancel Order</button>`);
+                    break;
+                    
+                case 'shipped':
+                    actions.push(`<button class="btn btn-primary btn-sm" onclick="trackOrder('${order.id}')">📦 Track Package</button>`);
+                    break;
+                    
+                case 'delivered':
+                    actions.push(`<button class="btn btn-success btn-sm" onclick="confirmDelivery('${order.id}')">✅ Confirm Received</button>`);
+                    actions.push(`<button class="btn btn-warning btn-sm" onclick="disputeOrder('${order.id}')">⚠️ Report Issue</button>`);
+                    break;
+                    
+                case 'completed':
+                    actions.push(`<button class="btn btn-secondary btn-sm" onclick="leaveReview('${order.id}')">⭐ Leave Review</button>`);
+                    break;
+            }
+            
+            actions.push(`<button class="btn btn-outline btn-sm" onclick="viewOrderDetails('${order.id}')">📋 Details</button>`);
+            
+            return actions.join(' ');
+        }
+        
+        function getOrderStatusColor(status) {
+            const colors = {
+                'pending': '#f59e0b',
+                'confirmed': '#3b82f6',
+                'processing': '#8b5cf6',
+                'shipped': '#06b6d4',
+                'delivered': '#10b981',
+                'completed': '#059669',
+                'cancelled': '#6b7280',
+                'disputed': '#dc2626'
+            };
+            return colors[status] || '#6b7280';
+        }
+        
+        function formatOrderStatus(status) {
+            const statusMap = {
+                'pending': 'Pending',
+                'confirmed': 'Confirmed',
+                'processing': 'Processing',
+                'shipped': 'Shipped',
+                'delivered': 'Delivered',
+                'completed': 'Completed',
+                'cancelled': 'Cancelled',
+                'disputed': 'Disputed'
+            };
+            return statusMap[status] || status;
+        }
+        
+        function filterBuyerOrders() {
+            const status = document.getElementById('statusFilter').value;
+            const filteredOrders = status ? buyerOrders.filter(o => o.status === status) : buyerOrders;
+            displayBuyerOrders(filteredOrders);
+        }
+        
+        function refreshBuyerOrders() {
+            const user = Auth.getCurrentUser();
+            loadBuyerOrders(user.id);
+            showNotification('Order history refreshed!', 'success');
+        }
+        
+        // Placeholder functions for order actions
+        function contactSeller(orderId) {
+            showNotification('💬 Contact seller functionality coming soon', 'info');
+        }
+        
+        function cancelOrder(orderId) {
+            if (confirm('Are you sure you want to cancel this order?')) {
+                showNotification('❌ Order cancellation requested', 'info');
+            }
+        }
+        
+        function trackOrder(orderId) {
+            showNotification('📦 Package tracking would open here', 'info');
+        }
+        
+        function confirmDelivery(orderId) {
+            showNotification('✅ Delivery confirmed! Funds will be released to seller.', 'success');
+        }
+        
+        function disputeOrder(orderId) {
+            showNotification('⚠️ Dispute form would open here', 'info');
+        }
+        
+        function leaveReview(orderId) {
+            showNotification('⭐ Review form would open here', 'info');
+        }
+        
+        function viewOrderDetails(orderId) {
+            showNotification('📋 Detailed order view would open here', 'info');
+        }
+        
+        function showNotification(message, type = 'info') {
+            if (typeof window.showNotification === 'function') {
+                window.showNotification(message, type);
+            } else {
+                alert(message);
+            }
+        }
+    </script>
+    
+    <style>
+        .order-history-container { max-width: 1000px; margin: 0 auto; }
+        .orders-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .orders-filters { display: flex; gap: 10px; align-items: center; }
+        .buyer-orders-list { display: flex; flex-direction: column; gap: 20px; }
+        .order-card { background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; }
+        .order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .order-info h4 { margin: 0 0 5px 0; color: #333; }
+        .seller-info { color: #666; font-size: 0.9rem; margin: 0; }
+        .order-status { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+        .order-details { margin-bottom: 15px; }
+        .detail-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
+        .detail-row:last-child { border-bottom: none; }
+        .order-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+        .empty-state, .error-state { text-align: center; padding: 40px; }
+        .loading-state { text-align: center; padding: 40px; color: #666; }
+    </style>
+</body>
+</html>

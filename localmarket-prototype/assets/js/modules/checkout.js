@@ -281,8 +281,9 @@ const Checkout = (function() {
                     // Deplete stock after successful order
                     await this.depleteStock(currentListing.id, currentQuantity);
                     
-                    // Store order for seller notification
+                    // Store order for both seller and buyer
                     this.storeOrderForSeller(response.order, user, currentListing);
+                    this.storeOrderForBuyer(response.order, user, currentListing);
                     
                     // Simulate escrow payment processing if available
                     if (typeof EscrowPlayacting !== 'undefined') {
@@ -349,6 +350,43 @@ const Checkout = (function() {
                 
             } catch (error) {
                 console.error('Error storing order for seller:', error);
+            }
+        },
+        
+        // Store order for buyer history
+        storeOrderForBuyer(order, buyer, listing) {
+            try {
+                const buyerOrder = {
+                    id: order.id,
+                    listingId: listing.id,
+                    listingTitle: listing.title,
+                    sellerId: listing.sellerId,
+                    sellerName: listing.sellerName || listing.sellerId,
+                    buyerId: buyer.id,
+                    quantity: order.quantity,
+                    price: listing.price,
+                    total_amount: order.total_amount,
+                    status: 'pending',
+                    escrow_status: 'funds_held',
+                    escrow_id: `escrow_${Date.now()}`,
+                    created_at: new Date().toISOString(),
+                    payment_method: 'escrow',
+                    shipping_address: '123 Sample St, Sample City, SC 12345'
+                };
+                
+                // Get existing buyer orders from localStorage
+                const existingBuyerOrders = JSON.parse(localStorage.getItem('buyerOrders') || '[]');
+                
+                // Add new order
+                existingBuyerOrders.push(buyerOrder);
+                
+                // Store back to localStorage
+                localStorage.setItem('buyerOrders', JSON.stringify(existingBuyerOrders));
+                
+                console.log('Order stored for buyer:', buyerOrder);
+                
+            } catch (error) {
+                console.error('Error storing order for buyer:', error);
             }
         },
         
