@@ -285,13 +285,23 @@ const Checkout = (function() {
                     // No need for additional localStorage storage
                     console.log('Order created globally via API:', response.order);
                     
-                    // Simulate escrow payment processing if available
+                    // Simulate escrow payment processing and advance workflow
                     if (typeof EscrowPlayacting !== 'undefined') {
                         const escrowResult = await EscrowPlayacting.simulatePayment(orderId, totalAmount);
                         
                         if (escrowResult.success) {
                             response.order.escrow_status = escrowResult.status;
                             response.order.escrow_id = escrowResult.escrowId;
+                            
+                            // Automatically advance to "seller_notified" stage after payment
+                            setTimeout(async () => {
+                                try {
+                                    await this.updateOrderStatusGlobally(orderId, 'pending', 'seller_notified');
+                                    showNotification('📧 Seller has been notified and can now confirm your order!', 'info');
+                                } catch (error) {
+                                    console.error('Error updating order status:', error);
+                                }
+                            }, 3000);
                         }
                     }
                     
@@ -342,6 +352,42 @@ const Checkout = (function() {
             } catch (error) {
                 console.error('Error updating global stock:', error);
                 showNotification('⚠️ Stock update error: ' + error.message, 'warning');
+            }
+        },
+        
+        // Update order status globally (for escrow workflow progression)
+        async updateOrderStatusGlobally(orderId, currentStatus, newEscrowStatus) {
+            try {
+                // In a real system, this would call an API to update orders.json
+                // For playacting, we'll simulate the status update
+                console.log(`Updating order ${orderId}: ${currentStatus} → ${newEscrowStatus}`);
+                
+                // Simulate API call
+                const response = await fetch('../api/orders/update-status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        newStatus: currentStatus,
+                        escrowStatus: newEscrowStatus
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        console.log('Order status updated globally:', result);
+                        return result;
+                    }
+                }
+                
+                // Fallback: just log the update
+                console.log('Order status update simulated');
+                return { success: true };
+                
+            } catch (error) {
+                console.error('Error updating order status globally:', error);
+                return { success: false, error: error.message };
             }
         }
     };

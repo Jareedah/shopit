@@ -72,7 +72,9 @@ try {
         'listingId' => $input['listingId'],
         'quantity' => $input['quantity'],
         'total_amount' => $input['total_amount'],
-        'status' => 'confirmed',
+        'status' => 'pending',
+        'escrow_status' => 'funds_held',
+        'payment_method' => 'escrow',
         'created_at' => date('c'),
         'updated_at' => date('c')
     ];
