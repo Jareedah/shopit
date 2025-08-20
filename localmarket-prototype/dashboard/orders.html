@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History - LocalMarket</title>
+    <link rel="stylesheet" href="../assets/css/base/reset.css">
+    <link rel="stylesheet" href="../assets/css/base/variables.css">
+    <link rel="stylesheet" href="../assets/css/base/typography.css">
+    <link rel="stylesheet" href="../assets/css/layout/header.css">
+    <link rel="stylesheet" href="../assets/css/layout/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/components/buttons.css">
+    <link rel="stylesheet" href="../assets/css/components/forms.css">
+    <link rel="stylesheet" href="../assets/css/components/cards.css">
+    <link rel="stylesheet" href="../assets/css/pages/orders.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">LocalMarket</h1>
+            <nav class="navigation">
+                <a href="index.html" class="nav-link">Dashboard</a>
+                <a href="../search/index.html" class="nav-link">Search</a>
+                <a href="../index.html" class="nav-link">Home</a>
+                <span id="userWelcome"></span>
+                <a href="#" id="logoutLink" class="nav-link">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="dashboard-header">
+                <h2>Order History</h2>
+                <div class="filter-controls">
+                    <select id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                    <select id="timeFilter">
+                        <option value="30">Last 30 days</option>
+                        <option value="90">Last 90 days</option>
+                        <option value="365">Last year</option>
+                        <option value="all">All time</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="orders-container">
+                <div id="ordersList" class="orders-list">
+                    <div class="loading-state">
+                        <p>Loading your orders...</p>
+                    </div>
+                </div>
+                
+                <div id="orderDetail" class="order-detail hidden">
+                    <div class="detail-header">
+                        <button id="backToList" class="btn btn-secondary">← Back to List</button>
+                        <h3>Order Details</h3>
+                    </div>
+                    <div id="detailContent"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="notification" class="notification hidden"></div>
+
+    <script src="../assets/js/core/api.js"></script>
+    <script src="../assets/js/core/utils.js"></script>
+    <script src="../assets/js/modules/auth.js"></script>
+    <script src="../assets/js/modules/orders.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            if (!Auth.isLoggedIn()) {
+                window.location.href = '../auth/login.html';
+                return;
+            }
+            
+            const user = Auth.getCurrentUser();
+            document.getElementById('userWelcome').textContent = `Welcome, ${user.username}`;
+            
+            // Logout functionality
+            document.getElementById('logoutLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                Auth.logout();
+                window.location.href = '../auth/login.html';
+            });
+            
+            // Initialize orders
+            Orders.init();
+            
+            // Filter event listeners
+            document.getElementById('statusFilter').addEventListener('change', () => {
+                Orders.applyFilters();
+            });
+            
+            document.getElementById('timeFilter').addEventListener('change', () => {
+                Orders.applyFilters();
+            });
+            
+            // Back to list button
+            document.getElementById('backToList').addEventListener('click', () => {
+                document.getElementById('ordersList').classList.remove('hidden');
+                document.getElementById('orderDetail').classList.add('hidden');
+            });
+        });
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            
+            setTimeout(() => {
+                notification.className = 'notification hidden';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
