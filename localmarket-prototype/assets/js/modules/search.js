@@ -256,16 +256,9 @@ const SearchEngine = (function() {
             return userLocation;
         },
         
-        // Get stock display for search results
+        // Get stock display for search results (from global data)
         getStockDisplay(listing) {
-            // Check for stock updates from localStorage
-            const stockUpdates = JSON.parse(localStorage.getItem('stockUpdates') || '{}');
-            const stockUpdate = stockUpdates[listing.id];
-            
-            let currentStock = listing.stock || 0;
-            if (stockUpdate) {
-                currentStock = stockUpdate.currentStock;
-            }
+            const currentStock = listing.stock || 0;
             
             if (currentStock > 0) {
                 return `<span class="listing-stock in-stock" style="color: #28a745; font-weight: bold;">📦 ${currentStock} in stock</span>`;

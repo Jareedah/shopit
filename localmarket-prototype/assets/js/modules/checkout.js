@@ -281,9 +281,9 @@ const Checkout = (function() {
                     // Deplete stock after successful order
                     await this.depleteStock(currentListing.id, currentQuantity);
                     
-                    // Store order for both seller and buyer
-                    this.storeOrderForSeller(response.order, user, currentListing);
-                    this.storeOrderForBuyer(response.order, user, currentListing);
+                    // Order is already stored globally via API
+                    // No need for additional localStorage storage
+                    console.log('Order created globally via API:', response.order);
                     
                     // Simulate escrow payment processing if available
                     if (typeof EscrowPlayacting !== 'undefined') {
@@ -304,134 +304,44 @@ const Checkout = (function() {
                 console.error('Purchase error:', error);
                 showNotification('Error completing purchase: ' + error.message, 'error');
             }
+            
+            // Show notification about seller notification
+            setTimeout(() => {
+                showNotification('📧 Seller has been notified of your purchase!', 'info');
+            }, 3000);
         },
         
-        // Store order for seller notification (playacting)
-        storeOrderForSeller(order, buyer, listing) {
-            try {
-                const sellerOrder = {
-                    id: order.id,
-                    listingId: listing.id,
-                    listingTitle: listing.title,
-                    buyerId: buyer.id,
-                    buyerName: buyer.username,
-                    buyerEmail: buyer.email || `${buyer.username}@example.com`,
-                    sellerId: listing.sellerId,
-                    quantity: order.quantity,
-                    price: listing.price,
-                    platform_fee: order.total_amount - (listing.price * order.quantity),
-                    total_amount: order.total_amount,
-                    seller_amount: listing.price * order.quantity,
-                    status: 'pending',
-                    escrow_status: 'funds_held',
-                    escrow_id: `escrow_${Date.now()}`,
-                    created_at: new Date().toISOString(),
-                    payment_method: 'escrow',
-                    buyer_message: 'Thank you for your item! Looking forward to receiving it.',
-                    shipping_address: '123 Sample St, Sample City, SC 12345',
-                    isNewOrder: true
-                };
-                
-                // Get existing seller orders from localStorage
-                const existingOrders = JSON.parse(localStorage.getItem('sellerOrders') || '[]');
-                
-                // Add new order
-                existingOrders.push(sellerOrder);
-                
-                // Store back to localStorage
-                localStorage.setItem('sellerOrders', JSON.stringify(existingOrders));
-                
-                console.log('Order stored for seller:', sellerOrder);
-                
-                // Show notification about seller notification
-                setTimeout(() => {
-                    showNotification('📧 Seller has been notified of your purchase!', 'info');
-                }, 3000);
-                
-            } catch (error) {
-                console.error('Error storing order for seller:', error);
-            }
-        },
-        
-        // Store order for buyer history
-        storeOrderForBuyer(order, buyer, listing) {
-            try {
-                const buyerOrder = {
-                    id: order.id,
-                    listingId: listing.id,
-                    listingTitle: listing.title,
-                    sellerId: listing.sellerId,
-                    sellerName: listing.sellerName || listing.sellerId,
-                    buyerId: buyer.id,
-                    quantity: order.quantity,
-                    price: listing.price,
-                    total_amount: order.total_amount,
-                    status: 'pending',
-                    escrow_status: 'funds_held',
-                    escrow_id: `escrow_${Date.now()}`,
-                    created_at: new Date().toISOString(),
-                    payment_method: 'escrow',
-                    shipping_address: '123 Sample St, Sample City, SC 12345'
-                };
-                
-                // Get existing buyer orders from localStorage
-                const existingBuyerOrders = JSON.parse(localStorage.getItem('buyerOrders') || '[]');
-                
-                // Add new order
-                existingBuyerOrders.push(buyerOrder);
-                
-                // Store back to localStorage
-                localStorage.setItem('buyerOrders', JSON.stringify(existingBuyerOrders));
-                
-                console.log('Order stored for buyer:', buyerOrder);
-                
-            } catch (error) {
-                console.error('Error storing order for buyer:', error);
-            }
-        },
-        
-        // Deplete stock after purchase (playacting - simulate stock reduction)
+        // Deplete stock after purchase - UPDATE GLOBAL DATA
         async depleteStock(listingId, quantityPurchased) {
             try {
-                // In a real system, this would update the database
-                // For playacting, we'll update localStorage representation
-                
-                // Get current listings data
-                const response = await fetch('../api/search/query.php', {
+                // Update stock in global listings.json via API
+                const response = await fetch('../api/listings/update-stock.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query: '', limit: 100 })
+                    body: JSON.stringify({
+                        listingId: listingId,
+                        quantityPurchased: quantityPurchased
+                    })
                 });
                 
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success && result.data) {
-                        const listing = result.data.find(l => l.id === listingId);
-                        if (listing && listing.stock) {
-                            const newStock = Math.max(0, listing.stock - quantityPurchased);
-                            
-                            // Store stock depletion info
-                            const stockUpdates = JSON.parse(localStorage.getItem('stockUpdates') || '{}');
-                            stockUpdates[listingId] = {
-                                originalStock: listing.stock,
-                                currentStock: newStock,
-                                lastPurchase: {
-                                    quantity: quantityPurchased,
-                                    timestamp: new Date().toISOString()
-                                }
-                            };
-                            localStorage.setItem('stockUpdates', JSON.stringify(stockUpdates));
-                            
-                            console.log(`Stock depleted for ${listingId}: ${listing.stock} → ${newStock}`);
-                            
-                            if (newStock === 0) {
-                                showNotification('⚠️ Item is now out of stock for other buyers', 'info');
-                            }
-                        }
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log(`Global stock updated for ${listingId}: new stock = ${result.newStock}`);
+                    
+                    if (result.newStock === 0) {
+                        showNotification('⚠️ Item is now out of stock for all users', 'info');
+                    } else {
+                        showNotification(`📦 Stock updated globally: ${result.newStock} units remaining`, 'info');
                     }
+                } else {
+                    console.error('Failed to update global stock:', result.message);
+                    showNotification('⚠️ Stock update failed: ' + result.message, 'warning');
                 }
+                
             } catch (error) {
-                console.error('Error depleting stock:', error);
+                console.error('Error updating global stock:', error);
+                showNotification('⚠️ Stock update error: ' + error.message, 'warning');
             }
         }
     };

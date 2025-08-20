@@ -189,16 +189,8 @@
                 document.getElementById('detailTags').textContent = 'No tags';
             }
             
-            // Set stock information with real-time updates
-            let currentStock = listing.stock || 0;
-            
-            // Check for stock updates from localStorage
-            const stockUpdates = JSON.parse(localStorage.getItem('stockUpdates') || '{}');
-            const stockUpdate = stockUpdates[listing.id];
-            
-            if (stockUpdate) {
-                currentStock = stockUpdate.currentStock;
-            }
+            // Set stock information from global data (listings.json)
+            const currentStock = listing.stock || 0;
             
             const stockElement = document.getElementById('detailStock');
             if (currentStock > 0) {
@@ -208,9 +200,6 @@
                 stockElement.innerHTML = `<span style="color: #dc3545; font-weight: bold;">Out of Stock</span>`;
                 stockElement.className = 'stock-indicator out-of-stock';
             }
-            
-            // Update the listing object for action buttons
-            listing.stock = currentStock;
             
             // Set distance if available
             if (listing.distance) {

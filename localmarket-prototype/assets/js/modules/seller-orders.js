@@ -1,4 +1,4 @@
-// Seller Order Management Module - FIXED VERSION
+// Unified Seller Order Management Module - Uses Global Data
 const SellerOrders = (function() {
     'use strict';
     
@@ -6,14 +6,14 @@ const SellerOrders = (function() {
     let currentSellerId = null;
     
     return {
-        // Initialize seller orders system
+        // Initialize seller orders system with global data
         async init(sellerId) {
             console.log('SellerOrders.init called with sellerId:', sellerId);
             currentSellerId = sellerId;
             
             try {
-                // Load orders first
-                await this.loadSellerOrders(sellerId);
+                // Load orders from global API (not localStorage)
+                await this.loadSellerOrdersFromAPI(sellerId);
                 
                 // Update notification badge
                 this.updateNotificationBadge();
@@ -24,69 +24,31 @@ const SellerOrders = (function() {
             }
         },
         
-        // Load orders for seller
-        async loadSellerOrders(sellerId) {
+        // Load orders from global API
+        async loadSellerOrdersFromAPI(sellerId) {
             try {
-                // Get orders from localStorage
-                const allOrders = JSON.parse(localStorage.getItem('sellerOrders') || '[]');
+                const response = await fetch('../api/orders/seller-orders.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sellerId: sellerId })
+                });
                 
-                // Filter orders for this seller
-                const sellerSpecificOrders = allOrders.filter(order => 
-                    order.sellerId === sellerId || 
-                    (sellerId === 'admin_001' && order.sellerId === 'admin_001') ||
-                    (sellerId === 'admin_002' && order.sellerId === 'admin_002')
-                );
+                const result = await response.json();
                 
-                // Add sample orders for demonstration (only if no real orders exist)
-                if (sellerSpecificOrders.length === 0) {
-                    const sampleOrders = this.generateSampleOrders(sellerId);
-                    sellerSpecificOrders.push(...sampleOrders);
-                    
-                    // Store sample orders
-                    const updatedAllOrders = [...allOrders, ...sampleOrders];
-                    localStorage.setItem('sellerOrders', JSON.stringify(updatedAllOrders));
+                if (result.success) {
+                    sellerOrders = result.orders || [];
+                    console.log('Loaded seller orders from API:', sellerOrders);
+                } else {
+                    console.error('Failed to load seller orders:', result.message);
+                    sellerOrders = [];
                 }
-                
-                sellerOrders = sellerSpecificOrders;
-                console.log('Loaded seller orders:', sellerOrders);
                 
                 return sellerOrders;
             } catch (error) {
-                console.error('Error loading seller orders:', error);
+                console.error('Error loading seller orders from API:', error);
                 sellerOrders = [];
                 return [];
             }
-        },
-        
-        // Generate sample orders for demonstration
-        generateSampleOrders(sellerId) {
-            const now = new Date();
-            const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-            
-            return [
-                {
-                    id: 'order_sample_' + Date.now(),
-                    listingId: 'listing_001',
-                    listingTitle: 'iPhone 13 Pro - Excellent Condition',
-                    buyerId: 'buyer_demo_001',
-                    buyerName: 'John Smith',
-                    buyerEmail: 'john@example.com',
-                    sellerId: sellerId,
-                    quantity: 1,
-                    price: 650.00,
-                    platform_fee: 13.00,
-                    total_amount: 663.00,
-                    seller_amount: 650.00,
-                    status: 'pending',
-                    escrow_status: 'funds_held',
-                    escrow_id: 'escrow_sample_001',
-                    created_at: now.toISOString(),
-                    payment_method: 'escrow',
-                    buyer_message: 'Looking forward to this purchase! When can you ship?',
-                    shipping_address: '123 Main St, New York, NY 10001',
-                    isNewOrder: true
-                }
-            ];
         },
         
         // Display seller orders in dashboard
@@ -104,6 +66,9 @@ const SellerOrders = (function() {
                     <div class="empty-state">
                         <p>No orders yet</p>
                         <small>Orders will appear here when customers purchase your items</small>
+                        <button class="btn btn-secondary" onclick="SellerOrders.refreshOrders()" style="margin-top: 1rem;">
+                            🔄 Refresh Orders
+                        </button>
                     </div>
                 `;
                 return;
@@ -133,7 +98,7 @@ const SellerOrders = (function() {
                                     ${this.formatStatus(order.status)}
                                 </span>
                                 <span class="escrow-badge-small" style="background-color: #3b82f6; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.625rem;">
-                                    💰 Escrow Secured
+                                    🔒 Escrow Secured
                                 </span>
                             </div>
                         </div>
@@ -150,6 +115,10 @@ const SellerOrders = (function() {
                             <div class="detail-row">
                                 <span class="detail-label">Order Date:</span>
                                 <span class="detail-value">${this.formatDate(order.created_at)}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Order ID:</span>
+                                <span class="detail-value">${order.id}</span>
                             </div>
                             ${order.buyer_message ? `
                                 <div class="buyer-message">
@@ -171,7 +140,7 @@ const SellerOrders = (function() {
             if (sellerOrders.length > limit) {
                 ordersHtml += `
                     <div class="view-all-orders">
-                        <button class="btn btn-secondary" onclick="SellerOrders.showAllOrders()">
+                        <button class="btn btn-secondary" onclick="window.location.href='../dashboard/orders.html'">
                             View All Orders (${sellerOrders.length})
                         </button>
                     </div>
@@ -188,13 +157,10 @@ const SellerOrders = (function() {
             
             switch (order.status) {
                 case 'pending':
-                    actions.push(`<button class="btn btn-primary btn-sm" onclick="SellerOrders.confirmOrder('${order.id}')">✅ Confirm Order</button>`);
-                    actions.push(`<button class="btn btn-danger btn-sm" onclick="SellerOrders.cancelOrder('${order.id}')">❌ Cancel</button>`);
-                    break;
-                    
                 case 'confirmed':
-                    actions.push(`<button class="btn btn-primary btn-sm" onclick="SellerOrders.markAsProcessing('${order.id}')">📦 Start Processing</button>`);
+                    actions.push(`<button class="btn btn-primary btn-sm" onclick="SellerOrders.confirmOrder('${order.id}')">✅ Confirm Order</button>`);
                     actions.push(`<button class="btn btn-secondary btn-sm" onclick="SellerOrders.contactBuyer('${order.id}')">💬 Contact Buyer</button>`);
+                    actions.push(`<button class="btn btn-danger btn-sm" onclick="SellerOrders.cancelOrder('${order.id}')">❌ Cancel</button>`);
                     break;
                     
                 case 'processing':
@@ -217,12 +183,12 @@ const SellerOrders = (function() {
             return actions.join(' ');
         },
         
-        // Order status update functions
+        // Order management functions
         async confirmOrder(orderId) {
             try {
                 showNotification('✅ Confirming order...', 'info');
-                await this.updateOrderStatus(orderId, 'confirmed');
-                showNotification('Order confirmed! Buyer has been notified.', 'success');
+                await this.updateOrderStatus(orderId, 'processing');
+                showNotification('Order confirmed and processing! Buyer has been notified.', 'success');
                 this.refreshOrders();
             } catch (error) {
                 showNotification('Error confirming order: ' + error.message, 'error');
@@ -230,31 +196,26 @@ const SellerOrders = (function() {
         },
         
         async updateOrderStatus(orderId, newStatus) {
+            // In a real system, this would call an API to update orders.json
+            // For now, we'll update the local array and simulate success
             return new Promise((resolve) => {
                 setTimeout(() => {
                     const orderIndex = sellerOrders.findIndex(o => o.id === orderId);
                     if (orderIndex >= 0) {
                         sellerOrders[orderIndex].status = newStatus;
                         sellerOrders[orderIndex].isNewOrder = false;
-                        
-                        // Update localStorage
-                        const allOrders = JSON.parse(localStorage.getItem('sellerOrders') || '[]');
-                        const globalOrderIndex = allOrders.findIndex(o => o.id === orderId);
-                        if (globalOrderIndex >= 0) {
-                            allOrders[globalOrderIndex] = sellerOrders[orderIndex];
-                            localStorage.setItem('sellerOrders', JSON.stringify(allOrders));
-                        }
-                        
                         resolve({ success: true });
                     }
                 }, 500);
             });
         },
         
-        refreshOrders() {
+        async refreshOrders() {
             if (currentSellerId) {
+                await this.loadSellerOrdersFromAPI(currentSellerId);
                 this.displaySellerOrders('sellerOrdersList');
                 this.updateNotificationBadge();
+                showNotification('Orders refreshed!', 'success');
             }
         },
         
@@ -272,6 +233,45 @@ const SellerOrders = (function() {
                     badge.style.display = 'none';
                 }
             }
+        },
+        
+        // Display seller statistics
+        displaySellerStats(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            const stats = this.calculateSellerStats();
+            
+            // Update individual stat elements if they exist
+            const elements = {
+                'userOrdersCount': stats.totalOrders,
+                'totalEarnings': `$${stats.totalEarnings.toFixed(2)}`,
+                'pendingEarnings': `$${stats.pendingEarnings.toFixed(2)}`
+            };
+            
+            Object.entries(elements).forEach(([id, value]) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value;
+                }
+            });
+        },
+        
+        calculateSellerStats() {
+            const newOrders = sellerOrders.filter(o => o.isNewOrder).length;
+            const totalEarnings = sellerOrders
+                .filter(o => o.status === 'completed')
+                .reduce((sum, o) => sum + (o.seller_amount || 0), 0);
+            const pendingEarnings = sellerOrders
+                .filter(o => o.escrow_status === 'funds_held')
+                .reduce((sum, o) => sum + (o.seller_amount || 0), 0);
+            
+            return {
+                totalOrders: sellerOrders.length,
+                newOrders: newOrders,
+                totalEarnings: totalEarnings,
+                pendingEarnings: pendingEarnings
+            };
         },
         
         // Utility functions
@@ -325,13 +325,6 @@ const SellerOrders = (function() {
             showNotification('Order would be cancelled', 'info');
         },
         
-        markAsProcessing(orderId) {
-            this.updateOrderStatus(orderId, 'processing').then(() => {
-                showNotification('Order marked as processing!', 'success');
-                this.refreshOrders();
-            });
-        },
-        
         markAsShipped(orderId) {
             this.updateOrderStatus(orderId, 'shipped').then(() => {
                 showNotification('Order marked as shipped!', 'success');
@@ -347,7 +340,14 @@ const SellerOrders = (function() {
         },
         
         requestFundRelease(orderId) {
-            showNotification('💰 Fund release requested! Buyer has 72 hours to confirm.', 'success');
+            if (typeof EscrowPlayacting !== 'undefined') {
+                EscrowPlayacting.simulateRelease(orderId, currentSellerId).then(() => {
+                    this.updateOrderStatus(orderId, 'completed');
+                    this.refreshOrders();
+                });
+            } else {
+                showNotification('💰 Fund release requested! Buyer has 72 hours to confirm.', 'success');
+            }
         },
         
         contactBuyer(orderId) {
@@ -355,11 +355,7 @@ const SellerOrders = (function() {
         },
         
         viewOrderDetails(orderId) {
-            showNotification('📋 Detailed order view would open here', 'info');
-        },
-        
-        showAllOrders() {
-            showNotification('📋 Full orders page would open here', 'info');
+            window.location.href = `../dashboard/orders.html?order=${orderId}`;
         }
     };
 })();

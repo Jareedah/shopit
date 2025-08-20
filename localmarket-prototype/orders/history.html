@@ -92,13 +92,23 @@
                 const container = document.getElementById('buyerOrdersList');
                 container.innerHTML = '<div class="loading-state">Loading your orders...</div>';
                 
-                // Get buyer orders from localStorage
-                const allOrders = JSON.parse(localStorage.getItem('buyerOrders') || '[]');
-                const userOrders = allOrders.filter(order => order.buyerId === buyerId);
+                // Get buyer orders from global API
+                const response = await fetch('../api/orders/buyer-orders.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ buyerId: buyerId })
+                });
                 
-                buyerOrders = userOrders;
+                const result = await response.json();
                 
-                if (userOrders.length === 0) {
+                if (result.success) {
+                    buyerOrders = result.orders || [];
+                } else {
+                    console.error('Failed to load buyer orders:', result.message);
+                    buyerOrders = [];
+                }
+                
+                if (buyerOrders.length === 0) {
                     container.innerHTML = `
                         <div class="empty-state">
                             <h3>No Orders Yet</h3>
@@ -110,7 +120,7 @@
                 }
                 
                 // Display orders
-                displayBuyerOrders(userOrders);
+                displayBuyerOrders(buyerOrders);
                 
             } catch (error) {
                 console.error('Error loading buyer orders:', error);
