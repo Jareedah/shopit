@@ -71,7 +71,7 @@ const Auth = (function() {
         if (!currentUser) return;
         
         try {
-            const response = await API.post('/api/auth/validate.php');
+            const response = await API.post('../api/auth/validate.php');
             if (!response.success) {
                 await logout();
             }
@@ -110,7 +110,7 @@ const Auth = (function() {
          */
         async login(username) {
             try {
-                const response = await API.post('/api/auth/login.php', { username });
+                const response = await API.post('../api/auth/login.php', { username });
                 
                 if (response.success) {
                     storeSession(response.user);
@@ -133,7 +133,7 @@ const Auth = (function() {
          */
         async register(username, userData) {
             try {
-                const response = await API.post('/api/auth/register.php', {
+                const response = await API.post('../api/auth/register.php', {
                     username,
                     userData
                 });
@@ -156,7 +156,7 @@ const Auth = (function() {
         async logout() {
             try {
                 // Call logout endpoint
-                await API.post('/api/auth/logout.php');
+                await API.post('../api/auth/logout.php');
             } catch (error) {
                 console.error('Logout API error:', error);
             } finally {
@@ -215,7 +215,7 @@ const Auth = (function() {
             }
             
             try {
-                const response = await API.post('/api/auth/update-profile.php', {
+                const response = await API.post('../api/auth/update-profile.php', {
                     userId: currentUser.id,
                     profileData
                 });
@@ -247,7 +247,7 @@ const Auth = (function() {
             }
             
             try {
-                const response = await API.post('/api/auth/change-password.php', {
+                const response = await API.post('../api/auth/change-password.php', {
                     userId: currentUser.id,
                     currentPassword,
                     newPassword
@@ -271,7 +271,7 @@ const Auth = (function() {
          */
         async requestPasswordReset(username) {
             try {
-                const response = await API.post('/api/auth/reset-password.php', { username });
+                const response = await API.post('../api/auth/reset-password.php', { username });
                 
                 if (response.success) {
                     return response;
@@ -400,7 +400,7 @@ const Auth = (function() {
             }
             
             try {
-                const response = await API.post('/api/auth/me.php');
+                const response = await API.post('../api/auth/me.php');
                 
                 if (response.success) {
                     storeSession(response.user);

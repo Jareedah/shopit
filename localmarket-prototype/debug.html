@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - LocalMarket</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>LocalMarket Debug Console</h1>
+    
+    <div class="debug-section">
+        <h2>API Connectivity Tests</h2>
+        <button onclick="testBasicAPI()">Test Basic PHP</button>
+        <button onclick="testSimpleLogin()">Test Simple Login</button>
+        <button onclick="testLogin()">Test Login API</button>
+        <button onclick="testRegister()">Test Register API</button>
+        <button onclick="testDataFiles()">Test Data Files</button>
+        <div id="apiResults"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>File Structure Check</h2>
+        <button onclick="checkFileStructure()">Check Files</button>
+        <div id="fileResults"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>JavaScript Module Tests</h2>
+        <button onclick="testAuthModule()">Test Auth Module</button>
+        <button onclick="testAPIModule()">Test API Module</button>
+        <div id="jsResults"></div>
+    </div>
+
+    <script>
+        async function testBasicAPI() {
+            const resultsDiv = document.getElementById('apiResults');
+            resultsDiv.innerHTML = '<p>Testing basic PHP functionality...</p>';
+            
+            try {
+                const response = await fetch('api/debug/test.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({test: true})
+                });
+                
+                const data = await response.json();
+                resultsDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ Basic PHP Test: SUCCESS</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Basic PHP Test: FAILED</h3>
+                        <p>Error: ${error.message}</p>
+                        <p>This indicates PHP scripts are not executing or there's a server configuration issue.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testSimpleLogin() {
+            const resultsDiv = document.getElementById('apiResults');
+            resultsDiv.innerHTML = '<p>Testing simple login (minimal dependencies)...</p>';
+            
+            try {
+                const response = await fetch('api/debug/simple-login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({username: 'admin1'})
+                });
+                
+                const data = await response.json();
+                resultsDiv.innerHTML = `
+                    <div class="${data.success ? 'success' : 'error'}">
+                        <h3>${data.success ? '✅' : '❌'} Simple Login Test: ${data.success ? 'SUCCESS' : 'FAILED'}</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Simple Login Test: FAILED</h3>
+                        <p>Error: ${error.message}</p>
+                        <p>This indicates a fundamental PHP or server issue.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testLogin() {
+            const resultsDiv = document.getElementById('apiResults');
+            resultsDiv.innerHTML = '<p>Testing login API...</p>';
+            
+            try {
+                const response = await fetch('api/auth/login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({username: 'admin1'})
+                });
+                
+                const data = await response.json();
+                resultsDiv.innerHTML = `
+                    <div class="${data.success ? 'success' : 'error'}">
+                        <h3>${data.success ? '✅' : '❌'} Login Test: ${data.success ? 'SUCCESS' : 'FAILED'}</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Login Test: FAILED</h3>
+                        <p>Error: ${error.message}</p>
+                        <p>This indicates the login API endpoint has issues.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testRegister() {
+            const resultsDiv = document.getElementById('apiResults');
+            resultsDiv.innerHTML = '<p>Testing register API...</p>';
+            
+            try {
+                const response = await fetch('api/auth/register.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'testuser_' + Date.now(),
+                        userData: {
+                            name: 'Test User',
+                            email: 'test@example.com'
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                resultsDiv.innerHTML = `
+                    <div class="${data.success ? 'success' : 'error'}">
+                        <h3>${data.success ? '✅' : '❌'} Register Test: ${data.success ? 'SUCCESS' : 'FAILED'}</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Register Test: FAILED</h3>
+                        <p>Error: ${error.message}</p>
+                        <p>This indicates the register API endpoint has issues.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function checkFileStructure() {
+            const resultsDiv = document.getElementById('fileResults');
+            const requiredFiles = [
+                'api/auth/login.php',
+                'api/auth/register.php',
+                'api/core/Auth.php',
+                'api/core/DataManager.php',
+                'data/users.json',
+                'assets/js/modules/auth.js',
+                'assets/js/core/api.js'
+            ];
+            
+            let html = '<h3>File Structure Check</h3>';
+            
+            requiredFiles.forEach(file => {
+                // We can't actually check file existence from JavaScript in browser
+                // This is just for documentation
+                html += `<p>📁 ${file} - Expected to exist</p>`;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        function testAuthModule() {
+            const resultsDiv = document.getElementById('jsResults');
+            
+            try {
+                if (typeof Auth === 'undefined') {
+                    throw new Error('Auth module not loaded');
+                }
+                
+                if (typeof Auth.login !== 'function') {
+                    throw new Error('Auth.login method not available');
+                }
+                
+                resultsDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ Auth Module: LOADED</h3>
+                        <p>Auth module is properly loaded and has required methods.</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Auth Module: FAILED</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function testAPIModule() {
+            const resultsDiv = document.getElementById('jsResults');
+            
+            try {
+                if (typeof API === 'undefined') {
+                    throw new Error('API module not loaded');
+                }
+                
+                if (typeof API.post !== 'function') {
+                    throw new Error('API.post method not available');
+                }
+                
+                resultsDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ API Module: LOADED</h3>
+                        <p>API module is properly loaded and has required methods.</p>
+                        <p>Base URL: "${API.getConfig().baseUrl}"</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ API Module: FAILED</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+    
+    <!-- Load the same scripts as the main pages -->
+    <script src="assets/js/core/app.js"></script>
+    <script src="assets/js/core/api.js"></script>
+    <script src="assets/js/core/utils.js"></script>
+    <script src="assets/js/modules/auth.js"></script>
+</body>
+</html>
