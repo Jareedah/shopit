@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="../assets/css/components/buttons.css">
     <link rel="stylesheet" href="../assets/css/components/forms.css">
     <link rel="stylesheet" href="../assets/css/components/cards.css">
+    <link rel="stylesheet" href="../assets/css/components/loading.css">
     <style>
         .auth-container {
             display: flex;
@@ -130,7 +131,7 @@
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-full" id="loginButton">
-                            Login
+                            <span class="btn-text">Login</span>
                         </button>
                     </form>
                     
@@ -232,8 +233,10 @@
             // Helper functions
             function setLoadingState(loading) {
                 loginButton.disabled = loading;
-                loginButton.textContent = loading ? 'Logging in...' : 'Login';
                 loginButton.classList.toggle('btn-loading', loading);
+                
+                const btnText = loginButton.querySelector('.btn-text');
+                btnText.textContent = loading ? 'Logging in...' : 'Login';
                 
                 if (loading) {
                     loginForm.classList.add('form-loading');
