@@ -94,11 +94,14 @@ const SellerOrders = (function() {
                                 <p class="buyer-info">👤 ${order.buyerName}</p>
                             </div>
                             <div class="order-status">
-                                <span class="status-badge" style="background-color: ${statusColor}; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem;">
-                                    ${this.formatStatus(order.status)}
-                                </span>
-                                <span class="escrow-badge-small" style="background-color: #3b82f6; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.625rem;">
-                                    🔒 Escrow Secured
+                                ${typeof EscrowWorkflow !== 'undefined' ? 
+                                    EscrowWorkflow.createStageBadge(EscrowWorkflow.getEscrowStage(order.status, order.escrow_status)) :
+                                    `<span class="status-badge" style="background-color: ${statusColor}; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem;">
+                                        ${this.formatStatus(order.status)}
+                                    </span>`
+                                }
+                                <span class="escrow-security-badge" style="background-color: #059669; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; margin-top: 0.25rem;">
+                                    🔒 Escrow Protected
                                 </span>
                             </div>
                         </div>
@@ -151,36 +154,23 @@ const SellerOrders = (function() {
             console.log('Orders displayed successfully');
         },
         
-        // Generate action buttons based on order status
+        // Generate action buttons based on escrow workflow stage
         generateOrderActions(order) {
-            let actions = [];
-            
-            switch (order.status) {
-                case 'pending':
-                case 'confirmed':
-                    actions.push(`<button class="btn btn-primary btn-sm" onclick="SellerOrders.confirmOrder('${order.id}')">✅ Confirm Order</button>`);
-                    actions.push(`<button class="btn btn-secondary btn-sm" onclick="SellerOrders.contactBuyer('${order.id}')">💬 Contact Buyer</button>`);
-                    actions.push(`<button class="btn btn-danger btn-sm" onclick="SellerOrders.cancelOrder('${order.id}')">❌ Cancel</button>`);
-                    break;
-                    
-                case 'processing':
-                    actions.push(`<button class="btn btn-primary btn-sm" onclick="SellerOrders.markAsShipped('${order.id}')">🚚 Mark as Shipped</button>`);
-                    break;
-                    
-                case 'shipped':
-                    actions.push(`<button class="btn btn-primary btn-sm" onclick="SellerOrders.markAsDelivered('${order.id}')">📦 Mark as Delivered</button>`);
-                    break;
-                    
-                case 'delivered':
-                    actions.push(`<button class="btn btn-success btn-sm" onclick="SellerOrders.requestFundRelease('${order.id}')">💰 Request Fund Release</button>`);
-                    break;
-                    
-                case 'completed':
-                    actions.push(`<button class="btn btn-secondary btn-sm" onclick="SellerOrders.viewOrderDetails('${order.id}')">📋 View Details</button>`);
-                    break;
+            if (typeof EscrowWorkflow === 'undefined') {
+                // Fallback to simple actions if EscrowWorkflow not available
+                return `<button class="btn btn-secondary btn-sm" onclick="SellerOrders.viewOrderDetails('${order.id}')">📋 View Details</button>`;
             }
             
-            return actions.join(' ');
+            const actions = EscrowWorkflow.getSellerActions(order);
+            
+            return actions.map(action => {
+                const disabledAttr = action.disabled ? 'disabled' : '';
+                const onclickAttr = action.action !== 'null' ? `onclick="SellerOrders.${action.action}"` : '';
+                
+                return `<button class="btn ${action.class} btn-sm" ${disabledAttr} ${onclickAttr}>
+                    ${action.text}
+                </button>`;
+            }).join(' ');
         },
         
         // Order management functions
@@ -320,34 +310,150 @@ const SellerOrders = (function() {
             }
         },
         
-        // Placeholder functions for UI interactions
-        cancelOrder(orderId) {
-            showNotification('Order would be cancelled', 'info');
-        },
-        
-        markAsShipped(orderId) {
-            this.updateOrderStatus(orderId, 'shipped').then(() => {
-                showNotification('Order marked as shipped!', 'success');
+        // Escrow workflow action handlers
+        async confirmOrder(orderId) {
+            try {
+                showNotification('✅ Confirming order...', 'info');
+                await this.updateOrderStatus(orderId, 'confirmed');
+                
+                if (typeof EscrowWorkflow !== 'undefined') {
+                    await EscrowWorkflow.advanceToNextStage(orderId, 'seller_notified', 'order_confirmed');
+                }
+                
+                showNotification('Order confirmed! Buyer has been notified.', 'success');
                 this.refreshOrders();
-            });
-        },
-        
-        markAsDelivered(orderId) {
-            this.updateOrderStatus(orderId, 'delivered').then(() => {
-                showNotification('Order marked as delivered!', 'success');
-                this.refreshOrders();
-            });
-        },
-        
-        requestFundRelease(orderId) {
-            if (typeof EscrowPlayacting !== 'undefined') {
-                EscrowPlayacting.simulateRelease(orderId, currentSellerId).then(() => {
-                    this.updateOrderStatus(orderId, 'completed');
-                    this.refreshOrders();
-                });
-            } else {
-                showNotification('💰 Fund release requested! Buyer has 72 hours to confirm.', 'success');
+            } catch (error) {
+                showNotification('Error confirming order: ' + error.message, 'error');
             }
+        },
+        
+        async startPreparing(orderId) {
+            try {
+                showNotification('📦 Starting order preparation...', 'info');
+                await this.updateOrderStatus(orderId, 'processing');
+                
+                if (typeof EscrowWorkflow !== 'undefined') {
+                    await EscrowWorkflow.advanceToNextStage(orderId, 'order_confirmed', 'item_preparing');
+                }
+                
+                showNotification('Order preparation started! Buyer has been notified.', 'success');
+                this.refreshOrders();
+            } catch (error) {
+                showNotification('Error starting preparation: ' + error.message, 'error');
+            }
+        },
+        
+        async markAsShipped(orderId) {
+            const trackingNumber = prompt('Enter tracking number (optional):');
+            
+            try {
+                showNotification('🚚 Marking as shipped...', 'info');
+                await this.updateOrderStatus(orderId, 'shipped');
+                
+                if (typeof EscrowWorkflow !== 'undefined') {
+                    await EscrowWorkflow.advanceToNextStage(orderId, 'item_preparing', 'item_shipped');
+                }
+                
+                showNotification(`Order marked as shipped! ${trackingNumber ? 'Tracking: ' + trackingNumber : 'Buyer has been notified.'}`, 'success');
+                this.refreshOrders();
+            } catch (error) {
+                showNotification('Error marking as shipped: ' + error.message, 'error');
+            }
+        },
+        
+        async markAsDelivered(orderId) {
+            try {
+                showNotification('📦 Marking as delivered...', 'info');
+                await this.updateOrderStatus(orderId, 'delivered');
+                
+                if (typeof EscrowWorkflow !== 'undefined') {
+                    await EscrowWorkflow.advanceToNextStage(orderId, 'item_shipped', 'item_delivered');
+                }
+                
+                showNotification('Order marked as delivered! 72-hour escrow countdown started.', 'success');
+                this.refreshOrders();
+            } catch (error) {
+                showNotification('Error marking as delivered: ' + error.message, 'error');
+            }
+        },
+        
+        async requestFundRelease(orderId) {
+            try {
+                showNotification('💰 Requesting fund release...', 'info');
+                
+                if (typeof EscrowPlayacting !== 'undefined') {
+                    const result = await EscrowPlayacting.simulateRelease(orderId, currentSellerId);
+                    if (result.success) {
+                        await this.updateOrderStatus(orderId, 'completed');
+                        
+                        if (typeof EscrowWorkflow !== 'undefined') {
+                            await EscrowWorkflow.advanceToNextStage(orderId, 'confirmation_pending', 'funds_released');
+                        }
+                        
+                        showNotification('🎉 Funds released! Payment is on the way.', 'success');
+                        this.refreshOrders();
+                    }
+                } else {
+                    showNotification('💰 Fund release requested! Buyer has 72 hours to confirm.', 'info');
+                }
+            } catch (error) {
+                showNotification('Error requesting fund release: ' + error.message, 'error');
+            }
+        },
+        
+        async cancelOrder(orderId) {
+            if (!confirm('Are you sure you want to cancel this order? This will trigger an automatic refund.')) {
+                return;
+            }
+            
+            try {
+                showNotification('❌ Cancelling order...', 'info');
+                await this.updateOrderStatus(orderId, 'cancelled');
+                
+                if (typeof EscrowWorkflow !== 'undefined') {
+                    await EscrowWorkflow.advanceToNextStage(orderId, null, 'cancelled');
+                }
+                
+                showNotification('Order cancelled. Refund will be processed automatically.', 'success');
+                this.refreshOrders();
+            } catch (error) {
+                showNotification('Error cancelling order: ' + error.message, 'error');
+            }
+        },
+        
+        // Additional escrow workflow methods
+        addTracking(orderId) {
+            const trackingNumber = prompt('Enter tracking number:');
+            if (trackingNumber) {
+                showNotification(`📦 Tracking number added: ${trackingNumber}`, 'success');
+            }
+        },
+        
+        updateTracking(orderId) {
+            const newTracking = prompt('Update tracking number:');
+            if (newTracking) {
+                showNotification(`📦 Tracking updated: ${newTracking}`, 'success');
+            }
+        },
+        
+        viewEscrowCountdown(orderId) {
+            showNotification('⏰ 72-hour countdown: 45 hours remaining', 'info');
+        },
+        
+        viewOrderAnalytics(orderId) {
+            showNotification('📊 Order analytics: High buyer satisfaction, on-time delivery', 'info');
+        },
+        
+        viewBuyerReview(orderId) {
+            showNotification('⭐ Buyer review: "Great item, fast shipping!" - 5 stars', 'info');
+        },
+        
+        viewDispute(orderId) {
+            showNotification('🔍 Dispute details would open here', 'info');
+        },
+        
+        contactSupport(orderId) {
+            showNotification('📞 Support contact form would open here', 'info');
         },
         
         contactBuyer(orderId) {
