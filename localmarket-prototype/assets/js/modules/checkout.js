@@ -285,23 +285,26 @@ const Checkout = (function() {
                     // No need for additional localStorage storage
                     console.log('Order created globally via API:', response.order);
                     
-                    // Simulate escrow payment processing and advance workflow
-                    if (typeof EscrowPlayacting !== 'undefined') {
+                    // Initialize complete escrow system
+                    if (typeof EscrowComplete !== 'undefined') {
+                        // Determine completion type (for now, default to delivery-based)
+                        const completionType = 'delivery_based'; // Could be 'instant' for digital goods
+                        
+                        // Initialize escrow workflow
+                        const escrowData = EscrowComplete.initializeEscrow(response.order, completionType);
+                        
+                        response.order.escrow_status = 'funds_locked';
+                        response.order.escrow_id = `escrow_${orderId}`;
+                        response.order.completion_type = completionType;
+                        
+                        showNotification('🔒 Payment secured in escrow! Seller will be notified.', 'success');
+                    } else if (typeof EscrowPlayacting !== 'undefined') {
+                        // Fallback to old escrow system
                         const escrowResult = await EscrowPlayacting.simulatePayment(orderId, totalAmount);
                         
                         if (escrowResult.success) {
                             response.order.escrow_status = escrowResult.status;
                             response.order.escrow_id = escrowResult.escrowId;
-                            
-                            // Automatically advance to "seller_notified" stage after payment
-                            setTimeout(async () => {
-                                try {
-                                    await this.updateOrderStatusGlobally(orderId, 'pending', 'seller_notified');
-                                    showNotification('📧 Seller has been notified and can now confirm your order!', 'info');
-                                } catch (error) {
-                                    console.error('Error updating order status:', error);
-                                }
-                            }, 3000);
                         }
                     }
                     

@@ -154,18 +154,18 @@ const SellerOrders = (function() {
             console.log('Orders displayed successfully');
         },
         
-        // Generate action buttons based on escrow workflow stage
+        // Generate action buttons based on complete escrow system
         generateOrderActions(order) {
-            if (typeof EscrowWorkflow === 'undefined') {
-                // Fallback to simple actions if EscrowWorkflow not available
+            if (typeof EscrowComplete === 'undefined') {
+                // Fallback to simple actions if EscrowComplete not available
                 return `<button class="btn btn-secondary btn-sm" onclick="SellerOrders.viewOrderDetails('${order.id}')">📋 View Details</button>`;
             }
             
-            const actions = EscrowWorkflow.getSellerActions(order);
+            const actions = EscrowComplete.getSellerActions(order);
             
             return actions.map(action => {
                 const disabledAttr = action.disabled ? 'disabled' : '';
-                const onclickAttr = action.action !== 'null' ? `onclick="SellerOrders.${action.action}"` : '';
+                const onclickAttr = action.action !== 'null' ? `onclick="EscrowComplete.${action.action}"` : '';
                 
                 return `<button class="btn ${action.class} btn-sm" ${disabledAttr} ${onclickAttr}>
                     ${action.text}
