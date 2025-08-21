@@ -25,6 +25,12 @@
         .radio-label em { display: block; font-size: 0.8rem; color: #9ca3af; }
         .radio-option input[type="radio"]:checked + .radio-label { color: #3b82f6; }
         .radio-option:has(input[type="radio"]:checked) { border-color: #3b82f6; background: #eff6ff; }
+        .image-preview { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .image-item { position: relative; display: inline-block; }
+        .image-item img { width: 100px; height: 100px; object-fit: cover; border-radius: 5px; border: 1px solid #e5e7eb; }
+        .remove-image { position: absolute; top: 5px; right: 5px; background: #dc2626; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; }
+        .location-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .form-actions { display: flex; gap: 15px; justify-content: center; margin-top: 30px; }
     </style>
 </head>
 <body>
@@ -54,12 +60,12 @@
                     
                     <div class="form-group">
                         <label for="title">Title*</label>
-                        <input type="text" id="title" name="title" required maxlength="100">
+                        <input type="text" id="title" name="title" required maxlength="100" placeholder="Enter a descriptive title">
                     </div>
                     
                     <div class="form-group">
                         <label for="description">Description*</label>
-                        <textarea id="description" name="description" rows="4" required maxlength="500"></textarea>
+                        <textarea id="description" name="description" rows="4" required maxlength="500" placeholder="Describe your item or service"></textarea>
                     </div>
                     
                     <div class="form-row">
@@ -79,18 +85,20 @@
                         
                         <div class="form-group">
                             <label for="price">Price* ($)</label>
-                            <input type="number" id="price" name="price" min="0" step="0.01" required>
+                            <input type="number" id="price" name="price" min="0" step="0.01" required placeholder="0.00">
                         </div>
                         
                         <div class="form-group">
                             <label for="stock">Stock Quantity*</label>
                             <input type="number" id="stock" name="stock" min="1" max="9999" value="1" required>
+                            <small class="form-help">How many units available for sale</small>
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="tags">Tags</label>
+                        <label for="tags">Tags (Optional)</label>
                         <input type="text" id="tags" name="tags" placeholder="e.g., vintage, handmade, professional">
+                        <small class="form-help">Separate tags with commas</small>
                     </div>
                 </div>
 
@@ -105,7 +113,7 @@
                                 <span class="radio-label">
                                     <strong>⚡ Immediate Execution</strong>
                                     <small>Payment → Instant completion → Funds released immediately</small>
-                                    <em>Best for: Digital goods, services, instant delivery items</em>
+                                    <em>Perfect for: Digital goods, services, instant delivery items</em>
                                 </span>
                             </label>
                             
@@ -114,7 +122,7 @@
                                 <span class="radio-label">
                                     <strong>📦 Delivery-Based</strong>
                                     <small>Payment → Delivery process → Buyer confirmation → Funds released</small>
-                                    <em>Best for: Physical products requiring shipping/delivery</em>
+                                    <em>Perfect for: Physical products requiring shipping/delivery</em>
                                 </span>
                             </label>
                         </div>
@@ -123,13 +131,13 @@
                     <div class="form-group" id="deliveryTimeGroup">
                         <label for="deliveryTime">Expected Delivery Time*</label>
                         <select id="deliveryTime" name="deliveryTime">
-                            <option value="24">24 hours</option>
-                            <option value="48">2 days</option>
-                            <option value="72" selected>3 days</option>
-                            <option value="120">5 days</option>
-                            <option value="168">1 week</option>
-                            <option value="336">2 weeks</option>
-                            <option value="720">30 days</option>
+                            <option value="24">24 hours (1 day)</option>
+                            <option value="48">48 hours (2 days)</option>
+                            <option value="72" selected>72 hours (3 days)</option>
+                            <option value="120">120 hours (5 days)</option>
+                            <option value="168">168 hours (1 week)</option>
+                            <option value="336">336 hours (2 weeks)</option>
+                            <option value="720">720 hours (30 days)</option>
                         </select>
                         <small class="form-help">Buyers can request cancellation if delivery exceeds this time</small>
                     </div>
@@ -138,27 +146,27 @@
                 <div class="form-section">
                     <h3>📍 Location</h3>
                     <div class="form-group">
-                        <label for="location">Location</label>
-                        <input type="text" id="location" name="location" readonly>
+                        <label for="location">Location*</label>
+                        <input type="text" id="location" name="location" placeholder="Your location will appear here" readonly>
                         <div class="location-actions">
-                            <button type="button" id="detectLocation" class="btn btn-secondary">📍 Detect Location</button>
+                            <button type="button" id="detectLocation" class="btn btn-secondary">📍 Detect My Location</button>
                             <button type="button" id="manualLocation" class="btn btn-secondary">✏️ Enter Manually</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <h3>🖼️ Images</h3>
-                    <div id="imagePreview" class="image-preview-container"></div>
+                    <h3>🖼️ Images (Optional)</h3>
+                    <div id="imagePreview" class="image-preview"></div>
                     <div class="image-upload-section">
                         <input type="file" id="fileUpload" accept="image/*" multiple style="display: none;">
                         <button type="button" id="uploadButton" class="btn btn-secondary">📁 Upload Images</button>
-                        <button type="button" id="cameraButton" class="btn btn-secondary">📷 Take Photo</button>
+                        <small class="form-help">Upload up to 5 images (JPEG, PNG, GIF, max 5MB each)</small>
                     </div>
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">📝 Create Listing</button>
+                    <button type="submit" class="btn btn-primary" id="submitButton">📝 Create Listing</button>
                     <a href="../dashboard/index.html" class="btn btn-secondary">Cancel</a>
                 </div>
             </form>
@@ -168,15 +176,12 @@
     <script src="../assets/js/core/api.js"></script>
     <script src="../assets/js/core/utils.js"></script>
     <script src="../assets/js/modules/auth.js"></script>
-    <script src="../assets/js/modules/location.js"></script>
-    <script src="../assets/js/modules/camera.js"></script>
-    <script src="../assets/js/modules/image-upload.js"></script>
     
     <script>
         let uploadedImages = [];
         
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is logged in
+            // Check authentication
             if (!Auth.isLoggedIn()) {
                 window.location.href = '../auth/login.html';
                 return;
@@ -185,8 +190,8 @@
             const user = Auth.getCurrentUser();
             document.getElementById('userWelcome').textContent = `Welcome, ${user.username}`;
             
-            // Setup all event listeners
-            setupEventListeners();
+            // Initialize all functionality
+            initializeForm();
             
             // Logout functionality
             document.getElementById('logoutLink').addEventListener('click', function(e) {
@@ -196,13 +201,13 @@
             });
         });
         
-        function setupEventListeners() {
+        function initializeForm() {
             // Sale type handling
             const immediateRadio = document.getElementById('saleTypeImmediate');
             const deliveryRadio = document.getElementById('saleTypeDelivery');
             const deliveryTimeGroup = document.getElementById('deliveryTimeGroup');
             
-            function toggleDeliveryTime() {
+            function updateDeliveryTimeVisibility() {
                 if (immediateRadio.checked) {
                     deliveryTimeGroup.style.display = 'none';
                 } else {
@@ -210,9 +215,9 @@
                 }
             }
             
-            immediateRadio.addEventListener('change', toggleDeliveryTime);
-            deliveryRadio.addEventListener('change', toggleDeliveryTime);
-            toggleDeliveryTime(); // Initial setup
+            immediateRadio.addEventListener('change', updateDeliveryTimeVisibility);
+            deliveryRadio.addEventListener('change', updateDeliveryTimeVisibility);
+            updateDeliveryTimeVisibility(); // Initial setup
             
             // Image upload
             document.getElementById('uploadButton').addEventListener('click', function() {
@@ -223,57 +228,55 @@
                 handleImageUpload(e);
             });
             
-            // Camera (simplified)
-            document.getElementById('cameraButton').addEventListener('click', function() {
-                showNotification('📷 Camera functionality available - feature will be enhanced', 'info');
-            });
-            
             // Location detection
-            document.getElementById('detectLocation').addEventListener('click', async function() {
-                try {
-                    this.disabled = true;
-                    this.textContent = 'Detecting...';
-                    
-                    if (typeof LocationService !== 'undefined') {
-                        const location = await LocationService.detectLocation();
-                        document.getElementById('location').value = location.address;
-                        showNotification('📍 Location detected!', 'success');
-                    } else {
-                        // Simple geolocation fallback
-                        if (navigator.geolocation) {
-                            navigator.geolocation.getCurrentPosition(function(position) {
-                                document.getElementById('location').value = `${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`;
-                                showNotification('📍 Location detected!', 'success');
-                            });
-                        } else {
-                            showNotification('Geolocation not supported', 'error');
-                        }
-                    }
-                } catch (error) {
-                    showNotification('Error detecting location: ' + error.message, 'error');
-                } finally {
-                    this.disabled = false;
-                    this.textContent = '📍 Detect Location';
-                }
+            document.getElementById('detectLocation').addEventListener('click', function() {
+                detectUserLocation();
             });
             
             document.getElementById('manualLocation').addEventListener('click', function() {
                 const address = prompt('Enter your location address:');
-                if (address) {
-                    document.getElementById('location').value = address;
+                if (address && address.trim()) {
+                    document.getElementById('location').value = address.trim();
                     showNotification('📍 Location updated!', 'success');
                 }
             });
             
             // Form submission
-            document.getElementById('listingForm').addEventListener('submit', handleFormSubmit);
+            document.getElementById('listingForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleFormSubmission();
+            });
         }
         
         function handleImageUpload(e) {
             const files = Array.from(e.target.files);
-            uploadedImages = uploadedImages.concat(files);
             
-            // Display image previews
+            // Validate files
+            const validFiles = files.filter(file => {
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification(`File ${file.name} is too large (max 5MB)`, 'error');
+                    return false;
+                }
+                if (!file.type.startsWith('image/')) {
+                    showNotification(`File ${file.name} is not an image`, 'error');
+                    return false;
+                }
+                return true;
+            });
+            
+            // Add to uploaded images (max 5 total)
+            const totalImages = uploadedImages.length + validFiles.length;
+            if (totalImages > 5) {
+                showNotification('Maximum 5 images allowed', 'error');
+                return;
+            }
+            
+            uploadedImages = uploadedImages.concat(validFiles);
+            displayImagePreviews();
+            showNotification(`${validFiles.length} image(s) uploaded successfully`, 'success');
+        }
+        
+        function displayImagePreviews() {
             const previewContainer = document.getElementById('imagePreview');
             previewContainer.innerHTML = '';
             
@@ -281,68 +284,110 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const imageDiv = document.createElement('div');
-                    imageDiv.style.cssText = 'display: inline-block; margin: 10px; position: relative;';
+                    imageDiv.className = 'image-item';
                     imageDiv.innerHTML = `
-                        <img src="${e.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px;">
-                        <button type="button" onclick="removeImage(${index})" style="position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer;">×</button>
+                        <img src="${e.target.result}" alt="Preview ${index + 1}">
+                        <button type="button" class="remove-image" onclick="removeImage(${index})" title="Remove image">×</button>
                     `;
                     previewContainer.appendChild(imageDiv);
                 };
                 reader.readAsDataURL(file);
             });
-            
-            showNotification(`${files.length} image(s) uploaded`, 'success');
         }
         
         function removeImage(index) {
             uploadedImages.splice(index, 1);
-            handleImageUpload({ target: { files: [] } }); // Refresh display
+            displayImagePreviews();
+            showNotification('Image removed', 'info');
         }
         
-        async function handleFormSubmit(e) {
-            e.preventDefault();
+        function detectUserLocation() {
+            const button = document.getElementById('detectLocation');
+            button.disabled = true;
+            button.textContent = 'Detecting...';
             
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude.toFixed(4);
+                        const lng = position.coords.longitude.toFixed(4);
+                        document.getElementById('location').value = `${lat}, ${lng}`;
+                        showNotification('📍 Location detected successfully!', 'success');
+                        
+                        button.disabled = false;
+                        button.textContent = '📍 Detect My Location';
+                    },
+                    function(error) {
+                        showNotification('Error detecting location: ' + error.message, 'error');
+                        button.disabled = false;
+                        button.textContent = '📍 Detect My Location';
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    }
+                );
+            } else {
+                showNotification('Geolocation not supported by this browser', 'error');
+                button.disabled = false;
+                button.textContent = '📍 Detect My Location';
+            }
+        }
+        
+        async function handleFormSubmission() {
             try {
-                const submitButton = document.querySelector('button[type="submit"]');
+                const submitButton = document.getElementById('submitButton');
                 submitButton.disabled = true;
-                submitButton.textContent = 'Creating...';
+                submitButton.textContent = 'Creating Listing...';
+                
+                // Validate required fields
+                const title = document.getElementById('title').value.trim();
+                const description = document.getElementById('description').value.trim();
+                const category = document.getElementById('category').value;
+                const price = parseFloat(document.getElementById('price').value);
+                const stock = parseInt(document.getElementById('stock').value);
+                const location = document.getElementById('location').value.trim();
+                
+                if (!title || !description || !category || !price || !stock || !location) {
+                    throw new Error('Please fill in all required fields');
+                }
                 
                 // Get sale type data
                 const saleType = document.querySelector('input[name="saleType"]:checked').value;
                 const deliveryTimeHours = saleType === 'immediate' ? 0 : parseInt(document.getElementById('deliveryTime').value);
                 
-                // Get location data
-                const locationValue = document.getElementById('location').value;
-                const locationData = {
-                    address: locationValue || 'Location not specified',
-                    lat: 0,
-                    lng: 0
-                };
-                
+                // Prepare listing data
                 const listingData = {
-                    title: document.getElementById('title').value,
-                    description: document.getElementById('description').value,
-                    category: document.getElementById('category').value,
-                    price: parseFloat(document.getElementById('price').value),
-                    stock: parseInt(document.getElementById('stock').value) || 1,
+                    title: title,
+                    description: description,
+                    category: category,
+                    price: price,
+                    stock: stock,
                     sale_type: saleType,
                     delivery_time_hours: deliveryTimeHours,
                     delivery_time_display: saleType === 'immediate' ? 'Instant' : `${deliveryTimeHours} hours`,
                     tags: document.getElementById('tags').value.split(',').map(tag => tag.trim()).filter(tag => tag),
-                    location: locationData,
+                    location: {
+                        address: location,
+                        lat: 0,
+                        lng: 0
+                    },
                     sellerId: Auth.getCurrentUser().id
                 };
                 
                 console.log('Submitting listing data:', listingData);
                 
-                // Create FormData
+                // Create form data
                 const formData = new FormData();
                 formData.append('listingData', JSON.stringify(listingData));
                 
                 // Add images
-                uploadedImages.forEach(file => {
-                    formData.append('images[]', file);
+                uploadedImages.forEach((file, index) => {
+                    formData.append(`images[]`, file);
                 });
+                
+                console.log('Form data prepared, submitting to API...');
                 
                 // Submit to API
                 const response = await fetch('../api/listings/create.php', {
@@ -350,23 +395,36 @@
                     body: formData
                 });
                 
+                console.log('API response received:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status}`);
+                }
+                
                 const result = await response.json();
+                console.log('API result:', result);
                 
                 if (result.success) {
                     showNotification('✅ Listing created successfully!', 'success');
+                    
+                    // Clear form
+                    document.getElementById('listingForm').reset();
+                    uploadedImages = [];
+                    displayImagePreviews();
+                    
+                    // Redirect after delay
                     setTimeout(() => {
                         window.location.href = '../dashboard/index.html';
                     }, 2000);
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || 'Unknown error occurred');
                 }
                 
             } catch (error) {
-                console.error('Error creating listing:', error);
+                console.error('Form submission error:', error);
                 showNotification('Error creating listing: ' + error.message, 'error');
-                
-                // Re-enable submit button
-                const submitButton = document.querySelector('button[type="submit"]');
+            } finally {
+                const submitButton = document.getElementById('submitButton');
                 submitButton.disabled = false;
                 submitButton.textContent = '📝 Create Listing';
             }
@@ -378,12 +436,16 @@
                 position: fixed; top: 20px; right: 20px; z-index: 1000;
                 background: ${type === 'success' ? '#10b981' : type === 'error' ? '#dc2626' : '#3b82f6'};
                 color: white; padding: 15px 20px; border-radius: 5px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 300px;
             `;
             notification.textContent = message;
             document.body.appendChild(notification);
             
-            setTimeout(() => notification.remove(), 4000);
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 4000);
         }
     </script>
 </body>

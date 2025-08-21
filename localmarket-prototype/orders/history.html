@@ -195,29 +195,41 @@
         }
         
         function generateBuyerOrderActions(order) {
-            let actions = [];
+            const actions = [];
             
             switch (order.status) {
                 case 'pending':
+                    actions.push(`<button class="btn btn-success btn-sm" onclick="releaseFundsNow('${order.id}')">💰 Release Funds Now</button>`);
                     actions.push(`<button class="btn btn-secondary btn-sm" onclick="contactSeller('${order.id}')">💬 Contact Seller</button>`);
                     actions.push(`<button class="btn btn-danger btn-sm" onclick="cancelOrder('${order.id}')">❌ Cancel Order</button>`);
                     break;
                     
+                case 'confirmed':
+                    actions.push(`<button class="btn btn-success btn-sm" onclick="releaseFundsNow('${order.id}')">💰 Release Funds Now</button>`);
+                    actions.push(`<button class="btn btn-secondary btn-sm" onclick="contactSeller('${order.id}')">💬 Contact Seller</button>`);
+                    break;
+                    
                 case 'shipped':
-                    actions.push(`<button class="btn btn-primary btn-sm" onclick="trackOrder('${order.id}')">📦 Track Package</button>`);
+                    actions.push(`<button class="btn btn-success btn-sm" onclick="confirmDeliveryAndRelease('${order.id}')">✅ Confirm & Release Funds</button>`);
+                    actions.push(`<button class="btn btn-primary btn-sm" onclick="releaseFundsNow('${order.id}')">💰 Release Funds Now</button>`);
+                    actions.push(`<button class="btn btn-secondary btn-sm" onclick="trackOrder('${order.id}')">📦 Track Package</button>`);
                     break;
                     
                 case 'delivered':
-                    actions.push(`<button class="btn btn-success btn-sm" onclick="confirmDelivery('${order.id}')">✅ Confirm Received</button>`);
+                    actions.push(`<button class="btn btn-success btn-sm" onclick="confirmDeliveryAndRelease('${order.id}')">✅ Confirm & Release Funds</button>`);
+                    actions.push(`<button class="btn btn-primary btn-sm" onclick="releaseFundsNow('${order.id}')">💰 Release Funds Now</button>`);
                     actions.push(`<button class="btn btn-warning btn-sm" onclick="disputeOrder('${order.id}')">⚠️ Report Issue</button>`);
                     break;
                     
                 case 'completed':
+                    actions.push(`<button class="btn btn-success btn-sm" disabled style="opacity: 0.6;">🎉 Transaction Complete</button>`);
                     actions.push(`<button class="btn btn-secondary btn-sm" onclick="leaveReview('${order.id}')">⭐ Leave Review</button>`);
                     break;
+                    
+                case 'cancelled':
+                    actions.push(`<button class="btn btn-secondary btn-sm" disabled style="opacity: 0.6;">❌ Cancelled</button>`);
+                    break;
             }
-            
-            actions.push(`<button class="btn btn-outline btn-sm" onclick="viewOrderDetails('${order.id}')">📋 Details</button>`);
             
             return actions.join(' ');
         }
@@ -262,35 +274,116 @@
             showNotification('Order history refreshed!', 'success');
         }
         
-        // Placeholder functions for order actions
-        function contactSeller(orderId) {
-            showNotification('💬 Contact seller functionality coming soon', 'info');
-        }
-        
-        function cancelOrder(orderId) {
-            if (confirm('Are you sure you want to cancel this order?')) {
-                showNotification('❌ Order cancellation requested', 'info');
+        // WORKING buyer order functions
+        async function releaseFundsNow(orderId) {
+            if (!confirm('Release funds to seller immediately? This will complete the transaction.')) {
+                return;
+            }
+            
+            try {
+                showNotification('💰 Releasing funds to seller...', 'info');
+                
+                const response = await fetch('../api/orders/update-status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        newStatus: 'completed'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('🎉 Funds released! Transaction completed successfully.', 'success');
+                    refreshBuyerOrders();
+                } else {
+                    showNotification('Error releasing funds: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showNotification('Error releasing funds: ' + error.message, 'error');
             }
         }
         
-        function trackOrder(orderId) {
-            showNotification('📦 Package tracking would open here', 'info');
+        async function confirmDeliveryAndRelease(orderId) {
+            if (!confirm('Confirm delivery and release funds to seller?')) {
+                return;
+            }
+            
+            try {
+                showNotification('✅ Confirming delivery and releasing funds...', 'info');
+                
+                const response = await fetch('../api/orders/update-status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        newStatus: 'completed'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('🎉 Delivery confirmed and funds released! Transaction completed.', 'success');
+                    refreshBuyerOrders();
+                } else {
+                    showNotification('Error confirming delivery: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showNotification('Error confirming delivery: ' + error.message, 'error');
+            }
         }
         
-        function confirmDelivery(orderId) {
-            showNotification('✅ Delivery confirmed! Funds will be released to seller.', 'success');
+        async function cancelOrder(orderId) {
+            if (!confirm('Cancel this order? This will trigger an automatic refund.')) {
+                return;
+            }
+            
+            try {
+                showNotification('❌ Cancelling order...', 'info');
+                
+                const response = await fetch('../api/orders/update-status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        newStatus: 'cancelled'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Order cancelled. Automatic refund processed.', 'success');
+                    refreshBuyerOrders();
+                } else {
+                    showNotification('Error cancelling order: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showNotification('Error cancelling order: ' + error.message, 'error');
+            }
+        }
+        
+        // Placeholder functions for future features
+        function contactSeller(orderId) {
+            showNotification('💬 Seller contact system coming soon', 'info');
+        }
+        
+        function trackOrder(orderId) {
+            showNotification('📦 Package tracking system coming soon', 'info');
         }
         
         function disputeOrder(orderId) {
-            showNotification('⚠️ Dispute form would open here', 'info');
+            showNotification('⚠️ Dispute system coming soon', 'info');
         }
         
         function leaveReview(orderId) {
-            showNotification('⭐ Review form would open here', 'info');
+            showNotification('⭐ Review system coming soon', 'info');
         }
         
         function viewOrderDetails(orderId) {
-            showNotification('📋 Detailed order view would open here', 'info');
+            showNotification('📋 Detailed order view coming soon', 'info');
         }
         
         function showNotification(message, type = 'info') {
