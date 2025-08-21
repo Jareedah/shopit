@@ -347,12 +347,19 @@
                 const locationData = LocationService.getCurrentLocation();
                 const locationValue = document.getElementById('location').value;
                 
+                // Get sale type data
+                const saleType = document.querySelector('input[name="saleType"]:checked')?.value || 'delivery_based';
+                const deliveryTimeHours = getSaleTypeDeliveryTime();
+                
                 const listingData = {
                     title: document.getElementById('title').value,
                     description: document.getElementById('description').value,
                     category: document.getElementById('category').value,
                     price: parseFloat(document.getElementById('price').value),
                     stock: parseInt(document.getElementById('stock').value) || 1,
+                    sale_type: saleType,
+                    delivery_time_hours: deliveryTimeHours,
+                    delivery_time_display: saleType === 'immediate' ? 'Instant' : `${deliveryTimeHours} hours`,
                     tags: document.getElementById('tags').value.split(',').map(tag => tag.trim()).filter(tag => tag),
                     location: locationData || {
                         address: locationValue || 'Location not specified',
@@ -401,6 +408,37 @@
                 }, 3000);
             }
         });
+        
+        // Get delivery time based on sale type selection
+        function getSaleTypeDeliveryTime() {
+            const saleType = document.querySelector('input[name="saleType"]:checked')?.value;
+            
+            if (saleType === 'immediate') {
+                return 0; // Instant
+            }
+            
+            const deliveryTimeSelect = document.getElementById('deliveryTime');
+            if (deliveryTimeSelect.value === 'custom') {
+                return parseInt(document.getElementById('customDeliveryHours').value) || 72;
+            } else {
+                return parseInt(deliveryTimeSelect.value);
+            }
+        }
+        
+        // Show notification function
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed; top: 20px; right: 20px; z-index: 1000;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#dc2626' : '#3b82f6'};
+                color: white; padding: 15px 20px; border-radius: 5px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.remove(), 4000);
+        }
     </script>
 </body>
 </html>

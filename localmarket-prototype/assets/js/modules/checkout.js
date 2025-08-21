@@ -285,27 +285,38 @@ const Checkout = (function() {
                     // No need for additional localStorage storage
                     console.log('Order created globally via API:', response.order);
                     
-                    // Initialize complete escrow system
-                    if (typeof EscrowComplete !== 'undefined') {
-                        // Determine completion type (for now, default to delivery-based)
-                        const completionType = 'delivery_based'; // Could be 'instant' for digital goods
+                    // Implement actual sale type logic
+                    const saleType = currentListing.sale_type || 'delivery_based';
+                    
+                    if (saleType === 'immediate') {
+                        // IMMEDIATE EXECUTION: Complete transaction instantly
+                        showNotification('⚡ Processing instant completion...', 'info');
                         
-                        // Initialize escrow workflow
-                        const escrowData = EscrowComplete.initializeEscrow(response.order, completionType);
+                        setTimeout(async () => {
+                            // Mark as instantly completed
+                            await this.updateOrderStatusGlobally(orderId, 'completed');
+                            
+                            // Show instant completion
+                            showNotification('⚡ Transaction completed instantly! Funds released to seller.', 'success');
+                            
+                            // Update completion display
+                            this.showInstantCompletionStep(response.order);
+                        }, 2000);
                         
-                        response.order.escrow_status = 'funds_locked';
-                        response.order.escrow_id = `escrow_${orderId}`;
-                        response.order.completion_type = completionType;
-                        
+                    } else {
+                        // DELIVERY-BASED: Start escrow workflow
                         showNotification('🔒 Payment secured in escrow! Seller will be notified.', 'success');
-                    } else if (typeof EscrowPlayacting !== 'undefined') {
-                        // Fallback to old escrow system
-                        const escrowResult = await EscrowPlayacting.simulatePayment(orderId, totalAmount);
                         
-                        if (escrowResult.success) {
-                            response.order.escrow_status = escrowResult.status;
-                            response.order.escrow_id = escrowResult.escrowId;
-                        }
+                        // Set escrow status for delivery-based
+                        response.order.escrow_status = 'funds_secured';
+                        response.order.escrow_id = `escrow_${orderId}`;
+                        response.order.completion_type = 'delivery_based';
+                        
+                        // Notify seller after delay
+                        setTimeout(async () => {
+                            await this.updateOrderStatusGlobally(orderId, 'pending');
+                            showNotification('📧 Seller has been notified and can now manage your order!', 'info');
+                        }, 3000);
                     }
                     
                     this.showCompletionStep(response.order);
@@ -356,6 +367,64 @@ const Checkout = (function() {
                 console.error('Error updating global stock:', error);
                 showNotification('⚠️ Stock update error: ' + error.message, 'warning');
             }
+        },
+        
+        // Show instant completion step
+        showInstantCompletionStep(order) {
+            const checkoutContent = document.getElementById('checkoutContent');
+            
+            checkoutContent.innerHTML = `
+                <div class="instant-completion">
+                    <div class="completion-header">
+                        <div class="success-icon">⚡</div>
+                        <h3>Transaction Completed Instantly!</h3>
+                        <p>Your purchase has been completed and funds have been released to the seller</p>
+                    </div>
+                    
+                    <div class="order-summary-card">
+                        <h4>Order Details</h4>
+                        <div class="detail-row">
+                            <strong>Order ID:</strong>
+                            <span>${order.id}</span>
+                        </div>
+                        <div class="detail-row">
+                            <strong>Item:</strong>
+                            <span>${currentListing.title}</span>
+                        </div>
+                        <div class="detail-row">
+                            <strong>Completion Type:</strong>
+                            <span>⚡ Instant Execution</span>
+                        </div>
+                        <div class="detail-row">
+                            <strong>Total Amount:</strong>
+                            <span>$${order.total_amount.toFixed(2)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <strong>Status:</strong>
+                            <span style="color: #059669; font-weight: bold;">🎉 Complete</span>
+                        </div>
+                    </div>
+                    
+                    <div class="instant-benefits">
+                        <h4>⚡ Instant Completion Benefits</h4>
+                        <ul>
+                            <li>✅ <strong>Immediate access</strong> - No waiting for delivery</li>
+                            <li>✅ <strong>Instant payment</strong> - Seller receives funds immediately</li>
+                            <li>✅ <strong>No disputes</strong> - Transaction completed automatically</li>
+                            <li>✅ <strong>Perfect for digital goods</strong> - Services and instant delivery</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="completion-actions">
+                        <button class="btn btn-primary" onclick="window.location.href='../orders/history.html'">
+                            📦 View Purchase History
+                        </button>
+                        <button class="btn btn-secondary" onclick="window.location.href='../search/index.html'">
+                            🛍️ Continue Shopping
+                        </button>
+                    </div>
+                </div>
+            `;
         },
         
         // Update order status globally (for escrow workflow progression)

@@ -7,6 +7,9 @@
       "category": "electronics",
       "price": 650.00,
       "stock": 1,
+      "sale_type": "delivery_based",
+      "delivery_time_hours": 72,
+      "delivery_time_display": "72 hours",
       "tags": ["iphone", "smartphone", "apple", "mobile"],
       "location": {
         "address": "Manhattan, New York, NY",
@@ -27,6 +30,9 @@
       "category": "services",
       "price": 120.00,
       "stock": 10,
+      "sale_type": "immediate",
+      "delivery_time_hours": 0,
+      "delivery_time_display": "Instant",
       "tags": ["cleaning", "house", "professional", "service"],
       "location": {
         "address": "Brooklyn, New York, NY",
@@ -47,6 +53,9 @@
       "category": "clothing",
       "price": 85.00,
       "stock": 1,
+      "sale_type": "delivery_based",
+      "delivery_time_hours": 168,
+      "delivery_time_display": "168 hours",
       "tags": ["vintage", "leather", "jacket", "fashion", "80s"],
       "location": {
         "address": "Queens, New York, NY",
