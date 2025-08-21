@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Location Filtering - LocalMarket</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 11px; }
+        .location-info { background: #fff3cd; padding: 15px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Location-Based Filtering</h1>
+    
+    <div class="debug-section">
+        <h2>📍 Current Location Detection</h2>
+        <button onclick="detectCurrentLocation()">Detect My Location</button>
+        <div id="currentLocationResults"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>📋 All Listings Analysis</h2>
+        <button onclick="analyzeAllListings()">Analyze All Listings</button>
+        <div id="listingsAnalysisResults"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>📐 Distance Calculation Test</h2>
+        <button onclick="testDistanceCalculation()">Test Distance Calculations</button>
+        <div id="distanceTestResults"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>🔍 Search API Test</h2>
+        <button onclick="testSearchWithLocation()">Test Search with Location</button>
+        <div id="searchTestResults"></div>
+    </div>
+
+    <script src="assets/js/core/api.js"></script>
+    <script src="assets/js/modules/auth.js"></script>
+    
+    <script>
+        let currentUserLocation = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!Auth.isLoggedIn()) {
+                alert('Please login first');
+                window.location.href = 'auth/login.html';
+                return;
+            }
+        });
+        
+        async function detectCurrentLocation() {
+            const resultsDiv = document.getElementById('currentLocationResults');
+            resultsDiv.innerHTML = '<p>Detecting your location...</p>';
+            
+            try {
+                if (navigator.geolocation) {
+                    const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: true,
+                            timeout: 15000,
+                            maximumAge: 300000
+                        });
+                    });
+                    
+                    currentUserLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                        address: `${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`,
+                        accuracy: position.coords.accuracy
+                    };
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Location Detected Successfully</h3>
+                            <pre>${JSON.stringify(currentUserLocation, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    throw new Error('Geolocation not supported');
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Location Detection Failed</h3>
+                        <p>Error: ${error.message}</p>
+                        <p>Code: ${error.code}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function analyzeAllListings() {
+            const resultsDiv = document.getElementById('listingsAnalysisResults');
+            resultsDiv.innerHTML = '<p>Analyzing all listings...</p>';
+            
+            try {
+                const response = await fetch('api/search/query.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: '',
+                        limit: 100
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const listings = result.data || [];
+                    
+                    let analysisHtml = `
+                        <div class="info">
+                            <h3>📋 Listings Analysis</h3>
+                            <p><strong>Total listings:</strong> ${listings.length}</p>
+                    `;
+                    
+                    let listingsWithCoords = 0;
+                    let listingsWithoutCoords = 0;
+                    let locationFormats = [];
+                    
+                    listings.forEach(listing => {
+                        if (listing.location && listing.location.lat && listing.location.lng) {
+                            listingsWithCoords++;
+                        } else {
+                            listingsWithoutCoords++;
+                        }
+                        
+                        locationFormats.push({
+                            id: listing.id,
+                            title: listing.title,
+                            location: listing.location,
+                            hasCoords: !!(listing.location && listing.location.lat && listing.location.lng)
+                        });
+                    });
+                    
+                    analysisHtml += `
+                            <p><strong>Listings with coordinates:</strong> ${listingsWithCoords}</p>
+                            <p><strong>Listings without coordinates:</strong> ${listingsWithoutCoords}</p>
+                            
+                            <h4>Location Data Structure:</h4>
+                            <pre>${JSON.stringify(locationFormats, null, 2)}</pre>
+                        </div>
+                    `;
+                    
+                    resultsDiv.innerHTML = analysisHtml;
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Listings Analysis Failed</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testDistanceCalculation() {
+            const resultsDiv = document.getElementById('distanceTestResults');
+            
+            if (!currentUserLocation) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <p>Please detect your location first</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultsDiv.innerHTML = '<p>Testing distance calculations...</p>';
+            
+            try {
+                // Test with sample coordinates
+                const testLocations = [
+                    { name: "Manhattan (Sample)", lat: 40.7831, lng: -73.9712 },
+                    { name: "Brooklyn (Sample)", lat: 40.6782, lng: -73.9442 },
+                    { name: "Queens (Sample)", lat: 40.7282, lng: -73.7949 }
+                ];
+                
+                let testHtml = `
+                    <div class="info">
+                        <h3>📐 Distance Calculation Test</h3>
+                        <p><strong>Your location:</strong> ${currentUserLocation.address}</p>
+                        <p><strong>Coordinates:</strong> ${currentUserLocation.lat}, ${currentUserLocation.lng}</p>
+                        
+                        <h4>Distances to sample locations:</h4>
+                `;
+                
+                testLocations.forEach(location => {
+                    const distance = calculateDistanceJS(
+                        currentUserLocation.lat, currentUserLocation.lng,
+                        location.lat, location.lng
+                    );
+                    
+                    testHtml += `<p><strong>${location.name}:</strong> ${distance.toFixed(2)} km</p>`;
+                });
+                
+                testHtml += '</div>';
+                resultsDiv.innerHTML = testHtml;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Distance Calculation Test Failed</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testSearchWithLocation() {
+            const resultsDiv = document.getElementById('searchTestResults');
+            
+            if (!currentUserLocation) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <p>Please detect your location first</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultsDiv.innerHTML = '<p>Testing search with location filtering...</p>';
+            
+            try {
+                const searchData = {
+                    query: '',
+                    category: '',
+                    radius: 50, // 50km radius
+                    userLocation: currentUserLocation
+                };
+                
+                const response = await fetch('api/search/query.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(searchData)
+                });
+                
+                const result = await response.json();
+                
+                let testHtml = `
+                    <div class="${result.success ? 'success' : 'error'}">
+                        <h3>${result.success ? '✅' : '❌'} Search API Test</h3>
+                        <p><strong>API Success:</strong> ${result.success}</p>
+                        <p><strong>Results Found:</strong> ${result.data?.length || 0}</p>
+                        <p><strong>User Location Sent:</strong></p>
+                        <pre>${JSON.stringify(currentUserLocation, null, 2)}</pre>
+                `;
+                
+                if (result.data && result.data.length > 0) {
+                    testHtml += '<h4>Found Listings with Distances:</h4>';
+                    result.data.forEach(listing => {
+                        testHtml += `
+                            <p><strong>${listing.title}:</strong> 
+                            ${listing.distance ? listing.distance.toFixed(2) + ' km' : 'No distance calculated'}</p>
+                        `;
+                    });
+                } else {
+                    testHtml += '<p><strong>Issue:</strong> No listings found within radius</p>';
+                }
+                
+                testHtml += '</div>';
+                resultsDiv.innerHTML = testHtml;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Search API Test Failed</h3>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // JavaScript distance calculation (same formula as PHP)
+        function calculateDistanceJS(lat1, lng1, lat2, lng2) {
+            const earthRadius = 6371; // km
+            
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                     Math.sin(dLng/2) * Math.sin(dLng/2);
+            
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            
+            return earthRadius * c;
+        }
+    </script>
+</body>
+</html>
