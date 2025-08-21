@@ -159,23 +159,80 @@
             // Update location display
             updateLocationDisplay();
             
-            // Location update handler
+            // Location update handler - WORKING VERSION
             document.getElementById('updateLocation').addEventListener('click', async function() {
+                const button = this;
+                button.disabled = true;
+                button.textContent = 'Detecting...';
+                
                 try {
-                    this.disabled = true;
-                    this.textContent = 'Detecting...';
-                    
-                    const location = await LocationService.detectLocation();
-                    SearchEngine.updateUserLocation(location);
-                    updateLocationDisplay();
-                    SearchEngine.applyFilters(); // Refresh search with new location
-                    
-                    showNotification('Location updated successfully!', 'success');
+                    if (navigator.geolocation) {
+                        const position = await new Promise((resolve, reject) => {
+                            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                                enableHighAccuracy: true,
+                                timeout: 15000,
+                                maximumAge: 300000
+                            });
+                        });
+                        
+                        const location = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            address: `${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`
+                        };
+                        
+                        // Update search engine location
+                        if (typeof SearchEngine !== 'undefined' && SearchEngine.updateUserLocation) {
+                            SearchEngine.updateUserLocation(location);
+                            SearchEngine.applyFilters();
+                        }
+                        
+                        // Update display
+                        const locationInput = document.getElementById('userLocation');
+                        if (locationInput) {
+                            locationInput.value = location.address;
+                        }
+                        
+                        showNotification('📍 Location updated successfully!', 'success');
+                    } else {
+                        throw new Error('Geolocation not supported');
+                    }
                 } catch (error) {
-                    showNotification('Error detecting location: ' + error.message, 'error');
+                    console.error('Location detection error:', error);
+                    let errorMessage = 'Location detection failed. ';
+                    
+                    if (error.code === 1) {
+                        errorMessage += 'Permission denied. Please allow location access.';
+                    } else if (error.code === 2) {
+                        errorMessage += 'Position unavailable.';
+                    } else if (error.code === 3) {
+                        errorMessage += 'Request timed out.';
+                    } else {
+                        errorMessage += error.message;
+                    }
+                    
+                    showNotification(errorMessage, 'error');
+                    
+                    // Fallback: allow manual entry
+                    const manualLocation = prompt('Enter your location manually:');
+                    if (manualLocation) {
+                        const location = {
+                            lat: 0,
+                            lng: 0,
+                            address: manualLocation
+                        };
+                        
+                        if (typeof SearchEngine !== 'undefined' && SearchEngine.updateUserLocation) {
+                            SearchEngine.updateUserLocation(location);
+                            SearchEngine.applyFilters();
+                        }
+                        
+                        document.getElementById('userLocation').value = manualLocation;
+                        showNotification('📍 Location set manually!', 'success');
+                    }
                 } finally {
-                    this.disabled = false;
-                    this.textContent = 'Update Location';
+                    button.disabled = false;
+                    button.textContent = 'Update Location';
                 }
             });
             

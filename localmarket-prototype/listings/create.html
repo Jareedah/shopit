@@ -26,6 +26,10 @@
         .remove-image { position: absolute; top: 5px; right: 5px; background: #dc2626; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; }
         .location-actions { display: flex; gap: 10px; margin-top: 10px; }
         .form-actions { display: flex; gap: 15px; justify-content: center; margin-top: 30px; }
+        .camera-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; }
+        .camera-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); }
+        .camera-content { position: relative; background: white; margin: 5% auto; padding: 20px; max-width: 500px; border-radius: 8px; text-align: center; }
+        .camera-actions { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -149,6 +153,21 @@
                     <div class="image-upload-section">
                         <input type="file" id="fileUpload" accept="image/*" multiple style="display: none;">
                         <button type="button" id="uploadButton" class="btn btn-secondary">📁 Upload Images</button>
+                        <button type="button" id="cameraButton" class="btn btn-secondary">📷 Take Photo</button>
+                    </div>
+                </div>
+
+                <!-- Camera Modal -->
+                <div id="cameraModal" class="camera-modal" style="display: none;">
+                    <div class="camera-overlay" onclick="closeCameraModal()"></div>
+                    <div class="camera-content">
+                        <h3>📷 Camera Capture</h3>
+                        <video id="cameraVideo" autoplay playsinline style="width: 100%; max-width: 400px; border-radius: 8px;"></video>
+                        <canvas id="cameraCanvas" style="display: none;"></canvas>
+                        <div class="camera-actions">
+                            <button type="button" id="capturePhoto" class="btn btn-primary">📸 Capture Photo</button>
+                            <button type="button" onclick="closeCameraModal()" class="btn btn-secondary">Cancel</button>
+                        </div>
                     </div>
                 </div>
 
@@ -215,6 +234,15 @@
                 handleImageUpload(e);
             });
             
+            // Camera capture
+            document.getElementById('cameraButton').addEventListener('click', function() {
+                openCameraModal();
+            });
+            
+            document.getElementById('capturePhoto').addEventListener('click', function() {
+                capturePhoto();
+            });
+            
             // Location
             document.getElementById('detectLocation').addEventListener('click', function() {
                 detectLocation();
@@ -237,31 +265,35 @@
         
         function handleImageUpload(e) {
             const files = Array.from(e.target.files);
-            uploadedImages = uploadedImages.concat(files);
             
-            const preview = document.getElementById('imagePreview');
-            preview.innerHTML = '';
-            
-            uploadedImages.forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const imageDiv = document.createElement('div');
-                    imageDiv.className = 'image-item';
-                    imageDiv.innerHTML = `
-                        <img src="${event.target.result}" alt="Preview">
-                        <button type="button" class="remove-image" onclick="removeImage(${index})">×</button>
-                    `;
-                    preview.appendChild(imageDiv);
-                };
-                reader.readAsDataURL(file);
+            // Validate files
+            const validFiles = files.filter(file => {
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification(`${file.name} is too large (max 5MB)`, 'error');
+                    return false;
+                }
+                if (!file.type.startsWith('image/')) {
+                    showNotification(`${file.name} is not an image`, 'error');
+                    return false;
+                }
+                return true;
             });
             
-            showNotification(`${files.length} image(s) uploaded`, 'success');
+            // Check total limit
+            if (uploadedImages.length + validFiles.length > 5) {
+                showNotification('Maximum 5 images allowed', 'error');
+                return;
+            }
+            
+            uploadedImages = uploadedImages.concat(validFiles);
+            updateImagePreview();
+            showNotification(`${validFiles.length} image(s) uploaded successfully`, 'success');
         }
         
         function removeImage(index) {
             uploadedImages.splice(index, 1);
-            handleImageUpload({ target: { files: [] } });
+            updateImagePreview();
+            showNotification('Image removed', 'info');
         }
         
         function detectLocation() {
@@ -275,18 +307,38 @@
                         const lat = position.coords.latitude.toFixed(4);
                         const lng = position.coords.longitude.toFixed(4);
                         document.getElementById('location').value = `${lat}, ${lng}`;
-                        showNotification('📍 Location detected!', 'success');
+                        showNotification('📍 Location detected successfully!', 'success');
                         button.disabled = false;
                         button.textContent = '📍 Detect Location';
                     },
                     function(error) {
-                        showNotification('Location detection failed. Please enter manually.', 'error');
+                        let errorMessage = 'Location detection failed. ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage += 'Permission denied. Please allow location access.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage += 'Location unavailable.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage += 'Request timed out.';
+                                break;
+                            default:
+                                errorMessage += 'Unknown error.';
+                                break;
+                        }
+                        showNotification(errorMessage + ' Please enter manually.', 'error');
                         button.disabled = false;
                         button.textContent = '📍 Detect Location';
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
+                        maximumAge: 300000
                     }
                 );
             } else {
-                showNotification('Geolocation not supported. Please enter manually.', 'error');
+                showNotification('Geolocation not supported by this browser. Please enter manually.', 'error');
                 button.disabled = false;
                 button.textContent = '📍 Detect Location';
             }
@@ -369,6 +421,102 @@
                 submitButton.disabled = false;
                 submitButton.textContent = '📝 Create Listing';
             }
+        }
+        
+        // Camera functionality
+        let cameraStream = null;
+        
+        async function openCameraModal() {
+            try {
+                const modal = document.getElementById('cameraModal');
+                const video = document.getElementById('cameraVideo');
+                
+                // Request camera access with mobile-friendly constraints
+                const constraints = {
+                    video: {
+                        facingMode: 'environment', // Use back camera on mobile
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+                
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = cameraStream;
+                modal.style.display = 'block';
+                
+                showNotification('📷 Camera ready! Point and click capture.', 'success');
+            } catch (error) {
+                console.error('Camera error:', error);
+                if (error.name === 'NotAllowedError') {
+                    showNotification('Camera permission denied. Please allow camera access and try again.', 'error');
+                } else if (error.name === 'NotFoundError') {
+                    showNotification('No camera found on this device.', 'error');
+                } else {
+                    showNotification('Camera not available: ' + error.message, 'error');
+                }
+            }
+        }
+        
+        function capturePhoto() {
+            try {
+                const video = document.getElementById('cameraVideo');
+                const canvas = document.getElementById('cameraCanvas');
+                const context = canvas.getContext('2d');
+                
+                // Set canvas size to video size
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                
+                // Draw video frame to canvas
+                context.drawImage(video, 0, 0);
+                
+                // Convert to blob and add to uploaded images
+                canvas.toBlob(function(blob) {
+                    // Create a File object from the blob
+                    const file = new File([blob], `camera-capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                    uploadedImages.push(file);
+                    
+                    // Update preview
+                    updateImagePreview();
+                    
+                    showNotification('📸 Photo captured successfully!', 'success');
+                    closeCameraModal();
+                }, 'image/jpeg', 0.8);
+                
+            } catch (error) {
+                console.error('Capture error:', error);
+                showNotification('Error capturing photo: ' + error.message, 'error');
+            }
+        }
+        
+        function closeCameraModal() {
+            const modal = document.getElementById('cameraModal');
+            modal.style.display = 'none';
+            
+            // Stop camera stream
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+        }
+        
+        function updateImagePreview() {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            
+            uploadedImages.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imageDiv = document.createElement('div');
+                    imageDiv.className = 'image-item';
+                    imageDiv.innerHTML = `
+                        <img src="${event.target.result}" alt="Preview ${index + 1}">
+                        <button type="button" class="remove-image" onclick="removeImage(${index})">×</button>
+                    `;
+                    preview.appendChild(imageDiv);
+                };
+                reader.readAsDataURL(file);
+            });
         }
         
         function showNotification(message, type = 'info') {
