@@ -230,7 +230,7 @@
             const user = Auth.getCurrentUser();
             document.getElementById('userWelcome').textContent = `Welcome, ${user.username}`;
             
-            // Logout functionality
+            // Logout functionality - FIXED: Direct logout to login page
             document.getElementById('logoutLink').addEventListener('click', function(e) {
                 e.preventDefault();
                 Auth.logout();
