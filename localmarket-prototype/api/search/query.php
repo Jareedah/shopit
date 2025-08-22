@@ -40,14 +40,14 @@ try {
     $limit = $input['limit'] ?? 10;
     $userLocation = $input['userLocation'] ?? null;
     
-    // Debug logging
-    error_log("Search API - User Location: " . json_encode($userLocation));
-    error_log("Search API - Radius: " . $radius);
-    error_log("Search API - Total listings loaded: " . count($listings));
-    
     // Load listings
     $listingsData = $dataManager->readData('listings.json');
     $listings = $listingsData['data'] ?? [];
+    
+    // Debug logging (after listings are loaded)
+    error_log("Search API - User Location: " . json_encode($userLocation));
+    error_log("Search API - Radius: " . $radius);
+    error_log("Search API - Total listings loaded: " . count($listings));
     
     // Filter active listings only
     $listings = array_filter($listings, function($listing) {
