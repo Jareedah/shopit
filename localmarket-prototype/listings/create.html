@@ -202,6 +202,7 @@
 
     <script src="../assets/js/core/api.js"></script>
     <script src="../assets/js/core/utils.js"></script>
+    <script src="../assets/js/core/apple-notifications.js"></script>
     <script src="../assets/js/modules/auth.js"></script>
     
     <script>
@@ -368,6 +369,14 @@
         async function handleFormSubmit() {
             try {
                 const submitButton = document.getElementById('submitButton');
+                
+                // Show progress modal
+                const progressModal = showAppleNotification.progress({
+                    title: 'Creating Listing',
+                    message: 'Preparing your listing...',
+                    showProgress: true
+                });
+                
                 submitButton.disabled = true;
                 submitButton.textContent = 'Creating...';
                 
@@ -378,13 +387,53 @@
                 const price = parseFloat(document.getElementById('price').value);
                 const stock = parseInt(document.getElementById('stock').value);
                 const location = document.getElementById('location').value.trim();
-                const saleType = document.querySelector('input[name="saleType"]:checked').value;
+                const saleType = document.querySelector('input[name="saleType"]:checked')?.value;
                 const deliveryTime = saleType === 'immediate' ? 0 : parseInt(document.getElementById('deliveryTime').value);
                 
-                // Validate
-                if (!title || !description || !category || !price || !stock || !location) {
-                    throw new Error('Please fill in all required fields');
+                // Enhanced validation with specific error messages
+                const validationErrors = [];
+                
+                if (!title) validationErrors.push('Title is required');
+                else if (title.length < 3) validationErrors.push('Title must be at least 3 characters');
+                else if (title.length > 100) validationErrors.push('Title must be less than 100 characters');
+                
+                if (!description) validationErrors.push('Description is required');
+                else if (description.length < 10) validationErrors.push('Description must be at least 10 characters');
+                else if (description.length > 500) validationErrors.push('Description must be less than 500 characters');
+                
+                if (!category) validationErrors.push('Category selection is required');
+                
+                if (!price || isNaN(price)) validationErrors.push('Valid price is required');
+                else if (price <= 0) validationErrors.push('Price must be greater than $0');
+                else if (price > 999999) validationErrors.push('Price must be less than $999,999');
+                
+                if (!stock || isNaN(stock)) validationErrors.push('Stock quantity is required');
+                else if (stock < 1) validationErrors.push('Stock must be at least 1');
+                else if (stock > 9999) validationErrors.push('Stock must be less than 10,000');
+                
+                if (!location) validationErrors.push('Location is required');
+                
+                if (!saleType) validationErrors.push('Sale execution type is required');
+                
+                if (saleType === 'delivery_based' && (!deliveryTime || deliveryTime <= 0)) {
+                    validationErrors.push('Delivery time is required for delivery-based sales');
                 }
+                
+                if (uploadedImages.length === 0) {
+                    validationErrors.push('At least one image is required');
+                }
+                
+                if (validationErrors.length > 0) {
+                    progressModal.close();
+                    showAppleNotification.error(
+                        'Validation Failed',
+                        validationErrors.join('\n• '),
+                        { duration: 8000 }
+                    );
+                    throw new Error('Validation failed');
+                }
+                
+                progressModal.updateProgress(25);
                 
                 // Parse location coordinates if provided in "lat, lng" format
                 let locationData = {
@@ -393,12 +442,17 @@
                     lng: 0
                 };
                 
+                progressModal.updateProgress(40);
+                
                 // Check if location is in "lat, lng" format
                 const coordMatch = location.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
                 if (coordMatch) {
                     locationData.lat = parseFloat(coordMatch[1]);
                     locationData.lng = parseFloat(coordMatch[2]);
                     console.log('Parsed coordinates:', locationData);
+                } else {
+                    // Show warning for text-based location
+                    console.log('Using text-based location:', location);
                 }
 
                 // Prepare data
@@ -421,33 +475,69 @@
                 formData.append('listingData', JSON.stringify(listingData));
                 
                 // Add images
+                progressModal.updateProgress(60);
                 uploadedImages.forEach(file => {
                     formData.append('images[]', file);
                 });
                 
                 // Submit
+                progressModal.updateProgress(80);
                 const response = await fetch('../api/listings/create.php', {
                     method: 'POST',
                     body: formData
                 });
                 
                 const result = await response.json();
+                progressModal.updateProgress(100);
                 
                 if (result.success) {
-                    showNotification('✅ Listing created successfully!', 'success');
+                    progressModal.close();
+                    showAppleNotification.success(
+                        'Listing Created!',
+                        'Your product has been successfully added to the marketplace',
+                        { duration: 3000 }
+                    );
+                    
+                    // Clear form
                     document.getElementById('listingForm').reset();
                     uploadedImages = [];
                     document.getElementById('imagePreview').innerHTML = '';
+                    
+                    // Redirect after success
                     setTimeout(() => {
                         window.location.href = '../dashboard/index.html';
                     }, 2000);
                 } else {
-                    throw new Error(result.message || 'Failed to create listing');
+                    progressModal.close();
+                    
+                    // Provide specific error messages
+                    const errorMessage = result.message || 'Failed to create listing';
+                    const errorDetails = result.errors ? result.errors.join('\n• ') : '';
+                    
+                    showAppleNotification.error(
+                        'Listing Creation Failed',
+                        errorDetails ? `${errorMessage}\n\nDetails:\n• ${errorDetails}` : errorMessage,
+                        { duration: 8000 }
+                    );
+                    throw new Error(errorMessage);
                 }
                 
             } catch (error) {
                 console.error('Form submission error:', error);
-                showNotification('Error: ' + error.message, 'error');
+                
+                // Close progress modal if still open
+                if (typeof progressModal !== 'undefined' && progressModal.close) {
+                    progressModal.close();
+                }
+                
+                // Only show error if not already shown
+                if (!error.message.includes('Validation failed')) {
+                    showAppleNotification.error(
+                        'Submission Error',
+                        error.message || 'An unexpected error occurred while creating your listing',
+                        { duration: 6000 }
+                    );
+                }
             } finally {
                 const submitButton = document.getElementById('submitButton');
                 submitButton.disabled = false;
