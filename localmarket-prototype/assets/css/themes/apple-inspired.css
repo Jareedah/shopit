@@ -68,27 +68,27 @@
 
 /* ===== GLOBAL APPLE STYLING ===== */
 body {
-  font-family: var(--apple-font-family);
-  font-size: var(--apple-font-size-body);
-  line-height: 1.47;
-  color: var(--apple-text-primary);
-  background-color: var(--apple-background);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  letter-spacing: -0.01em;
+  font-family: var(--apple-font-family) !important;
+  font-size: var(--apple-font-size-body) !important;
+  line-height: 1.47 !important;
+  color: var(--apple-text-primary) !important;
+  background-color: var(--apple-background) !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  letter-spacing: -0.01em !important;
 }
 
 /* ===== APPLE-INSPIRED CARDS ===== */
 .auth-card,
 .dashboard-card,
 .card {
-  background: var(--apple-surface-elevated);
-  border-radius: var(--apple-radius-lg);
-  box-shadow: var(--apple-shadow-medium);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  transition: all var(--apple-transition-medium);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: var(--apple-surface-elevated) !important;
+  border-radius: var(--apple-radius-lg) !important;
+  box-shadow: var(--apple-shadow-medium) !important;
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
+  transition: all var(--apple-transition-medium) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
 }
 
 .auth-card:hover,
@@ -101,18 +101,18 @@ body {
 
 /* ===== APPLE-INSPIRED BUTTONS ===== */
 .btn {
-  font-family: var(--apple-font-family);
-  font-size: var(--apple-font-size-callout);
-  font-weight: 600;
-  border-radius: var(--apple-radius-md);
-  transition: all var(--apple-transition-fast);
-  min-height: 44px;
-  padding: 0 var(--apple-spacing-xl);
-  position: relative;
-  overflow: hidden;
-  border: none;
-  cursor: pointer;
-  letter-spacing: -0.01em;
+  font-family: var(--apple-font-family) !important;
+  font-size: var(--apple-font-size-callout) !important;
+  font-weight: 600 !important;
+  border-radius: var(--apple-radius-md) !important;
+  transition: all var(--apple-transition-fast) !important;
+  min-height: 44px !important;
+  padding: 0 var(--apple-spacing-xl) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  border: none !important;
+  cursor: pointer !important;
+  letter-spacing: -0.01em !important;
 }
 
 .btn::before {
@@ -136,14 +136,14 @@ body {
 }
 
 .btn-primary {
-  background: var(--apple-blue);
-  color: white;
-  box-shadow: 0 1px 3px rgba(0, 122, 255, 0.3);
+  background: var(--apple-blue) !important;
+  color: white !important;
+  box-shadow: 0 1px 3px rgba(0, 122, 255, 0.3) !important;
 }
 
 .btn-primary:hover {
-  background: var(--apple-blue-dark);
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.4);
+  background: var(--apple-blue-dark) !important;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.4) !important;
 }
 
 .btn-secondary {
