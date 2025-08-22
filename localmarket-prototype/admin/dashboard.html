@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - LocalMarket</title>
+    <title>Admin Dashboard - Shopit</title>
+    
+    <!-- Apple System Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SF Symbols Alternative - iOS-style icons -->
+    <link href="https://cdn.jsdelivr.net/npm/phosphor-icons@1.4.2/src/css/icons.min.css" rel="stylesheet">
+    
+    <!-- Original CSS (preserved) -->
     <link rel="stylesheet" href="../assets/css/base/reset.css">
     <link rel="stylesheet" href="../assets/css/base/variables.css">
     <link rel="stylesheet" href="../assets/css/base/typography.css">
@@ -12,11 +21,17 @@
     <link rel="stylesheet" href="../assets/css/components/forms.css">
     <link rel="stylesheet" href="../assets/css/components/cards.css">
     <link rel="stylesheet" href="../assets/css/pages/admin.css">
+    
+    <!-- Apple-Inspired Theme Coating - LOADED LAST FOR PRIORITY -->
+    <link rel="stylesheet" href="../assets/css/themes/apple-inspired.css">
 </head>
 <body>
     <header class="header">
         <div class="container">
-            <h1 class="logo">LocalMarket</h1>
+            <h1 class="logo">
+                <i class="ph ph-shopping-bag" style="margin-right: 8px; vertical-align: middle;"></i>
+                Shopit
+            </h1>
             <nav class="navigation">
                 <span class="nav-user">Admin Panel</span>
                 <a href="../dashboard/index.html" class="nav-link">User Dashboard</a>
@@ -29,17 +44,35 @@
 
     <main class="main-content">
         <div class="container">
-            <div class="admin-header">
-                <h2>Administrator Dashboard</h2>
-                <p>System overview and management tools</p>
+            <div class="admin-header" style="text-align: center; padding: 40px 0; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-radius: var(--apple-radius-lg); margin-bottom: 32px; box-shadow: var(--apple-shadow-medium);">
+                <div style="color: var(--apple-red); font-size: 48px; margin-bottom: 16px;">
+                    <i class="ph ph-shield-star"></i>
+                </div>
+                <h2 class="text-gradient-apple" style="font-size: var(--apple-font-size-title1); margin-bottom: 8px;">Administrator Dashboard</h2>
+                <p style="color: var(--apple-text-secondary); font-size: var(--apple-font-size-body);">System overview and management tools</p>
             </div>
 
-            <div class="admin-nav">
-                <button class="nav-btn active" data-tab="overview">Overview</button>
-                <button class="nav-btn" data-tab="users">User Management</button>
-                <button class="nav-btn" data-tab="listings">Listing Moderation</button>
-                <button class="nav-btn" data-tab="analytics">Analytics</button>
-                <button class="nav-btn" data-tab="settings">Settings</button>
+            <div class="admin-nav" style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 32px;">
+                <button class="nav-btn active" data-tab="overview" style="display: flex; align-items: center; gap: 8px; padding: 12px 20px; background: var(--apple-blue); color: white; border: none; border-radius: var(--apple-radius-full); font-weight: 600;">
+                    <i class="ph ph-house"></i>
+                    Overview
+                </button>
+                <button class="nav-btn" data-tab="users" style="display: flex; align-items: center; gap: 8px; padding: 12px 20px; background: var(--apple-gray-light); color: var(--apple-text-secondary); border: none; border-radius: var(--apple-radius-full); font-weight: 600;">
+                    <i class="ph ph-users"></i>
+                    Users
+                </button>
+                <button class="nav-btn" data-tab="listings" style="display: flex; align-items: center; gap: 8px; padding: 12px 20px; background: var(--apple-gray-light); color: var(--apple-text-secondary); border: none; border-radius: var(--apple-radius-full); font-weight: 600;">
+                    <i class="ph ph-list-checks"></i>
+                    Listings
+                </button>
+                <button class="nav-btn" data-tab="analytics" style="display: flex; align-items: center; gap: 8px; padding: 12px 20px; background: var(--apple-gray-light); color: var(--apple-text-secondary); border: none; border-radius: var(--apple-radius-full); font-weight: 600;">
+                    <i class="ph ph-chart-bar"></i>
+                    Analytics
+                </button>
+                <button class="nav-btn" data-tab="settings" style="display: flex; align-items: center; gap: 8px; padding: 12px 20px; background: var(--apple-gray-light); color: var(--apple-text-secondary); border: none; border-radius: var(--apple-radius-full); font-weight: 600;">
+                    <i class="ph ph-gear"></i>
+                    Settings
+                </button>
             </div>
 
             <div class="admin-content">
@@ -282,5 +315,44 @@
             }, 3000);
         }
     </script>
+
+    <!-- Apple-Inspired Mobile Navigation -->
+    <nav class="apple-bottom-nav">
+        <a href="../index.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-house"></i>
+            </div>
+            Home
+        </a>
+        <a href="../search/index.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-magnifying-glass"></i>
+            </div>
+            Browse
+        </a>
+        <a href="../listings/create.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-plus-circle"></i>
+            </div>
+            Sell
+        </a>
+        <a href="../dashboard/index.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-squares-four"></i>
+            </div>
+            Dashboard
+        </a>
+        <a href="dashboard.html" class="apple-nav-item active">
+            <div class="apple-nav-icon">
+                <i class="ph ph-shield-star"></i>
+            </div>
+            Admin
+        </a>
+    </nav>
+
+    <!-- Apple-Inspired Floating Action Button -->
+    <button class="apple-fab" onclick="window.location.href='../dashboard/index.html'" title="User Dashboard">
+        <i class="ph ph-user" style="font-size: 24px;"></i>
+    </button>
 </body>
 </html>
