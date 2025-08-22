@@ -40,6 +40,11 @@ try {
     $limit = $input['limit'] ?? 10;
     $userLocation = $input['userLocation'] ?? null;
     
+    // Debug logging
+    error_log("Search API - User Location: " . json_encode($userLocation));
+    error_log("Search API - Radius: " . $radius);
+    error_log("Search API - Total listings loaded: " . count($listings));
+    
     // Load listings
     $listingsData = $dataManager->readData('listings.json');
     $listings = $listingsData['data'] ?? [];
@@ -85,8 +90,14 @@ try {
             
             $listing['distance'] = $distance;
             
+            // Debug logging for distance calculation
+            error_log("Distance calculation - Listing: {$listing['title']}, Distance: {$distance}km, Radius: {$radius}km");
+            
             if ($distance > $radius) {
+                error_log("Listing excluded - distance {$distance}km > radius {$radius}km");
                 return false;
+            } else {
+                error_log("Listing included - distance {$distance}km <= radius {$radius}km");
             }
         }
         

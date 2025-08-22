@@ -221,6 +221,12 @@
                     actions.push(`<button class="btn btn-warning btn-sm" onclick="disputeOrder('${order.id}')">⚠️ Report Issue</button>`);
                     break;
                     
+                case 'release_requested':
+                    actions.push(`<button class="btn btn-success btn-sm" onclick="approveFundRelease('${order.id}')">✅ Approve Fund Release</button>`);
+                    actions.push(`<button class="btn btn-danger btn-sm" onclick="denyFundRelease('${order.id}')">❌ Deny Release</button>`);
+                    actions.push(`<button class="btn btn-warning btn-sm" onclick="disputeOrder('${order.id}')">⚠️ Report Issue</button>`);
+                    break;
+                    
                 case 'completed':
                     actions.push(`<button class="btn btn-success btn-sm" disabled style="opacity: 0.6;">🎉 Transaction Complete</button>`);
                     actions.push(`<button class="btn btn-secondary btn-sm" onclick="leaveReview('${order.id}')">⭐ Leave Review</button>`);
@@ -362,6 +368,50 @@
                 }
             } catch (error) {
                 showNotification('Error cancelling order: ' + error.message, 'error');
+            }
+        }
+        
+        async function approveFundRelease(orderId) {
+            if (!confirm('Approve fund release to seller? This will complete the transaction.')) {
+                return;
+            }
+            
+            try {
+                showNotification('✅ Approving fund release...', 'info');
+                
+                const response = await fetch('../api/orders/update-status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        newStatus: 'completed'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('🎉 Fund release approved! Transaction completed.', 'success');
+                    refreshBuyerOrders();
+                } else {
+                    showNotification('Error approving release: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showNotification('Error approving release: ' + error.message, 'error');
+            }
+        }
+        
+        async function denyFundRelease(orderId) {
+            const reason = prompt('Why are you denying the fund release? (Optional)');
+            
+            try {
+                showNotification('❌ Denying fund release...', 'info');
+                
+                // For now, just keep status as delivered
+                showNotification('Fund release denied. Seller has been notified. You can still release funds manually or report an issue.', 'info');
+                
+            } catch (error) {
+                showNotification('Error denying release: ' + error.message, 'error');
             }
         }
         

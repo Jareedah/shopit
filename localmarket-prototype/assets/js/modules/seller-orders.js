@@ -151,7 +151,12 @@ const SellerOrders = (function() {
                     break;
                     
                 case 'delivered':
-                    actions.push(`<button class="btn btn-success btn-sm" onclick="SellerOrders.releaseFunds('${order.id}')">💰 Release Funds</button>`);
+                    actions.push(`<button class="btn btn-primary btn-sm" onclick="SellerOrders.requestFundRelease('${order.id}')">💰 Request Fund Release</button>`);
+                    break;
+                    
+                case 'release_requested':
+                    actions.push(`<button class="btn btn-warning btn-sm" disabled style="opacity: 0.6;">⏰ Awaiting Buyer Approval</button>`);
+                    actions.push(`<button class="btn btn-secondary btn-sm" onclick="SellerOrders.contactBuyer('${order.id}')">💬 Contact Buyer</button>`);
                     break;
                     
                 case 'completed':
@@ -225,24 +230,24 @@ const SellerOrders = (function() {
             }
         },
         
-        async releaseFunds(orderId) {
-            if (!confirm('Release funds to complete this transaction? This action cannot be undone.')) {
+        async requestFundRelease(orderId) {
+            if (!confirm('Request fund release from buyer? This will notify the buyer to approve the release.')) {
                 return;
             }
             
             try {
-                showNotification('💰 Releasing funds...', 'info');
+                showNotification('💰 Requesting fund release...', 'info');
                 
-                const result = await this.updateOrderStatus(orderId, 'completed');
+                const result = await this.updateOrderStatus(orderId, 'release_requested');
                 
                 if (result.success) {
-                    showNotification('🎉 Funds released! Transaction completed successfully.', 'success');
+                    showNotification('📧 Fund release requested! Buyer has been notified to approve the release.', 'success');
                     await this.refreshOrders();
                 } else {
-                    showNotification('Error releasing funds: ' + result.message, 'error');
+                    showNotification('Error requesting fund release: ' + result.message, 'error');
                 }
             } catch (error) {
-                showNotification('Error releasing funds: ' + error.message, 'error');
+                showNotification('Error requesting fund release: ' + error.message, 'error');
             }
         },
         
