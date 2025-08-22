@@ -308,15 +308,20 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         orderId: orderId,
-                        newStatus: 'completed'
+                        newStatus: 'completed',
+                        escrowStatus: 'funds_released'
                     })
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    showNotification('🎉 Funds released! Transaction completed successfully.', 'success');
-                    refreshBuyerOrders();
+                    showNotification('💰 Money transferred to seller! Transaction completed successfully.', 'success');
+                    
+                    // Wait a moment for server update, then refresh
+                    setTimeout(() => {
+                        refreshBuyerOrders();
+                    }, 500);
                 } else {
                     showNotification('Error releasing funds: ' + result.message, 'error');
                 }
@@ -338,15 +343,20 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         orderId: orderId,
-                        newStatus: 'completed'
+                        newStatus: 'completed',
+                        escrowStatus: 'funds_released'
                     })
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    showNotification('🎉 Delivery confirmed and funds released! Transaction completed.', 'success');
-                    refreshBuyerOrders();
+                    showNotification('💰 Money transferred to seller! Delivery confirmed and transaction completed.', 'success');
+                    
+                    // Wait a moment for server update, then refresh
+                    setTimeout(() => {
+                        refreshBuyerOrders();
+                    }, 500);
                 } else {
                     showNotification('Error confirming delivery: ' + result.message, 'error');
                 }
@@ -407,7 +417,7 @@
                 console.log('Fund release approval result:', result);
                 
                 if (result.success) {
-                    showNotification('🎉 Fund release approved! Transaction completed.', 'success');
+                    showNotification('💰 Money transferred to seller! Transaction completed.', 'success');
                     
                     // Wait a moment for server update, then refresh
                     setTimeout(() => {
