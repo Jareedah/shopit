@@ -489,13 +489,67 @@ h4 { font-size: var(--apple-font-size-title3); }
   background-size: 200% 100%;
   animation: apple-shimmer 1.8s ease-in-out infinite;
   border-radius: var(--apple-radius-md);
-  height: 20px;
+  padding: var(--apple-spacing-xl);
   margin: var(--apple-spacing-md) 0;
+  text-align: center;
+  color: var(--apple-text-secondary);
+  font-family: var(--apple-font-family);
+  font-weight: 500;
+}
+
+.loading-state p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.loading-state .loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--apple-gray-light);
+  border-top: 2px solid var(--apple-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes apple-shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* Apple Skeleton Screens */
+.apple-skeleton {
+  background: linear-gradient(90deg, 
+    var(--apple-gray-light) 0%, 
+    rgba(242, 242, 247, 0.8) 50%, 
+    var(--apple-gray-light) 100%);
+  background-size: 200% 100%;
+  animation: apple-shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--apple-radius-md);
+}
+
+.apple-skeleton-text {
+  height: 16px;
+  margin: 8px 0;
+}
+
+.apple-skeleton-title {
+  height: 24px;
+  width: 60%;
+  margin: 12px 0;
+}
+
+.apple-skeleton-card {
+  height: 120px;
+  margin: 16px 0;
+}
+
+.apple-skeleton-button {
+  height: 44px;
+  width: 120px;
+  margin: 8px 0;
 }
 
 /* ===== APPLE-INSPIRED NOTIFICATIONS ===== */
