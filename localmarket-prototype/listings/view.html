@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listing Details - LocalMarket</title>
+    <title>Product Details - Shopit</title>
+    
+    <!-- Apple System Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SF Symbols Alternative - iOS-style icons -->
+    <link href="https://cdn.jsdelivr.net/npm/phosphor-icons@1.4.2/src/css/icons.min.css" rel="stylesheet">
+    
+    <!-- Original CSS (preserved) -->
     <link rel="stylesheet" href="../assets/css/base/reset.css">
     <link rel="stylesheet" href="../assets/css/base/variables.css">
     <link rel="stylesheet" href="../assets/css/base/typography.css">
@@ -12,11 +21,17 @@
     <link rel="stylesheet" href="../assets/css/components/forms.css">
     <link rel="stylesheet" href="../assets/css/components/cards.css">
     <link rel="stylesheet" href="../assets/css/pages/listing-detail.css">
+    
+    <!-- Apple-Inspired Theme Coating - LOADED LAST FOR PRIORITY -->
+    <link rel="stylesheet" href="../assets/css/themes/apple-inspired.css">
 </head>
 <body>
     <header class="header">
         <div class="container">
-            <h1 class="logo">LocalMarket</h1>
+            <h1 class="logo">
+                <i class="ph ph-shopping-bag" style="margin-right: 8px; vertical-align: middle;"></i>
+                Shopit
+            </h1>
             <nav class="navigation">
                 <a href="../dashboard/index.html" class="nav-link">Dashboard</a>
                 <a href="../search/index.html" class="nav-link">Search</a>
@@ -34,8 +49,11 @@
             </div>
             
             <div id="listingDetail" class="listing-detail hidden">
-                <div class="listing-header">
-                    <a href="../search/index.html" class="back-link">← Back to Search</a>
+                <div class="listing-header" style="background: var(--apple-surface-elevated); border-radius: var(--apple-radius-lg); box-shadow: var(--apple-shadow-medium); padding: 24px; margin-bottom: 24px;">
+                    <a href="../search/index.html" class="back-link" style="display: flex; align-items: center; gap: 8px; color: var(--apple-blue); text-decoration: none; font-weight: 500; margin-bottom: 16px;">
+                        <i class="ph ph-arrow-left"></i>
+                        Back to Search
+                    </a>
                     <h1 id="listingTitle"></h1>
                     <div class="listing-meta">
                         <span id="listingCategory" class="category-badge"></span>
@@ -380,5 +398,44 @@
             }, 3000);
         }
     </script>
+
+    <!-- Apple-Inspired Mobile Navigation -->
+    <nav class="apple-bottom-nav">
+        <a href="../index.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-house"></i>
+            </div>
+            Home
+        </a>
+        <a href="../search/index.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-magnifying-glass"></i>
+            </div>
+            Browse
+        </a>
+        <a href="create.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-plus-circle"></i>
+            </div>
+            Sell
+        </a>
+        <a href="../dashboard/index.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-squares-four"></i>
+            </div>
+            Dashboard
+        </a>
+        <a href="../auth/login.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-user"></i>
+            </div>
+            Account
+        </a>
+    </nav>
+
+    <!-- Apple-Inspired Floating Action Button -->
+    <button class="apple-fab" onclick="window.location.href='create.html'" title="Create Listing">
+        <i class="ph ph-plus" style="font-size: 24px;"></i>
+    </button>
 </body>
 </html>
