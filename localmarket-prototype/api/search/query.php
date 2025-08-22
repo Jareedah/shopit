@@ -77,8 +77,9 @@ try {
             return false;
         }
         
-        // Location filter
-        if ($userLocation && $radius > 0 && isset($listing['location'])) {
+        // Location filter - only apply if user has explicitly set location
+        if ($userLocation && $radius > 0 && isset($listing['location']) && 
+            isset($userLocation['explicit']) && $userLocation['explicit'] === true) {
             $distance = calculateDistance(
                 $userLocation['lat'], $userLocation['lng'],
                 $listing['location']['lat'] ?? 0,
@@ -90,6 +91,14 @@ try {
             if ($distance > $radius) {
                 return false;
             }
+        } else if ($userLocation && isset($listing['location'])) {
+            // Always calculate distance for display, but don't filter
+            $distance = calculateDistance(
+                $userLocation['lat'], $userLocation['lng'],
+                $listing['location']['lat'] ?? 0,
+                $listing['location']['lng'] ?? 0
+            );
+            $listing['distance'] = $distance;
         }
         
         return true;

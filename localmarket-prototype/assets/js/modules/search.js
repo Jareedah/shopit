@@ -18,7 +18,8 @@ const SearchEngine = (function() {
                 userLocation = { 
                     lat: 40.7128, 
                     lng: -74.0060, 
-                    address: 'New York, NY (default)' 
+                    address: 'New York, NY (default)',
+                    explicit: false  // Not explicitly set by user
                 };
                 
                 // Initialize map if Leaflet is available
@@ -256,7 +257,10 @@ const SearchEngine = (function() {
         // Update user location - WORKING VERSION
         updateUserLocation(location) {
             try {
-                userLocation = location;
+                userLocation = {
+                    ...location,
+                    explicit: true  // User explicitly set this location
+                };
                 console.log('User location updated:', location);
                 
                 // Update location display
