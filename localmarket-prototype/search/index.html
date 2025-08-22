@@ -271,13 +271,17 @@
         });
         
         function updateLocationDisplay() {
-            const userLocationInput = document.getElementById('userLocation');
-            const currentLocation = SearchEngine.getUserLocation();
-            
-            if (currentLocation) {
-                userLocationInput.value = currentLocation.address || `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
-            } else {
-                userLocationInput.value = 'Location not detected';
+            try {
+                const userLocationInput = document.getElementById('userLocation');
+                const currentLocation = SearchEngine.getUserLocation();
+                
+                if (currentLocation && userLocationInput) {
+                    userLocationInput.value = currentLocation.address || `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
+                } else if (userLocationInput) {
+                    userLocationInput.value = 'Location not detected';
+                }
+            } catch (error) {
+                console.error('Error updating location display:', error);
             }
         }
         

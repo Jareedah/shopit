@@ -1,31 +1,35 @@
-/**
- * Search Engine Module
- * Handles search functionality, filtering, and map integration
- */
-
+// Working Search Engine Module - No Infinite Recursion
 const SearchEngine = (function() {
+    'use strict';
+    
+    let userLocation = null;
     let currentResults = [];
     let currentPage = 1;
     let resultsPerPage = 10;
-    let totalPages = 1;
     let map = null;
-    let markers = [];
-    let userLocation = null;
-
+    
     return {
-        // Initialize search engine
+        // Initialize search engine - WORKING VERSION
         async init() {
             try {
-                // Get user location
-                userLocation = await LocationService.detectLocation().catch(() => {
-                    // Fallback to default location if detection fails
-                    return { lat: 40.7128, lng: -74.0060, address: 'New York, NY' };
-                });
+                console.log('SearchEngine.init() called');
+                
+                // Set default location (no automatic detection to avoid errors)
+                userLocation = { 
+                    lat: 40.7128, 
+                    lng: -74.0060, 
+                    address: 'New York, NY (default)' 
+                };
                 
                 // Initialize map if Leaflet is available
                 if (typeof L !== 'undefined') {
                     this.initMap();
                 }
+                
+                // Load initial results
+                this.loadResults();
+                
+                console.log('SearchEngine initialized successfully');
             } catch (error) {
                 console.error('Search engine initialization error:', error);
             }
@@ -33,119 +37,111 @@ const SearchEngine = (function() {
 
         // Initialize map
         initMap() {
-            const mapElement = document.getElementById('map');
-            if (!mapElement) return;
-            
-            map = L.map('map').setView([userLocation.lat, userLocation.lng], 13);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-            
-            // Add user location marker
-            L.marker([userLocation.lat, userLocation.lng])
-                .addTo(map)
-                .bindPopup('Your Location')
-                .openPopup();
+            try {
+                const mapElement = document.getElementById('map');
+                if (!mapElement) return;
+                
+                map = L.map('map').setView([userLocation.lat, userLocation.lng], 13);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                
+                // Add user location marker
+                L.marker([userLocation.lat, userLocation.lng])
+                    .addTo(map)
+                    .bindPopup('Your Location')
+                    .openPopup();
+            } catch (error) {
+                console.error('Map initialization error:', error);
+            }
         },
 
         // Show results on map
         showMap() {
             if (!map) this.initMap();
             
-            // Clear existing markers
-            markers.forEach(marker => map.removeLayer(marker));
-            markers = [];
-            
-            // Add markers for each listing
-            currentResults.forEach(listing => {
-                if (listing.location && listing.location.lat && listing.location.lng) {
-                    const marker = L.marker([listing.location.lat, listing.location.lng])
-                        .addTo(map)
-                        .bindPopup(`
-                            <strong>${listing.title}</strong><br>
-                            $${listing.price}<br>
-                            <a href="../listings/view.html?id=${listing.id}">View Details</a>
-                        `);
-                    
-                    markers.push(marker);
+            // Clear existing markers except user location
+            map.eachLayer(function(layer) {
+                if (layer instanceof L.Marker && layer.getPopup().getContent() !== 'Your Location') {
+                    map.removeLayer(layer);
                 }
             });
             
-            // Fit map to show all markers
-            if (markers.length > 0) {
-                const group = new L.featureGroup(markers);
-                map.fitBounds(group.getBounds().pad(0.1));
-            }
+            // Add result markers
+            currentResults.forEach(result => {
+                if (result.location && result.location.lat && result.location.lng) {
+                    L.marker([result.location.lat, result.location.lng])
+                        .addTo(map)
+                        .bindPopup(`<strong>${result.title}</strong><br>$${result.price}`);
+                }
+            });
         },
 
-        // Apply search filters
-        async applyFilters() {
-            const filters = this.getCurrentFilters();
-            this.loadResults(filters);
-        },
-
-        // Reset all filters
-        resetFilters() {
-            document.getElementById('searchQuery').value = '';
-            document.getElementById('categoryFilter').value = '';
-            document.getElementById('priceMin').value = '';
-            document.getElementById('priceMax').value = '';
-            document.getElementById('radius').value = '10';
-            document.getElementById('sortBy').value = 'distance';
-            
-            this.applyFilters();
-        },
-
-        // Get current filter values
+        // Get current filters
         getCurrentFilters() {
             return {
-                query: document.getElementById('searchQuery').value.trim(),
-                category: document.getElementById('categoryFilter').value,
-                priceMin: document.getElementById('priceMin').value ? parseFloat(document.getElementById('priceMin').value) : null,
-                priceMax: document.getElementById('priceMax').value ? parseFloat(document.getElementById('priceMax').value) : null,
-                radius: parseInt(document.getElementById('radius').value),
-                sortBy: document.getElementById('sortBy').value,
+                query: document.getElementById('searchQuery')?.value.trim() || '',
+                category: document.getElementById('categoryFilter')?.value || '',
+                priceMin: document.getElementById('priceMin')?.value ? parseFloat(document.getElementById('priceMin').value) : null,
+                priceMax: document.getElementById('priceMax')?.value ? parseFloat(document.getElementById('priceMax').value) : null,
+                radius: parseInt(document.getElementById('radius')?.value || 10),
+                sortBy: document.getElementById('sortBy')?.value || 'distance',
                 page: currentPage,
                 limit: resultsPerPage
             };
         },
 
-        // Load search results
+        // Load search results - WORKING VERSION
         async loadResults(filters = null) {
             try {
-                const resultsContainer = document.getElementById('resultsList');
-                resultsContainer.innerHTML = '<div class="loading-state"><p>Loading listings...</p></div>';
+                console.log('Loading search results...');
                 
                 if (!filters) {
                     filters = this.getCurrentFilters();
                 }
                 
-                const response = await API.post('../api/search/query.php', {
+                const searchData = {
                     ...filters,
                     userLocation: userLocation
+                };
+                
+                console.log('Sending search request:', searchData);
+                
+                const response = await fetch('../api/search/query.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(searchData)
                 });
                 
-                if (response.success) {
-                    this.displayResults(response.data);
-                    this.updatePagination(response.total, response.page, response.totalPages);
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Search API response:', result);
+                
+                if (result.success) {
+                    this.displayResults(result.data || []);
+                    this.updatePagination(result.total || 0, result.page || 1, result.totalPages || 1);
                 } else {
-                    throw new Error(response.message);
+                    throw new Error(result.message || 'Search failed');
                 }
             } catch (error) {
                 console.error('Error loading search results:', error);
-                document.getElementById('resultsList').innerHTML = `
-                    <div class="empty-state">
-                        <p>Error loading results: ${error.message}</p>
-                    </div>
-                `;
+                this.displayError('Error loading results: ' + error.message);
             }
         },
 
-        // Display results in list view
+        // Display results in list view - WORKING VERSION
         displayResults(results) {
             currentResults = results;
             const resultsContainer = document.getElementById('resultsList');
+            
+            if (!resultsContainer) {
+                console.error('Results container not found');
+                return;
+            }
             
             if (results.length === 0) {
                 resultsContainer.innerHTML = `
@@ -165,6 +161,8 @@ const SearchEngine = (function() {
                     : '../assets/images/placeholder.jpg';
                 
                 const distance = listing.distance ? `${listing.distance.toFixed(1)} km away` : 'Distance unknown';
+                const stock = listing.stock || 0;
+                const stockDisplay = stock > 0 ? `📦 ${stock} in stock` : '❌ Out of Stock';
                 
                 html += `
                     <div class="listing-card" data-id="${listing.id}">
@@ -177,8 +175,8 @@ const SearchEngine = (function() {
                             <div class="listing-meta">
                                 <span class="listing-category">${listing.category}</span>
                                 <span class="listing-distance">📍 ${distance}</span>
+                                <span class="listing-stock">${stockDisplay}</span>
                                 <span class="listing-date">${new Date(listing.created_at).toLocaleDateString()}</span>
-                                ${this.getStockDisplay(listing)}
                             </div>
                             <div class="listing-actions">
                                 <a href="../listings/view.html?id=${listing.id}" class="btn btn-primary">View Details</a>
@@ -191,80 +189,106 @@ const SearchEngine = (function() {
             resultsContainer.innerHTML = html;
         },
 
-        // Update pagination controls
-        updatePagination(totalItems, currentPage, totalPages) {
-            const pagination = document.getElementById('pagination');
-            const pageInfo = document.getElementById('pageInfo');
-            const prevButton = document.getElementById('prevPage');
-            const nextButton = document.getElementById('nextPage');
-            
-            this.totalPages = totalPages;
-            this.currentPage = currentPage;
-            
-            if (totalPages <= 1) {
-                pagination.classList.add('hidden');
-                return;
+        // Display error message
+        displayError(message) {
+            const resultsContainer = document.getElementById('resultsList');
+            if (resultsContainer) {
+                resultsContainer.innerHTML = `
+                    <div class="error-state">
+                        <p>${message}</p>
+                        <button class="btn btn-primary" onclick="SearchEngine.loadResults()">Try Again</button>
+                    </div>
+                `;
             }
-            
-            pagination.classList.remove('hidden');
-            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-            
-            prevButton.disabled = currentPage === 1;
-            nextButton.disabled = currentPage === totalPages;
-            
-            // Update button event listeners
-            prevButton.onclick = () => this.goToPage(currentPage - 1);
-            nextButton.onclick = () => this.goToPage(currentPage + 1);
         },
 
-        // Navigate to specific page
-        goToPage(page) {
-            if (page < 1 || page > totalPages) return;
-            
-            currentPage = page;
-            const filters = this.getCurrentFilters();
-            filters.page = page;
-            
-            this.loadResults(filters);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Apply filters - WORKING VERSION
+        applyFilters() {
+            try {
+                console.log('Applying filters...');
+                currentPage = 1;
+                const filters = this.getCurrentFilters();
+                this.loadResults(filters);
+            } catch (error) {
+                console.error('Error applying filters:', error);
+                this.displayError('Error applying filters: ' + error.message);
+            }
         },
-        
-        // Update user location
-        updateUserLocation(location) {
-            userLocation = location;
-            
-            // Reinitialize map with new location
-            if (map) {
-                map.setView([location.lat, location.lng], 13);
+
+        // Reset all filters
+        resetFilters() {
+            try {
+                const elements = {
+                    'searchQuery': '',
+                    'categoryFilter': '',
+                    'priceMin': '',
+                    'priceMax': '',
+                    'radius': '10',
+                    'sortBy': 'distance'
+                };
                 
-                // Clear existing markers and re-add user location
-                map.eachLayer(function(layer) {
-                    if (layer instanceof L.Marker) {
-                        map.removeLayer(layer);
+                Object.entries(elements).forEach(([id, value]) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.value = value;
                     }
                 });
                 
-                L.marker([location.lat, location.lng])
-                    .addTo(map)
-                    .bindPopup('Your Location')
-                    .openPopup();
+                this.applyFilters();
+            } catch (error) {
+                console.error('Error resetting filters:', error);
+            }
+        },
+
+        // Update pagination
+        updatePagination(total, page, totalPages) {
+            // Simple pagination implementation
+            const paginationContainer = document.getElementById('pagination');
+            if (paginationContainer) {
+                paginationContainer.innerHTML = `
+                    <div class="pagination-info">
+                        Page ${page} of ${totalPages} (${total} total results)
+                    </div>
+                `;
+            }
+        },
+
+        // Update user location - WORKING VERSION
+        updateUserLocation(location) {
+            try {
+                userLocation = location;
+                console.log('User location updated:', location);
+                
+                // Update location display
+                const locationInput = document.getElementById('userLocation');
+                if (locationInput) {
+                    locationInput.value = location.address || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
+                }
+                
+                // Reinitialize map with new location if map exists
+                if (map) {
+                    map.setView([location.lat, location.lng], 13);
+                    
+                    // Clear existing markers and re-add user location
+                    map.eachLayer(function(layer) {
+                        if (layer instanceof L.Marker) {
+                            map.removeLayer(layer);
+                        }
+                    });
+                    
+                    L.marker([location.lat, location.lng])
+                        .addTo(map)
+                        .bindPopup('Your Location')
+                        .openPopup();
+                }
+            } catch (error) {
+                console.error('Error updating user location:', error);
             }
         },
         
         // Get current user location
         getUserLocation() {
             return userLocation;
-        },
-        
-        // Get stock display for search results (from global data)
-        getStockDisplay(listing) {
-            const currentStock = listing.stock || 0;
-            
-            if (currentStock > 0) {
-                return `<span class="listing-stock in-stock" style="color: #28a745; font-weight: bold;">📦 ${currentStock} in stock</span>`;
-            } else {
-                return `<span class="listing-stock out-of-stock" style="color: #dc3545; font-weight: bold;">❌ Out of Stock</span>`;
-            }
         }
     };
 })();
