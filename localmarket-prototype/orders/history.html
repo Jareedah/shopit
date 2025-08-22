@@ -289,9 +289,15 @@
         }
         
         function refreshBuyerOrders() {
+            console.log('refreshBuyerOrders called');
             const user = Auth.getCurrentUser();
-            loadBuyerOrders(user.id);
-            showNotification('Order history refreshed!', 'success');
+            if (user) {
+                console.log('Reloading orders for user:', user.id);
+                loadBuyerOrders(user.id);
+                showNotification('Order history refreshed!', 'success');
+            } else {
+                console.error('No user found for refresh');
+            }
         }
         
         // WORKING buyer order functions
@@ -396,6 +402,8 @@
         }
         
         async function approveFundRelease(orderId) {
+            console.log('approveFundRelease called with orderId:', orderId);
+            
             if (!confirm('Approve fund release to seller? This will complete the transaction.')) {
                 return;
             }
@@ -417,13 +425,17 @@
                 console.log('Fund release approval result:', result);
                 
                 if (result.success) {
+                    console.log('Fund release approved successfully, showing success message');
                     showNotification('💰 Money transferred to seller! Transaction completed.', 'success');
                     
                     // Wait a moment for server update, then refresh
+                    console.log('Setting timeout for refresh...');
                     setTimeout(() => {
+                        console.log('Timeout fired, calling refresh...');
                         refreshBuyerOrders();
                     }, 500);
                 } else {
+                    console.error('Fund release approval failed:', result.message);
                     showNotification('Error approving release: ' + result.message, 'error');
                 }
             } catch (error) {
@@ -432,6 +444,8 @@
         }
         
         async function denyFundRelease(orderId) {
+            console.log('denyFundRelease called with orderId:', orderId);
+            
             const reason = prompt('Why are you denying the fund release? (Optional)');
             
             try {
@@ -448,15 +462,20 @@
                 });
                 
                 const result = await response.json();
+                console.log('Fund release denial result:', result);
                 
                 if (result.success) {
+                    console.log('Fund release denied successfully, showing message');
                     showNotification('❌ Fund release denied. Seller has been notified. You can still release funds manually or report an issue.', 'info');
                     
                     // Wait a moment for server update, then refresh
+                    console.log('Setting timeout for refresh after denial...');
                     setTimeout(() => {
+                        console.log('Timeout fired after denial, calling refresh...');
                         refreshBuyerOrders();
                     }, 500);
                 } else {
+                    console.error('Fund release denial failed:', result.message);
                     showNotification('Error denying release: ' + result.message, 'error');
                 }
                 
