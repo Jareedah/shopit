@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - LocalMarket</title>
+    <title>Join Shopit</title>
+    
+    <!-- Apple System Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SF Symbols Alternative - iOS-style icons -->
+    <link href="https://cdn.jsdelivr.net/npm/phosphor-icons@1.4.2/src/css/icons.min.css" rel="stylesheet">
+    
+    <!-- Original CSS (preserved) -->
     <link rel="stylesheet" href="../assets/css/base/reset.css">
     <link rel="stylesheet" href="../assets/css/base/variables.css">
     <link rel="stylesheet" href="../assets/css/base/typography.css">
@@ -80,11 +89,17 @@
             border-color: var(--success-color) !important;
         }
     </style>
+    
+    <!-- Apple-Inspired Theme Coating - LOADED LAST FOR PRIORITY -->
+    <link rel="stylesheet" href="../assets/css/themes/apple-inspired.css">
 </head>
 <body>
     <header class="header">
         <div class="container">
-            <h1 class="logo">LocalMarket</h1>
+            <h1 class="logo">
+                <i class="ph ph-shopping-bag" style="margin-right: 8px; vertical-align: middle;"></i>
+                Shopit
+            </h1>
             <nav class="navigation">
                 <a href="../index.html" class="nav-link">Home</a>
                 <a href="login.html" class="nav-link">Login</a>
@@ -96,8 +111,11 @@
         <div class="container">
             <div class="auth-container">
                 <div class="auth-card">
-                    <h2>Create an Account</h2>
-                    <p>Join LocalMarket to start buying and selling in your community</p>
+                    <div style="text-align: center; margin-bottom: 24px; color: var(--apple-blue); font-size: 48px;">
+                        <i class="ph ph-user-plus"></i>
+                    </div>
+                    <h2>Join Shopit</h2>
+                    <p>Create your account to start buying and selling in your community</p>
                     
                     <form id="registerForm" class="auth-form">
                         <div class="form-group">
@@ -145,7 +163,8 @@
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-full" id="registerButton">
-                            Create Account
+                            <i class="ph ph-user-plus" style="margin-right: 8px;"></i>
+                            <span class="btn-text">Create Account</span>
                         </button>
                     </form>
                     
@@ -378,5 +397,44 @@
             }
         });
     </script>
+
+    <!-- Apple-Inspired Mobile Navigation -->
+    <nav class="apple-bottom-nav">
+        <a href="../index.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-house"></i>
+            </div>
+            Home
+        </a>
+        <a href="../search/index.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-magnifying-glass"></i>
+            </div>
+            Browse
+        </a>
+        <a href="../listings/create.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-plus-circle"></i>
+            </div>
+            Sell
+        </a>
+        <a href="../dashboard/index.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-squares-four"></i>
+            </div>
+            Dashboard
+        </a>
+        <a href="register.html" class="apple-nav-item active">
+            <div class="apple-nav-icon">
+                <i class="ph ph-user-plus"></i>
+            </div>
+            Register
+        </a>
+    </nav>
+
+    <!-- Apple-Inspired Floating Action Button -->
+    <button class="apple-fab" onclick="window.location.href='../listings/create.html'" title="Create Listing">
+        <i class="ph ph-plus" style="font-size: 24px;"></i>
+    </button>
 </body>
 </html>
