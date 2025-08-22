@@ -365,6 +365,21 @@
                     throw new Error('Please fill in all required fields');
                 }
                 
+                // Parse location coordinates if provided in "lat, lng" format
+                let locationData = {
+                    address: location,
+                    lat: 0,
+                    lng: 0
+                };
+                
+                // Check if location is in "lat, lng" format
+                const coordMatch = location.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+                if (coordMatch) {
+                    locationData.lat = parseFloat(coordMatch[1]);
+                    locationData.lng = parseFloat(coordMatch[2]);
+                    console.log('Parsed coordinates:', locationData);
+                }
+
                 // Prepare data
                 const listingData = {
                     title: title,
@@ -376,11 +391,7 @@
                     delivery_time_hours: deliveryTime,
                     delivery_time_display: saleType === 'immediate' ? 'Instant' : `${deliveryTime} hours`,
                     tags: document.getElementById('tags').value.split(',').map(tag => tag.trim()).filter(tag => tag),
-                    location: {
-                        address: location,
-                        lat: 0,
-                        lng: 0
-                    },
+                    location: locationData,
                     sellerId: Auth.getCurrentUser().id
                 };
                 

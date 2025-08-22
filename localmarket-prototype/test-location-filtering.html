@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Location Filtering</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; }
+        input { margin: 5px; padding: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>🗺️ Test Location Filtering</h1>
+    
+    <div class="test-section">
+        <h2>Test Search with Location Filter</h2>
+        <div>
+            <label>User Location (lat, lng):</label><br>
+            <input type="text" id="testLat" placeholder="Latitude" value="55.6007">
+            <input type="text" id="testLng" placeholder="Longitude" value="12.9368">
+        </div>
+        <div>
+            <label>Search Radius (km):</label><br>
+            <input type="number" id="testRadius" value="10">
+        </div>
+        <div>
+            <button onclick="testLocationSearch()">Test Location Search</button>
+        </div>
+        <div id="searchResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Distance Calculation</h2>
+        <div>
+            <label>Point A (lat, lng):</label><br>
+            <input type="text" id="pointALat" value="55.6007">
+            <input type="text" id="pointALng" value="12.9368">
+        </div>
+        <div>
+            <label>Point B (lat, lng):</label><br>
+            <input type="text" id="pointBLat" value="55.6007">
+            <input type="text" id="pointBLng" value="12.9368">
+        </div>
+        <div>
+            <button onclick="testDistanceCalculation()">Calculate Distance</button>
+        </div>
+        <div id="distanceResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Current Listings</h2>
+        <button onclick="loadAllListings()">Load All Listings</button>
+        <div id="listingsResult"></div>
+    </div>
+
+    <script>
+        async function testLocationSearch() {
+            const result = document.getElementById('searchResult');
+            result.innerHTML = '<div>🔄 Testing location search...</div>';
+            
+            try {
+                const lat = parseFloat(document.getElementById('testLat').value);
+                const lng = parseFloat(document.getElementById('testLng').value);
+                const radius = parseInt(document.getElementById('testRadius').value);
+
+                const searchData = {
+                    query: '',
+                    category: '',
+                    priceMin: null,
+                    priceMax: null,
+                    radius: radius,
+                    sortBy: 'distance',
+                    sortOrder: 'asc',
+                    page: 1,
+                    limit: 50,
+                    userLocation: {
+                        lat: lat,
+                        lng: lng,
+                        explicit: true  // Explicitly set by user
+                    }
+                };
+
+                console.log('Sending search request:', searchData);
+
+                const response = await fetch('api/search/query.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(searchData)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    result.innerHTML = `
+                        <div class="success">
+                            ✅ Found ${data.listings.length} listings within ${radius}km<br>
+                            <strong>Results:</strong><br>
+                            ${data.listings.map(listing => 
+                                `• ${listing.title} - ${listing.location?.address || 'No address'} (Distance: ${listing.distance ? listing.distance.toFixed(2) + 'km' : 'Unknown'})`
+                            ).join('<br>')}
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `<div class="error">❌ Search failed: ${data.message}</div>`;
+                }
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                console.error('Search error:', error);
+            }
+        }
+
+        async function testDistanceCalculation() {
+            const result = document.getElementById('distanceResult');
+            
+            try {
+                const latA = parseFloat(document.getElementById('pointALat').value);
+                const lngA = parseFloat(document.getElementById('pointALng').value);
+                const latB = parseFloat(document.getElementById('pointBLat').value);
+                const lngB = parseFloat(document.getElementById('pointBLng').value);
+
+                // Haversine formula
+                const R = 6371; // Earth's radius in km
+                const dLat = (latB - latA) * Math.PI / 180;
+                const dLng = (lngB - lngA) * Math.PI / 180;
+                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                         Math.cos(latA * Math.PI / 180) * Math.cos(latB * Math.PI / 180) *
+                         Math.sin(dLng/2) * Math.sin(dLng/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                const distance = R * c;
+
+                result.innerHTML = `
+                    <div class="success">
+                        ✅ Distance calculated: ${distance.toFixed(2)} km<br>
+                        Point A: ${latA}, ${lngA}<br>
+                        Point B: ${latB}, ${lngB}
+                    </div>
+                `;
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function loadAllListings() {
+            const result = document.getElementById('listingsResult');
+            result.innerHTML = '<div>🔄 Loading all listings...</div>';
+            
+            try {
+                const response = await fetch('api/search/query.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: '',
+                        category: '',
+                        priceMin: null,
+                        priceMax: null,
+                        radius: 0,  // No radius filter
+                        sortBy: 'created_at',
+                        sortOrder: 'desc',
+                        page: 1,
+                        limit: 50,
+                        userLocation: {
+                            lat: 0,
+                            lng: 0,
+                            explicit: false  // Not explicitly set
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    result.innerHTML = `
+                        <div class="success">
+                            ✅ Found ${data.listings.length} total listings<br>
+                            <strong>All listings:</strong><br>
+                            ${data.listings.map(listing => 
+                                `• ${listing.title} - ${listing.location?.address || 'No address'} (${listing.location?.lat || 0}, ${listing.location?.lng || 0})`
+                            ).join('<br>')}
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `<div class="error">❌ Failed to load listings: ${data.message}</div>`;
+                }
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                console.error('Load error:', error);
+            }
+        }
+
+        // Auto-load listings on page load
+        window.onload = function() {
+            loadAllListings();
+        };
+    </script>
+</body>
+</html>

@@ -40,14 +40,11 @@ try {
     $limit = $input['limit'] ?? 10;
     $userLocation = $input['userLocation'] ?? null;
     
-    // Debug logging
-    error_log("Search API - User Location: " . json_encode($userLocation));
-    error_log("Search API - Radius: " . $radius);
-    error_log("Search API - Total listings loaded: " . count($listings));
-    
     // Load listings
     $listingsData = $dataManager->readData('listings.json');
     $listings = $listingsData['data'] ?? [];
+    
+    // Listings loaded successfully
     
     // Filter active listings only
     $listings = array_filter($listings, function($listing) {
@@ -80,8 +77,9 @@ try {
             return false;
         }
         
-        // Location filter
-        if ($userLocation && $radius > 0 && isset($listing['location'])) {
+        // Location filter - only apply if user has explicitly set location
+        if ($userLocation && $radius > 0 && isset($listing['location']) && 
+            isset($userLocation['explicit']) && $userLocation['explicit'] === true) {
             $distance = calculateDistance(
                 $userLocation['lat'], $userLocation['lng'],
                 $listing['location']['lat'] ?? 0,
@@ -90,15 +88,17 @@ try {
             
             $listing['distance'] = $distance;
             
-            // Debug logging for distance calculation
-            error_log("Distance calculation - Listing: {$listing['title']}, Distance: {$distance}km, Radius: {$radius}km");
-            
             if ($distance > $radius) {
-                error_log("Listing excluded - distance {$distance}km > radius {$radius}km");
                 return false;
-            } else {
-                error_log("Listing included - distance {$distance}km <= radius {$radius}km");
             }
+        } else if ($userLocation && isset($listing['location'])) {
+            // Always calculate distance for display, but don't filter
+            $distance = calculateDistance(
+                $userLocation['lat'], $userLocation['lng'],
+                $listing['location']['lat'] ?? 0,
+                $listing['location']['lng'] ?? 0
+            );
+            $listing['distance'] = $distance;
         }
         
         return true;
