@@ -145,6 +145,7 @@ class Validator {
         $this->required($data['description'] ?? '', 'description');
         $this->required($data['category'] ?? '', 'category');
         $this->required($data['price'] ?? '', 'price');
+        $this->required($data['stock'] ?? '', 'stock');
         
         // Field validation
         if (!empty($data['title'])) {
@@ -162,8 +163,24 @@ class Validator {
             }
         }
         
+        // Stock validation
+        if (!empty($data['stock'])) {
+            $this->numeric($data['stock'], 'stock');
+            if ($this->numeric($data['stock'], 'stock')) {
+                $this->range($data['stock'], 1, 9999, 'stock');
+            }
+        }
+        
+        // Sale type validation
+        if (!empty($data['sale_type'])) {
+            $validSaleTypes = ['immediate', 'delivery_based'];
+            if (!in_array($data['sale_type'], $validSaleTypes)) {
+                $this->addError('sale_type', 'Invalid sale type selected');
+            }
+        }
+        
         // Category validation
-        $validCategories = ['electronics', 'clothing', 'home', 'vehicles', 'services', 'other'];
+        $validCategories = ['electronics', 'clothing', 'home', 'vehicles', 'services', 'furniture', 'other'];
         if (!empty($data['category']) && !in_array($data['category'], $validCategories)) {
             $this->addError('category', 'Invalid category selected');
         }
