@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Listings - LocalMarket</title>
+    <title>Browse Marketplace - Shopit</title>
+    
+    <!-- Apple System Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SF Symbols Alternative - iOS-style icons -->
+    <link href="https://cdn.jsdelivr.net/npm/phosphor-icons@1.4.2/src/css/icons.min.css" rel="stylesheet">
+    
+    <!-- Original CSS (preserved) -->
     <link rel="stylesheet" href="../assets/css/base/reset.css">
     <link rel="stylesheet" href="../assets/css/base/variables.css">
     <link rel="stylesheet" href="../assets/css/base/typography.css">
@@ -13,11 +22,17 @@
     <link rel="stylesheet" href="../assets/css/components/cards.css">
     <link rel="stylesheet" href="../assets/css/pages/search.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+    
+    <!-- Apple-Inspired Theme Coating - LOADED LAST FOR PRIORITY -->
+    <link rel="stylesheet" href="../assets/css/themes/apple-inspired.css">
 </head>
 <body>
     <header class="header">
         <div class="container">
-            <h1 class="logo">LocalMarket</h1>
+            <h1 class="logo">
+                <i class="ph ph-shopping-bag" style="margin-right: 8px; vertical-align: middle;"></i>
+                Shopit
+            </h1>
             <nav class="navigation">
                 <a href="../dashboard/index.html" class="nav-link">Dashboard</a>
                 <a href="../index.html" class="nav-link">Home</a>
@@ -29,9 +44,12 @@
 
     <main class="main-content">
         <div class="container">
-            <div class="search-header">
-                <h2>Find Products & Services</h2>
-                <p>Discover amazing local offerings near you</p>
+            <div class="search-header" style="text-align: center; padding: 40px 0; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-radius: var(--apple-radius-lg); margin-bottom: 32px; box-shadow: var(--apple-shadow-medium);">
+                <div style="color: var(--apple-blue); font-size: 48px; margin-bottom: 16px;">
+                    <i class="ph ph-magnifying-glass"></i>
+                </div>
+                <h2 class="text-gradient-apple" style="font-size: var(--apple-font-size-title1); margin-bottom: 8px;">Discover Amazing Products</h2>
+                <p style="color: var(--apple-text-secondary); font-size: var(--apple-font-size-body);">Find exactly what you're looking for in your local marketplace</p>
             </div>
 
             <div class="search-interface">
@@ -40,12 +58,18 @@
                         <h3>Filters</h3>
                         
                         <div class="form-group">
-                            <label for="searchQuery">Search</label>
-                            <input type="text" id="searchQuery" placeholder="What are you looking for?">
+                            <label for="searchQuery">
+                                <i class="ph ph-magnifying-glass" style="margin-right: 8px; color: var(--apple-blue);"></i>
+                                Search
+                            </label>
+                            <input type="text" id="searchQuery" placeholder="What are you looking for?" style="padding-left: 16px;">
                         </div>
 
                         <div class="form-group">
-                            <label for="categoryFilter">Category</label>
+                            <label for="categoryFilter">
+                                <i class="ph ph-tag" style="margin-right: 8px; color: var(--apple-green);"></i>
+                                Category
+                            </label>
                             <select id="categoryFilter">
                                 <option value="">All Categories</option>
                                 <option value="electronics">Electronics</option>
@@ -58,7 +82,10 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="priceRange">Price Range</label>
+                            <label for="priceRange">
+                                <i class="ph ph-currency-dollar" style="margin-right: 8px; color: var(--apple-orange);"></i>
+                                Price Range
+                            </label>
                             <div class="price-range">
                                 <input type="number" id="priceMin" placeholder="Min" min="0">
                                 <span>to</span>
@@ -67,7 +94,10 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="radius">Distance (km)</label>
+                            <label for="radius">
+                                <i class="ph ph-map-pin" style="margin-right: 8px; color: var(--apple-red);"></i>
+                                Distance (km)
+                            </label>
                             <select id="radius">
                                 <option value="5">5 km</option>
                                 <option value="10" selected>10 km</option>
@@ -93,17 +123,32 @@
                             </select>
                         </div>
 
-                        <button id="applyFilters" class="btn btn-primary">Apply Filters</button>
-                        <button id="resetFilters" class="btn btn-secondary">Reset</button>
+                        <button id="applyFilters" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px;">
+                            <i class="ph ph-funnel"></i>
+                            Apply Filters
+                        </button>
+                        <button id="resetFilters" class="btn btn-secondary" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <i class="ph ph-arrow-clockwise"></i>
+                            Reset
+                        </button>
                     </div>
                 </div>
 
                 <div class="search-results">
-                    <div class="results-header">
-                        <h3>Results</h3>
-                        <div class="view-toggle">
-                            <button id="listView" class="btn btn-secondary active">List</button>
-                            <button id="mapView" class="btn btn-secondary">Map</button>
+                    <div class="results-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 20px; background: var(--apple-surface-elevated); border-radius: var(--apple-radius-lg); box-shadow: var(--apple-shadow-medium);">
+                        <h3 style="color: var(--apple-text-primary); font-size: var(--apple-font-size-headline); margin: 0;">
+                            <i class="ph ph-list" style="margin-right: 8px; color: var(--apple-blue);"></i>
+                            Results
+                        </h3>
+                        <div class="view-toggle" style="display: flex; gap: 8px;">
+                            <button id="listView" class="btn btn-secondary active" style="display: flex; align-items: center; gap: 6px;">
+                                <i class="ph ph-list"></i>
+                                List
+                            </button>
+                            <button id="mapView" class="btn btn-secondary" style="display: flex; align-items: center; gap: 6px;">
+                                <i class="ph ph-map-trifold"></i>
+                                Map
+                            </button>
                         </div>
                     </div>
 
@@ -126,6 +171,45 @@
             </div>
         </div>
     </main>
+
+    <!-- Apple-Inspired Mobile Navigation -->
+    <nav class="apple-bottom-nav">
+        <a href="../index.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-house"></i>
+            </div>
+            Home
+        </a>
+        <a href="index.html" class="apple-nav-item active">
+            <div class="apple-nav-icon">
+                <i class="ph ph-magnifying-glass"></i>
+            </div>
+            Browse
+        </a>
+        <a href="../listings/create.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-plus-circle"></i>
+            </div>
+            Sell
+        </a>
+        <a href="../dashboard/index.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-squares-four"></i>
+            </div>
+            Dashboard
+        </a>
+        <a href="../auth/login.html" class="apple-nav-item">
+            <div class="apple-nav-icon">
+                <i class="ph ph-user"></i>
+            </div>
+            Account
+        </a>
+    </nav>
+
+    <!-- Apple-Inspired Floating Action Button -->
+    <button class="apple-fab" onclick="window.location.href='../listings/create.html'" title="Create Listing">
+        <i class="ph ph-plus" style="font-size: 24px;"></i>
+    </button>
 
     <div id="notification" class="notification hidden"></div>
 
