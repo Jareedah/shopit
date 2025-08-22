@@ -154,7 +154,7 @@
                                 <span class="status-badge" style="background-color: ${statusColor}; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem;">
                                     ${formatOrderStatus(order.status)}
                                 </span>
-                                ${EscrowPlayacting ? EscrowPlayacting.createStatusBadge(escrowStatus) : ''}
+                                ${getBuyerEscrowBadge(order)}
                             </div>
                         </div>
                         
@@ -247,11 +247,25 @@
                 'processing': '#8b5cf6',
                 'shipped': '#06b6d4',
                 'delivered': '#10b981',
+                'release_requested': '#f59e0b',
                 'completed': '#059669',
                 'cancelled': '#6b7280',
                 'disputed': '#dc2626'
             };
             return colors[status] || '#6b7280';
+        }
+
+        function getBuyerEscrowBadge(order) {
+            if (order.status === 'completed' || order.escrow_status === 'funds_released') {
+                return `<span class="escrow-badge" style="background: #059669; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; margin-top: 0.25rem; display: block;">
+                    🎉 Transaction Complete
+                </span>`;
+            } else if (order.escrow_status === 'funds_held') {
+                return `<span class="escrow-badge" style="background: #0891b2; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; margin-top: 0.25rem; display: block;">
+                    🔒 Payment Secured
+                </span>`;
+            }
+            return '';
         }
         
         function formatOrderStatus(status) {
@@ -384,15 +398,21 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         orderId: orderId,
-                        newStatus: 'completed'
+                        newStatus: 'completed',
+                        escrowStatus: 'funds_released'
                     })
                 });
                 
                 const result = await response.json();
+                console.log('Fund release approval result:', result);
                 
                 if (result.success) {
                     showNotification('🎉 Fund release approved! Transaction completed.', 'success');
-                    refreshBuyerOrders();
+                    
+                    // Wait a moment for server update, then refresh
+                    setTimeout(() => {
+                        refreshBuyerOrders();
+                    }, 500);
                 } else {
                     showNotification('Error approving release: ' + result.message, 'error');
                 }

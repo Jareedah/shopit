@@ -89,8 +89,8 @@ const SellerOrders = (function() {
                                 <span class="status-badge" style="background: ${statusColor}; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">
                                     ${this.formatStatus(order.status)}
                                 </span>
-                                <span class="escrow-badge" style="background: #059669; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; margin-top: 0.25rem; display: block;">
-                                    🔒 Escrow Secured
+                                <span class="escrow-badge" style="background: ${this.getEscrowBadgeColor(order)}; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; margin-top: 0.25rem; display: block;">
+                                    ${this.getEscrowBadgeText(order)}
                                 </span>
                             </div>
                         </div>
@@ -346,6 +346,20 @@ const SellerOrders = (function() {
                 'cancelled': 'Cancelled'
             };
             return statusMap[status] || status;
+        },
+
+        getEscrowBadgeColor(order) {
+            if (order.escrow_status === 'funds_released' || order.status === 'completed') {
+                return '#059669'; // Green for released funds
+            }
+            return '#0891b2'; // Blue for secured funds
+        },
+
+        getEscrowBadgeText(order) {
+            if (order.escrow_status === 'funds_released' || order.status === 'completed') {
+                return '💰 Funds Released';
+            }
+            return '🔒 Escrow Secured';
         },
         
         getStatusColor(status) {
