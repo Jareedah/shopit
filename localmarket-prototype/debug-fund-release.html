@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Fund Release</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; }
+        input { margin: 5px; padding: 5px; width: 200px; }
+        .order-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug Fund Release</h1>
+    
+    <div class="test-section">
+        <h2>Test Authentication</h2>
+        <button onclick="testAuth()">Check Auth Status</button>
+        <div id="authResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Load Current Orders</h2>
+        <button onclick="loadOrders()">Load My Orders</button>
+        <div id="ordersResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Fund Release API</h2>
+        <div>
+            <label>Order ID:</label><br>
+            <input type="text" id="testOrderId" placeholder="Enter order ID">
+        </div>
+        <div>
+            <button onclick="testApproveFundRelease()">Test Approve Fund Release</button>
+            <button onclick="testDenyFundRelease()">Test Deny Fund Release</button>
+        </div>
+        <div id="apiResult"></div>
+    </div>
+
+    <script src="assets/js/modules/auth.js"></script>
+    <script>
+        async function testAuth() {
+            const result = document.getElementById('authResult');
+            try {
+                const user = Auth.getCurrentUser();
+                if (user) {
+                    result.innerHTML = `<div class="success">✅ Authenticated as: ${user.username} (ID: ${user.id})</div>`;
+                } else {
+                    result.innerHTML = `<div class="error">❌ Not authenticated. Please login first.</div>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Auth error: ${error.message}</div>`;
+            }
+        }
+
+        async function loadOrders() {
+            const result = document.getElementById('ordersResult');
+            result.innerHTML = '<div>🔄 Loading orders...</div>';
+            
+            try {
+                const user = Auth.getCurrentUser();
+                if (!user) {
+                    throw new Error('Not authenticated');
+                }
+
+                const response = await fetch('api/orders/buyer-orders.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        buyerId: user.id
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    let ordersHtml = `<div class="success">✅ Found ${data.orders.length} orders</div>`;
+                    
+                    data.orders.forEach(order => {
+                        ordersHtml += `
+                            <div class="order-card">
+                                <strong>Order ID:</strong> ${order.id}<br>
+                                <strong>Item:</strong> ${order.listingTitle}<br>
+                                <strong>Status:</strong> ${order.status}<br>
+                                <strong>Escrow Status:</strong> ${order.escrow_status || 'N/A'}<br>
+                                <strong>Created:</strong> ${order.created_at}<br>
+                                ${order.status === 'release_requested' ? 
+                                    `<button onclick="testSpecificApprove('${order.id}')" style="background: green; color: white; padding: 5px 10px; border: none; margin-top: 5px;">✅ Test Approve</button>
+                                     <button onclick="testSpecificDeny('${order.id}')" style="background: red; color: white; padding: 5px 10px; border: none; margin-top: 5px;">❌ Test Deny</button>` 
+                                    : ''
+                                }
+                            </div>
+                        `;
+                    });
+                    
+                    result.innerHTML = ordersHtml;
+                } else {
+                    result.innerHTML = `<div class="error">❌ Failed to load orders: ${data.message}</div>`;
+                }
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                console.error('Load orders error:', error);
+            }
+        }
+
+        async function testApproveFundRelease() {
+            const orderId = document.getElementById('testOrderId').value.trim();
+            if (!orderId) {
+                alert('Please enter an order ID');
+                return;
+            }
+            
+            const result = document.getElementById('apiResult');
+            result.innerHTML = '<div>🔄 Testing approve fund release...</div>';
+            
+            try {
+                console.log('Testing approve fund release for order:', orderId);
+                
+                const response = await fetch('api/orders/update-status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        newStatus: 'completed',
+                        escrowStatus: 'funds_released'
+                    })
+                });
+
+                const data = await response.json();
+                console.log('API Response:', data);
+                
+                if (data.success) {
+                    result.innerHTML = `<div class="success">✅ Fund release approved successfully!<br>Order: ${data.orderId}<br>Status: ${data.newStatus}<br>Escrow: ${data.escrowStatus}</div>`;
+                } else {
+                    result.innerHTML = `<div class="error">❌ API Error: ${data.message}</div>`;
+                }
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                console.error('API error:', error);
+            }
+        }
+
+        async function testDenyFundRelease() {
+            const orderId = document.getElementById('testOrderId').value.trim();
+            if (!orderId) {
+                alert('Please enter an order ID');
+                return;
+            }
+            
+            const result = document.getElementById('apiResult');
+            result.innerHTML = '<div>🔄 Testing deny fund release...</div>';
+            
+            try {
+                console.log('Testing deny fund release for order:', orderId);
+                
+                const response = await fetch('api/orders/update-status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        newStatus: 'delivered',
+                        escrowStatus: 'funds_held'
+                    })
+                });
+
+                const data = await response.json();
+                console.log('API Response:', data);
+                
+                if (data.success) {
+                    result.innerHTML = `<div class="success">✅ Fund release denied successfully!<br>Order: ${data.orderId}<br>Status: ${data.newStatus}<br>Escrow: ${data.escrowStatus}</div>`;
+                } else {
+                    result.innerHTML = `<div class="error">❌ API Error: ${data.message}</div>`;
+                }
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                console.error('API error:', error);
+            }
+        }
+
+        async function testSpecificApprove(orderId) {
+            document.getElementById('testOrderId').value = orderId;
+            await testApproveFundRelease();
+        }
+
+        async function testSpecificDeny(orderId) {
+            document.getElementById('testOrderId').value = orderId;
+            await testDenyFundRelease();
+        }
+
+        // Auto-test auth on page load
+        window.onload = function() {
+            testAuth();
+        };
+    </script>
+</body>
+</html>

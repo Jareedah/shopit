@@ -437,8 +437,28 @@
             try {
                 showNotification('❌ Denying fund release...', 'info');
                 
-                // For now, just keep status as delivered
-                showNotification('Fund release denied. Seller has been notified. You can still release funds manually or report an issue.', 'info');
+                const response = await fetch('../api/orders/update-status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        newStatus: 'delivered',  // Go back to delivered status
+                        escrowStatus: 'funds_held'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('❌ Fund release denied. Seller has been notified. You can still release funds manually or report an issue.', 'info');
+                    
+                    // Wait a moment for server update, then refresh
+                    setTimeout(() => {
+                        refreshBuyerOrders();
+                    }, 500);
+                } else {
+                    showNotification('Error denying release: ' + result.message, 'error');
+                }
                 
             } catch (error) {
                 showNotification('Error denying release: ' + error.message, 'error');
