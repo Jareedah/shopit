@@ -18,7 +18,7 @@ const Checkout = (function() {
                 const response = await API.post('../api/listings/get.php', { id: listingId });
                 
                 if (response.success) {
-                    currentListing = response.listing;
+                    currentListing = response.data;
                     this.showReviewStep();
                 } else {
                     throw new Error(response.message);

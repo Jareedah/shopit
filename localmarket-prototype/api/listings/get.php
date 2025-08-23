@@ -59,7 +59,7 @@ try {
     
     echo json_encode([
         'success' => true,
-        'listing' => $listing,
+        'data' => $listing,
         'message' => 'Listing retrieved successfully'
     ]);
     

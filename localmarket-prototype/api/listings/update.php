@@ -4,6 +4,7 @@ require_once '../core/DataManager.php';
 require_once '../core/Auth.php';
 require_once '../core/Validator.php';
 require_once '../core/Logger.php';
+require_once '../core/UploadHelper.php';
 
 session_start();
 header('Content-Type: application/json');
@@ -19,6 +20,7 @@ try {
     $auth = new Auth();
     $dataManager = new DataManager();
     $validator = new Validator();
+    $uploadHelper = new UploadHelper();
     $logger = new Logger();
     
     // Check authentication
@@ -72,7 +74,7 @@ try {
     // Process uploaded images if any
     $imagePaths = $currentListing['images'] ?? [];
     if (!empty($_FILES['images'])) {
-        $newImages = processImages($_FILES['images']);
+        $newImages = $uploadHelper->processImages($_FILES['images'], false); // Non-strict mode for updates
         $imagePaths = array_merge($imagePaths, $newImages);
     }
     
@@ -107,43 +109,5 @@ try {
     ]);
 }
 
-// Process uploaded images (same as create.php)
-function processImages($images) {
-    $uploadDir = __DIR__ . '/../../uploads/';
-    $uploadedPaths = [];
-    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-    $maxSize = 5 * 1024 * 1024; // 5MB
-    
-    for ($i = 0; $i < count($images['name']); $i++) {
-        if ($images['error'][$i] !== UPLOAD_ERR_OK) {
-            continue; // Skip files with errors
-        }
-        
-        // Validate file type
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mimeType = finfo_file($finfo, $images['tmp_name'][$i]);
-        finfo_close($finfo);
-        
-        if (!in_array($mimeType, $allowedTypes)) {
-            continue; // Skip invalid file types
-        }
-        
-        // Validate file size
-        if ($images['size'][$i] > $maxSize) {
-            continue; // Skip files too large
-        }
-        
-        // Generate unique filename
-        $extension = pathinfo($images['name'][$i], PATHINFO_EXTENSION);
-        $filename = uniqid('img_') . '.' . $extension;
-        $filepath = $uploadDir . $filename;
-        
-        // Move uploaded file
-        if (move_uploaded_file($images['tmp_name'][$i], $filepath)) {
-            $uploadedPaths[] = $filename;
-        }
-    }
-    
-    return $uploadedPaths;
-}
+
 ?>

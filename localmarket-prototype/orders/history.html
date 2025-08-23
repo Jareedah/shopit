@@ -409,14 +409,15 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         orderId: orderId,
-                        newStatus: 'completed'
+                        newStatus: 'completed',
+                        escrowStatus: 'funds_released'
                     })
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    showNotification('🎉 Fund release approved! Transaction completed.', 'success');
+                    showNotification('💰 Fund release approved! Money transferred to seller. Transaction completed.', 'success');
                     refreshBuyerOrders();
                 } else {
                     showNotification('Error approving release: ' + result.message, 'error');
@@ -432,8 +433,25 @@
             try {
                 showNotification('❌ Denying fund release...', 'info');
                 
-                // For now, just keep status as delivered
-                showNotification('Fund release denied. Seller has been notified. You can still release funds manually or report an issue.', 'info');
+                const response = await fetch('../api/orders/update-status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        newStatus: 'delivered',
+                        escrowStatus: 'funds_held',
+                        denyReason: reason || 'No reason provided'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('❌ Fund release denied. Order status reverted to delivered. Seller has been notified.', 'warning');
+                    refreshBuyerOrders();
+                } else {
+                    showNotification('Error denying release: ' + result.message, 'error');
+                }
                 
             } catch (error) {
                 showNotification('Error denying release: ' + error.message, 'error');

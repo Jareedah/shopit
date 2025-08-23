@@ -63,6 +63,17 @@ try {
             }
             $order['updated_at'] = date('c');
             
+            // Add completion timestamp when order is completed
+            if ($newStatus === 'completed') {
+                $order['completed_at'] = date('c');
+            }
+            
+            // Store deny reason if provided
+            if (isset($input['denyReason'])) {
+                $order['deny_reason'] = $input['denyReason'];
+                $order['denied_at'] = date('c');
+            }
+            
             $updated = true;
             $logger->log("Order status updated: {$orderId} → {$newStatus}" . ($escrowStatus ? " (escrow: {$escrowStatus})" : ""));
             break;

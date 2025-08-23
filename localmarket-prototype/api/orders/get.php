@@ -53,7 +53,7 @@ try {
     
     echo json_encode([
         'success' => true,
-        'order' => $order,
+        'data' => $order,
         'message' => 'Order retrieved successfully'
     ]);
     

@@ -167,7 +167,11 @@
                             <i class="ph ph-chart-line-up"></i>
                         </div>
                         <h3 style="color: var(--apple-text-primary); font-size: var(--apple-font-size-title2); margin-bottom: 8px;">System Analytics</h3>
-                        <p style="color: var(--apple-text-secondary); font-size: var(--apple-font-size-body); margin-bottom: 20px;">Advanced insights and reporting tools</p>
+                        <p style="color: var(--apple-text-secondary); font-size: var(--apple-font-size-body); margin-bottom: 8px;">Advanced insights and reporting tools</p>
+                        <p style="color: var(--apple-text-tertiary); font-size: 13px; margin-bottom: 20px;">
+                            <i class="ph ph-clock" style="margin-right: 4px;"></i>
+                            Last updated: <span id="analyticsTimestamp">Loading...</span>
+                        </p>
                         <div class="date-filter">
                             <select id="analyticsRange" style="border-radius: var(--apple-radius-md); border: 1px solid rgba(0,0,0,0.1); padding: 8px 12px; font-family: var(--apple-font-family);">
                                 <option value="7">Last 7 days</option>
@@ -345,6 +349,90 @@
             setTimeout(() => {
                 notification.className = 'notification hidden';
             }, 3000);
+        }
+
+        // Update analytics timestamp
+        function updateAnalyticsTimestamp() {
+            const timestampElement = document.getElementById('analyticsTimestamp');
+            if (timestampElement) {
+                const now = new Date();
+                timestampElement.textContent = now.toLocaleString();
+            }
+        }
+
+        // Initialize timestamp when analytics tab is shown
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAnalyticsTimestamp();
+            
+            // Update timestamp when analytics tab is clicked
+            const analyticsTabBtn = document.querySelector('[onclick="showTab(\'analytics\')"]');
+            if (analyticsTabBtn) {
+                analyticsTabBtn.addEventListener('click', updateAnalyticsTimestamp);
+            }
+
+            // Wire up maintenance buttons
+            const backupBtn = document.getElementById('backupData');
+            if (backupBtn) {
+                backupBtn.addEventListener('click', createBackup);
+            }
+
+            const clearCacheBtn = document.getElementById('clearCache');
+            if (clearCacheBtn) {
+                clearCacheBtn.addEventListener('click', clearCache);
+            }
+
+            const rebuildIndexBtn = document.getElementById('rebuildIndex');
+            if (rebuildIndexBtn) {
+                rebuildIndexBtn.addEventListener('click', rebuildIndex);
+            }
+
+            const exportDataBtn = document.getElementById('exportData');
+            if (exportDataBtn) {
+                exportDataBtn.addEventListener('click', exportData);
+            }
+        });
+
+        // Maintenance functions
+        async function createBackup() {
+            try {
+                showNotification('Creating backup...', 'info');
+                
+                const response = await fetch('../api/admin/backup.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `shopit-backup-${new Date().toISOString().split('T')[0]}.zip`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showNotification('Backup created and downloaded successfully!', 'success');
+                } else {
+                    throw new Error('Backup failed');
+                }
+            } catch (error) {
+                showNotification('Error creating backup: ' + error.message, 'error');
+            }
+        }
+
+        function clearCache() {
+            showNotification('Cache clearing feature coming soon...', 'info');
+        }
+
+        function rebuildIndex() {
+            showNotification('Search index rebuilding feature coming soon...', 'info');
+        }
+
+        function exportData() {
+            showNotification('Data export feature coming soon...', 'info');
         }
     </script>
 

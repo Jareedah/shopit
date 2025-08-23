@@ -168,7 +168,7 @@
                 const response = await API.post('../api/listings/get.php', { id: listingId });
                 
                 if (response.success) {
-                    displayListingDetails(response.listing);
+                    displayListingDetails(response.data);
                 } else {
                     throw new Error(response.message);
                 }

@@ -3,6 +3,7 @@
 require_once '../core/DataManager.php';
 require_once '../core/Auth.php';
 require_once '../core/Logger.php';
+require_once '../core/UploadHelper.php';
 
 session_start();
 header('Content-Type: application/json');
@@ -108,14 +109,12 @@ try {
     
     $dataManager->writeData('listings.json', $listingsData);
     
-    // Delete associated images
+    // Delete associated images using UploadHelper
     if (!empty($listingToDelete['images'])) {
-        $uploadDir = __DIR__ . '/../../uploads/';
-        foreach ($listingToDelete['images'] as $image) {
-            $imagePath = $uploadDir . $image;
-            if (file_exists($imagePath)) {
-                unlink($imagePath);
-            }
+        $uploadHelper = new UploadHelper();
+        $deleteResults = $uploadHelper->deleteImages($listingToDelete['images']);
+        if (!empty($deleteResults['failed'])) {
+            $logger->log("Some images failed to delete: " . implode(', ', $deleteResults['failed']), 'WARNING');
         }
     }
     

@@ -210,7 +210,7 @@
                 const response = await API.post('../api/listings/get.php', { id: id });
                 
                 if (response.success) {
-                    currentListing = response.listing;
+                    currentListing = response.data;
                     
                     // Check if user owns this listing
                     const user = Auth.getCurrentUser();

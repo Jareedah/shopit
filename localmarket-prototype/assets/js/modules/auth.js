@@ -156,10 +156,27 @@ const Auth = (function() {
         async logout() {
             try {
                 // Call logout endpoint
-                await API.post('../api/auth/logout.php');
+                const response = await API.post('../api/auth/logout.php');
+                
+                // Clear local session
+                const wasLoggedIn = !!currentUser;
+                clearStoredSession();
+                
+                if (wasLoggedIn) {
+                    notifyAuthListeners('logout', null);
+                }
+                
+                // Handle redirect from API response
+                if (response.redirect) {
+                    window.location.href = response.redirect;
+                } else {
+                    // Fallback redirect to login page
+                    window.location.href = '../auth/login.html';
+                }
+                
             } catch (error) {
                 console.error('Logout API error:', error);
-            } finally {
+                
                 // Clear local session regardless of API response
                 const wasLoggedIn = !!currentUser;
                 clearStoredSession();
@@ -167,6 +184,9 @@ const Auth = (function() {
                 if (wasLoggedIn) {
                     notifyAuthListeners('logout', null);
                 }
+                
+                // Redirect to login on error
+                window.location.href = '../auth/login.html';
             }
         },
         

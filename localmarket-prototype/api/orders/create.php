@@ -57,11 +57,10 @@ try {
         throw new Exception('Listing is not available for purchase');
     }
     
-    // Check if listing is a product with limited stock
-    if (isset($listing['availability']['type']) && $listing['availability']['type'] === 'product' && isset($listing['availability']['stock'])) {
-        if ($listing['availability']['stock'] < $input['quantity']) {
-            throw new Exception('Insufficient stock available');
-        }
+    // Check stock availability
+    $currentStock = $listing['stock'] ?? 0;
+    if ($currentStock < $input['quantity']) {
+        throw new Exception('Insufficient stock available. Only ' . $currentStock . ' items remaining.');
     }
     
     // Create order
@@ -92,10 +91,8 @@ try {
     
     $dataManager->writeData('orders.json', $ordersData);
     
-    // Update listing stock if applicable
-    if (isset($listing['availability']['type']) && $listing['availability']['type'] === 'product' && isset($listing['availability']['stock'])) {
-        updateListingStock($listing['id'], $input['quantity']);
-    }
+    // Update listing stock
+    updateListingStock($listing['id'], $input['quantity']);
     
     $logger->log("Order created: {$order['id']} by user {$buyerId}");
     
@@ -123,21 +120,22 @@ function updateListingStock($listingId, $quantity) {
     
     foreach ($listings as &$listing) {
         if ($listing['id'] === $listingId) {
-            if (!isset($listing['availability'])) {
-                $listing['availability'] = ['type' => 'product', 'stock' => 1];
-            }
+            $currentStock = $listing['stock'] ?? 0;
+            $newStock = max(0, $currentStock - $quantity);
             
-            $listing['availability']['stock'] -= $quantity;
+            $listing['stock'] = $newStock;
+            $listing['updated_at'] = date('c');
             
             // Mark as sold out if stock reaches 0
-            if ($listing['availability']['stock'] <= 0) {
-                $listing['status'] = 'sold';
+            if ($newStock <= 0) {
+                $listing['status'] = 'sold_out';
             }
             break;
         }
     }
     
     $listingsData['data'] = $listings;
+    $listingsData['metadata']['last_updated'] = date('c');
     $dataManager->writeData('listings.json', $listingsData);
 }
 ?>
