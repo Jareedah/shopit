@@ -223,54 +223,13 @@ const AdminPanel = (function() {
             }
         },
 
-        // Display analytics charts (simplified implementation)
+        // Display analytics charts (disabled to preserve Apple-styled design)
         displayAnalyticsCharts(data) {
-            // In a real implementation, this would use a charting library
-            // For this prototype, we'll create simple visualizations
-            
-            const createBarChart = (containerId, data, title) => {
-                const container = document.getElementById(containerId);
-                if (!container || !data || data.length === 0) {
-                    container.innerHTML = '<div class="empty-state">No data available</div>';
-                    return;
-                }
-                
-                let html = `<div class="simple-chart"><h5>${title}</h5>`;
-                data.forEach(item => {
-                    const width = Math.min(100, (item.value / Math.max(...data.map(d => d.value))) * 100);
-                    html += `
-                        <div class="chart-row">
-                            <span class="chart-label">${item.label}</span>
-                            <div class="chart-bar-container">
-                                <div class="chart-bar" style="width: ${width}%"></div>
-                                <span class="chart-value">${item.value}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                container.innerHTML = html;
-            };
-            
-            createBarChart('registrationsChart', data.registrations, 'User Registrations');
-            createBarChart('listingsChart', data.listings, 'New Listings');
-            createBarChart('transactionsChart', data.transactions, 'Transactions');
-            
-            // For pie chart (categories)
-            const categoriesContainer = document.getElementById('categoriesChart');
-            if (data.categories && data.categories.length > 0) {
-                let html = '<div class="simple-pie-chart"><h5>Categories Distribution</h5><div class="pie-container">';
-                data.categories.forEach(cat => {
-                    html += `<div class="pie-item" style="--percentage: ${cat.percentage}%; --color: ${this.getCategoryColor(cat.label)}">
-                               <span class="pie-label">${cat.label}</span>
-                               <span class="pie-value">${cat.percentage}%</span>
-                             </div>`;
-                });
-                html += '</div></div>';
-                categoriesContainer.innerHTML = html;
-            } else {
-                categoriesContainer.innerHTML = '<div class="empty-state">No category data</div>';
-            }
+            // Analytics charts are disabled to maintain the clean Apple-inspired design
+            // The analytics tab now shows professional "Coming Soon" placeholders
+            // This function is kept for future implementation when real charts are needed
+            console.log('Analytics data loaded:', data);
+            console.log('Analytics charts display disabled - preserving Apple-styled placeholders');
         },
 
         // Get color for category
