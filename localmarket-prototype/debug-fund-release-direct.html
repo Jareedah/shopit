@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Fund Release</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        button { padding: 10px 20px; margin: 5px; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug Fund Release API</h1>
+    
+    <div class="debug-section">
+        <h3>Step 1: Check Authentication</h3>
+        <button onclick="checkAuth()">Check Current User</button>
+        <div id="authResult" class="result"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>Step 2: Load Orders</h3>
+        <button onclick="loadOrders()">Load All Orders</button>
+        <div id="ordersResult" class="result"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>Step 3: Test Fund Release</h3>
+        <input type="text" id="orderIdInput" placeholder="Enter Order ID (e.g., order_68a9ba2f04854)" style="width: 300px;">
+        <button onclick="testFundRelease()">Test Fund Release API</button>
+        <div id="fundReleaseResult" class="result"></div>
+    </div>
+
+    <script src="assets/js/core/api.js"></script>
+    <script src="assets/js/modules/auth.js"></script>
+    
+    <script>
+        async function checkAuth() {
+            const resultDiv = document.getElementById('authResult');
+            try {
+                const user = Auth.getCurrentUser();
+                if (user) {
+                    resultDiv.innerHTML = `<div class="success">✅ Authenticated as: ${user.username} (ID: ${user.id})</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Not authenticated</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Auth Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function loadOrders() {
+            const resultDiv = document.getElementById('ordersResult');
+            try {
+                const response = await fetch('api/orders/buyer-orders.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    let html = `<div class="success">✅ Found ${result.orders.length} orders:</div>`;
+                    result.orders.forEach(order => {
+                        html += `<div>ID: ${order.id}, Status: ${order.status}, Escrow: ${order.escrow_status || 'N/A'}</div>`;
+                    });
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Error loading orders: ${result.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Exception: ${error.message}</div>`;
+            }
+        }
+        
+        async function testFundRelease() {
+            const orderId = document.getElementById('orderIdInput').value.trim();
+            const resultDiv = document.getElementById('fundReleaseResult');
+            
+            if (!orderId) {
+                resultDiv.innerHTML = `<div class="error">❌ Please enter an Order ID</div>`;
+                return;
+            }
+            
+            try {
+                console.log('🔧 Testing fund release for order:', orderId);
+                
+                const response = await fetch('api/orders/update-status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        newStatus: 'completed',
+                        escrowStatus: 'funds_released'
+                    })
+                });
+                
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('API result:', result);
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Fund Release Successful!<br>
+                            Order: ${result.orderId}<br>
+                            New Status: ${result.newStatus}<br>
+                            Escrow Status: ${result.escrowStatus}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ API Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                console.error('Exception:', error);
+                resultDiv.innerHTML = `<div class="error">❌ Exception: ${error.message}</div>`;
+            }
+        }
+        
+        // Auto-check auth on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+    </script>
+</body>
+</html>

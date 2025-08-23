@@ -404,38 +404,34 @@
             }
             
             try {
-                console.log('🔍 DEBUG: Starting fund release approval for order:', orderId);
                 showNotification('✅ Approving fund release...', 'info');
-                
-                const requestData = {
-                    orderId: orderId,
-                    newStatus: 'completed',
-                    escrowStatus: 'funds_released'
-                };
-                console.log('🔍 DEBUG: Sending request data:', requestData);
                 
                 const response = await fetch('../api/orders/update-status.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestData)
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        newStatus: 'completed',
+                        escrowStatus: 'funds_released'
+                    })
                 });
                 
-                console.log('🔍 DEBUG: Response status:', response.status);
-                console.log('🔍 DEBUG: Response ok:', response.ok);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
                 
                 const result = await response.json();
-                console.log('🔍 DEBUG: API response result:', result);
                 
                 if (result.success) {
-                    console.log('✅ DEBUG: Fund release approved successfully');
                     showNotification('💰 Fund release approved! Money transferred to seller. Transaction completed.', 'success');
-                    refreshBuyerOrders();
+                    // Force refresh after short delay to ensure UI updates
+                    setTimeout(() => {
+                        refreshBuyerOrders();
+                    }, 1000);
                 } else {
-                    console.error('❌ DEBUG: API returned error:', result.message);
                     showNotification('Error approving release: ' + result.message, 'error');
                 }
             } catch (error) {
-                console.error('❌ DEBUG: Exception in approveFundRelease:', error);
                 showNotification('Error approving release: ' + error.message, 'error');
             }
         }
