@@ -53,7 +53,7 @@
             </div>
 
             <div class="admin-nav" style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 32px;">
-                <button class="nav-btn active" data-tab="overview" style="display: flex; align-items: center; gap: 8px; padding: 12px 20px; background: var(--apple-blue); color: white; border: none; border-radius: var(--apple-radius-full); font-weight: 600;">
+                <button class="nav-btn" data-tab="overview" style="display: flex; align-items: center; gap: 8px; padding: 12px 20px; background: var(--apple-gray-light); color: var(--apple-text-secondary); border: none; border-radius: var(--apple-radius-full); font-weight: 600;">
                     <i class="ph ph-house"></i>
                     Overview
                 </button>
@@ -77,7 +77,7 @@
 
             <div class="admin-content">
                 <!-- Overview Tab -->
-                <div id="overviewTab" class="tab-content active">
+                <div id="overviewTab" class="tab-content">
                     <div class="stats-grid">
                         <div class="stat-card">
                             <h3>Total Users</h3>
@@ -360,15 +360,59 @@
             }
         }
 
+        // Tab switching functionality
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+                content.style.display = 'none';
+            });
+            
+            // Show selected tab content
+            const selectedTab = document.getElementById(tabName + 'Tab');
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+                selectedTab.style.display = 'block';
+            }
+            
+            // Update tab button styles
+            const tabButtons = document.querySelectorAll('.nav-btn');
+            tabButtons.forEach(button => {
+                const isActive = button.getAttribute('data-tab') === tabName;
+                
+                if (isActive) {
+                    button.classList.add('active');
+                    button.style.background = 'var(--apple-blue)';
+                    button.style.color = 'white';
+                } else {
+                    button.classList.remove('active');
+                    button.style.background = 'var(--apple-gray-light)';
+                    button.style.color = 'var(--apple-text-secondary)';
+                }
+            });
+            
+            // Special handling for analytics tab
+            if (tabName === 'analytics') {
+                updateAnalyticsTimestamp();
+            }
+        }
+
         // Initialize timestamp when analytics tab is shown
         document.addEventListener('DOMContentLoaded', function() {
             updateAnalyticsTimestamp();
             
-            // Update timestamp when analytics tab is clicked
-            const analyticsTabBtn = document.querySelector('[onclick="showTab(\'analytics\')"]');
-            if (analyticsTabBtn) {
-                analyticsTabBtn.addEventListener('click', updateAnalyticsTimestamp);
-            }
+            // Set up tab click handlers
+            const tabButtons = document.querySelectorAll('.nav-btn');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    showTab(tabName);
+                });
+            });
+            
+            // Show overview tab by default
+            showTab('overview');
 
             // Wire up maintenance buttons
             const backupBtn = document.getElementById('backupData');
