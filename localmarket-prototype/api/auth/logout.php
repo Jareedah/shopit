@@ -35,7 +35,7 @@ try {
     echo json_encode([
         'success' => true,
         'message' => 'Logout successful',
-        'redirect' => '/localmarket-prototype/auth/login.html'
+        'redirect' => '../auth/login.html'
     ]);
     
 } catch (Exception $e) {

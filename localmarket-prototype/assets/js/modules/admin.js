@@ -338,16 +338,21 @@ const AdminPanel = (function() {
         // Load system settings
         async loadSystemSettings() {
             try {
-                const response = await API.post('../api/admin/settings.php');
+                const response = await fetch('../api/admin/settings.php', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
                 
-                if (response.success) {
-                    const settings = response.data;
+                const result = await response.json();
+                
+                if (result.success) {
+                    const settings = result.data;
                     document.getElementById('platformFee').value = settings.platformFee || 2;
                     document.getElementById('minWithdrawal').value = settings.minWithdrawal || 10;
                     document.getElementById('autoApprove').value = settings.autoApprove ? 'true' : 'false';
                     document.getElementById('maxImages').value = settings.maxImages || 5;
                 } else {
-                    throw new Error(response.message);
+                    throw new Error(result.message);
                 }
             } catch (error) {
                 console.error('Error loading settings:', error);
@@ -580,7 +585,7 @@ const AdminPanel = (function() {
                     maxImages: parseInt(document.getElementById('maxImages').value)
                 };
                 
-                const response = await API.post('../api/admin/save-settings.php', settings);
+                const response = await API.post('../api/admin/settings.php', settings);
                 
                 if (response.success) {
                     showNotification('Settings saved successfully', 'success');
