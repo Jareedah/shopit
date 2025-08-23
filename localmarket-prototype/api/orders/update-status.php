@@ -19,7 +19,6 @@ try {
     $dataManager = new DataManager();
     $logger = new Logger();
     
-    // Check authentication
     if (!$auth->isLoggedIn()) {
         throw new Exception('Authentication required');
     }
@@ -32,95 +31,65 @@ try {
     
     $input = json_decode(file_get_contents('php://input'), true);
     
-    if (!$input) {
-        throw new Exception('Invalid input data');
+    if (!$input || !isset($input['orderId']) || !isset($input['newStatus'])) {
+        throw new Exception('Invalid input: orderId and newStatus are required');
     }
     
-    $orderId = $input['orderId'] ?? null;
-    $newStatus = $input['newStatus'] ?? null;
+    $orderId = $input['orderId'];
+    $newStatus = $input['newStatus'];
     $escrowStatus = $input['escrowStatus'] ?? null;
     
-
+    $logger->log("Update status request received for OrderID: {$orderId}, NewStatus: {$newStatus}, By User: {$currentUser['username']}");
     
-    if (!$orderId || !$newStatus) {
-        throw new Exception('Invalid order ID or status');
-    }
-    
-    // Load current orders
     $ordersData = $dataManager->readData('orders.json');
     $orders = $ordersData['data'] ?? [];
     
-    // Find and update order
     $updated = false;
-    foreach ($orders as &$order) {
+    $orderIndex = -1;
+
+    foreach ($orders as $index => $order) {
         if ($order['id'] === $orderId) {
-            // Verify user has permission to update this order
-            if ($order['buyerId'] !== $currentUser['id'] && $order['sellerId'] !== $currentUser['id']) {
-                throw new Exception('Unauthorized to update this order');
-            }
-            
-            $order['status'] = $newStatus;
-            if ($escrowStatus) {
-                $order['escrow_status'] = $escrowStatus;
-            }
-            $order['updated_at'] = date('c');
-            
-            // Add completion timestamp when order is completed
-            if ($newStatus === 'completed') {
-                $order['completed_at'] = date('c');
-            }
-            
-            // Store deny reason if provided
-            if (isset($input['denyReason'])) {
-                $order['deny_reason'] = $input['denyReason'];
-                $order['denied_at'] = date('c');
-            }
-            
-            $updated = true;
-            $logger->log("Order status updated: {$orderId} → {$newStatus}" . ($escrowStatus ? " (escrow: {$escrowStatus})" : ""));
+            $orderIndex = $index;
             break;
         }
     }
     
-    if (!$updated) {
+    if ($orderIndex === -1) {
         throw new Exception('Order not found');
     }
+
+    // Directly modify the array by reference
+    $orderToUpdate = &$orders[$orderIndex];
+
+    // Verify user has permission to update this order
+    if ($orderToUpdate['buyerId'] !== $currentUser['id'] && $orderToUpdate['sellerId'] !== $currentUser['id']) {
+        throw new Exception('Unauthorized to update this order');
+    }
     
-    // Save updated orders with file locking
+    // Update the order details
+    $orderToUpdate['status'] = $newStatus;
+    if ($escrowStatus) {
+        $orderToUpdate['escrow_status'] = $escrowStatus;
+    }
+    $orderToUpdate['updated_at'] = date('c');
+
+    if ($newStatus === 'completed') {
+        $orderToUpdate['completed_at'] = date('c');
+    }
+    
+    $logger->log("Order {$orderId} status updated to '{$newStatus}'.");
+    
+    // Save updated orders
     $ordersData['data'] = $orders;
-    $ordersData['metadata']['last_updated'] = date('c');
-    
-    // Force immediate write with error checking
-    $writeSuccess = $dataManager->writeData('orders.json', $ordersData);
-    if (!$writeSuccess) {
-        throw new Exception('Failed to save order data to file');
-    }
-    
-    // Verify the write was successful by reading back
-    $verifyData = $dataManager->readData('orders.json');
-    $verifyOrder = null;
-    foreach ($verifyData['data'] as $order) {
-        if ($order['id'] === $orderId) {
-            $verifyOrder = $order;
-            break;
-        }
-    }
-    
-    if (!$verifyOrder || $verifyOrder['status'] !== $newStatus) {
-        throw new Exception('Order update verification failed - data not saved properly');
-    }
+    $dataManager->writeData('orders.json', $ordersData);
     
     echo json_encode([
         'success' => true,
-        'message' => 'Order status updated successfully',
-        'orderId' => $orderId,
-        'newStatus' => $newStatus,
-        'escrowStatus' => $escrowStatus
+        'message' => 'Order status updated successfully'
     ]);
     
 } catch (Exception $e) {
     $logger->log("Order status update failed: " . $e->getMessage(), 'ERROR');
-    
     http_response_code(400);
     echo json_encode([
         'success' => false,

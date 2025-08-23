@@ -4,39 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Purchase History - Shopit</title>
-    
-    <!-- Apple System Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- SF Symbols Alternative - iOS-style icons -->
-    <link href="https://cdn.jsdelivr.net/npm/phosphor-icons@1.4.2/src/css/icons.min.css" rel="stylesheet">
-    
-    <!-- Original CSS (preserved) -->
-    <link rel="stylesheet" href="../assets/css/base/reset.css">
-    <link rel="stylesheet" href="../assets/css/base/variables.css">
-    <link rel="stylesheet" href="../assets/css/base/typography.css">
-    <link rel="stylesheet" href="../assets/css/layout/header.css">
-    <link rel="stylesheet" href="../assets/css/components/buttons.css">
-    <link rel="stylesheet" href="../assets/css/components/forms.css">
-    <link rel="stylesheet" href="../assets/css/components/cards.css">
-    <link rel="stylesheet" href="../assets/css/pages/orders.css">
-    <link rel="stylesheet" href="../assets/css/components/escrow.css">
-    
-    <!-- Apple-Inspired Theme Coating - LOADED LAST FOR PRIORITY -->
     <link rel="stylesheet" href="../assets/css/themes/apple-inspired.css">
+    <link href="https://cdn.jsdelivr.net/npm/phosphor-icons@1.4.2/src/css/icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/pages/orders.css">
 </head>
 <body>
     <header class="header">
         <div class="container">
-            <h1 class="logo">
-                <i class="ph ph-shopping-bag" style="margin-right: 8px; vertical-align: middle;"></i>
-                Shopit
-            </h1>
+            <h1 class="logo"><i class="ph ph-shopping-bag"></i> Shopit</h1>
             <nav class="navigation">
                 <a href="../dashboard/index.html" class="nav-link">Dashboard</a>
-                <a href="../search/index.html" class="nav-link">Search</a>
-                <a href="../index.html" class="nav-link">Home</a>
                 <span id="userWelcome"></span>
                 <a href="#" id="logoutLink" class="nav-link">Logout</a>
             </nav>
@@ -45,39 +22,12 @@
 
     <main class="main-content">
         <div class="container">
-            <div class="page-header" style="text-align: center; padding: 40px 0; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-radius: var(--apple-radius-lg); margin-bottom: 32px; box-shadow: var(--apple-shadow-medium);">
-                <div style="color: var(--apple-blue); font-size: 48px; margin-bottom: 16px;">
-                    <i class="ph ph-shopping-cart"></i>
-                </div>
-                <h2 class="text-gradient-apple" style="font-size: var(--apple-font-size-title1); margin-bottom: 8px;">My Purchase History</h2>
-                <p style="color: var(--apple-text-secondary); font-size: var(--apple-font-size-body);">Track all your purchases and their delivery status</p>
+            <div class="page-header" style="text-align: center; padding: 40px 0;">
+                <h2 class="text-gradient-apple">My Purchase History</h2>
+                <p>Track all your purchases and their delivery status</p>
             </div>
-
-            <div class="order-history-container">
-                <div class="orders-header" style="background: var(--apple-surface-elevated); border-radius: var(--apple-radius-lg); box-shadow: var(--apple-shadow-medium); padding: 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="color: var(--apple-text-primary); font-size: var(--apple-font-size-headline); margin: 0; display: flex; align-items: center; gap: 12px;">
-                        <i class="ph ph-list-checks" style="color: var(--apple-blue);"></i>
-                        Your Purchases
-                    </h3>
-                    <div class="orders-filters" style="display: flex; gap: 12px; align-items: center;">
-                        <select id="statusFilter" onchange="filterBuyerOrders()" style="border-radius: var(--apple-radius-md); border: 1px solid rgba(0,0,0,0.1); padding: 8px 12px;">
-                            <option value="">All Orders</option>
-                            <option value="pending">Pending</option>
-                            <option value="confirmed">Confirmed</option>
-                            <option value="shipped">Shipped</option>
-                            <option value="delivered">Delivered</option>
-                            <option value="completed">Completed</option>
-                        </select>
-                        <button class="btn btn-secondary" onclick="refreshBuyerOrders()" style="display: flex; align-items: center; gap: 8px;">
-                            <i class="ph ph-arrow-clockwise"></i>
-                            Refresh
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="buyerOrdersList" class="orders-container">
-                    <div class="loading-state">Loading your order history...</div>
-                </div>
+            <div id="buyerOrdersList" class="orders-container">
+                <div class="loading-state">Loading your order history...</div>
             </div>
         </div>
     </main>
@@ -86,473 +36,113 @@
     <script src="../assets/js/core/utils.js"></script>
     <script src="../assets/js/core/apple-notifications.js"></script>
     <script src="../assets/js/modules/auth.js"></script>
-    <script src="../assets/js/modules/escrow.js"></script>
-    <script src="../assets/js/modules/escrow-workflow.js"></script>
     
     <script>
         let buyerOrders = [];
         
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is logged in
             if (!Auth.isLoggedIn()) {
                 window.location.href = '../auth/login.html';
                 return;
             }
-            
             const user = Auth.getCurrentUser();
             document.getElementById('userWelcome').textContent = `Welcome, ${user.username}`;
-            
-            // Load buyer orders
             loadBuyerOrders(user.id);
-            
-            // Logout functionality
-            document.getElementById('logoutLink').addEventListener('click', function(e) {
-                e.preventDefault();
-                Auth.logout();
-                window.location.href = '../auth/login.html';
-            });
+            document.getElementById('logoutLink').addEventListener('click', (e) => { e.preventDefault(); Auth.logout(); });
         });
         
         async function loadBuyerOrders(buyerId) {
+            const container = document.getElementById('buyerOrdersList');
+            container.innerHTML = '<div class="loading-state">Loading your orders...</div>';
             try {
-                const container = document.getElementById('buyerOrdersList');
-                container.innerHTML = '<div class="loading-state">Loading your orders...</div>';
-                
-                // Get buyer orders from global API
-                const response = await fetch('../api/orders/buyer-orders.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ buyerId: buyerId })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    buyerOrders = result.orders || [];
+                const response = await API.post('../api/orders/buyer-orders.php', { buyerId });
+                if (response.success) {
+                    buyerOrders = response.orders || [];
+                    displayBuyerOrders(buyerOrders);
                 } else {
-                    console.error('Failed to load buyer orders:', result.message);
-                    buyerOrders = [];
+                    throw new Error(response.message);
                 }
-                
-                if (buyerOrders.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <h3>No Orders Yet</h3>
-                            <p>You haven't made any purchases yet.</p>
-                            <a href="../search/index.html" class="btn btn-primary">Start Shopping</a>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // Display orders
-                displayBuyerOrders(buyerOrders);
-                
             } catch (error) {
-                console.error('Error loading buyer orders:', error);
-                document.getElementById('buyerOrdersList').innerHTML = `
-                    <div class="error-state">
-                        <p>Error loading orders: ${error.message}</p>
-                        <button class="btn btn-primary" onclick="location.reload()">Retry</button>
-                    </div>
-                `;
+                container.innerHTML = `<div class="error-state"><p>Error: ${error.message}</p></div>`;
             }
         }
         
         function displayBuyerOrders(orders) {
             const container = document.getElementById('buyerOrdersList');
-            
-            let ordersHtml = '<div class="buyer-orders-list">';
-            
+            if (orders.length === 0) {
+                container.innerHTML = `<div class="empty-state"><h3>No Orders Yet</h3><p>You haven't made any purchases yet.</p><a href="../search/index.html" class="btn btn-primary">Start Shopping</a></div>`;
+                return;
+            }
+            let html = '<div class="buyer-orders-list">';
             orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).forEach(order => {
-                const statusColor = getOrderStatusColor(order.status);
-                const escrowStatus = order.escrow_status || 'pending';
-                
-                ordersHtml += `
+                html += `
                     <div class="order-card" data-order-id="${order.id}">
                         <div class="order-header">
-                            <div class="order-info">
-                                <h4>${order.listingTitle}</h4>
-                                <p class="seller-info">Sold by: ${order.sellerName || order.sellerId}</p>
-                            </div>
-                            <div class="order-status">
-                                <span class="status-badge" style="background-color: ${statusColor}; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem;">
-                                    ${formatOrderStatus(order.status)}
-                                </span>
-                                ${EscrowPlayacting ? EscrowPlayacting.createStatusBadge(escrowStatus) : ''}
-                            </div>
+                            <div class="order-info"><h4>${order.listingTitle}</h4><p class="seller-info">Sold by: ${order.sellerName || order.sellerId}</p></div>
+                            <div class="order-status"><span class="status-badge" style="background-color: ${getOrderStatusColor(order.status)}; color: white;">${formatOrderStatus(order.status)}</span></div>
                         </div>
-                        
                         <div class="order-details">
-                            <div class="detail-row">
-                                <span>Order ID:</span>
-                                <span>${order.id}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>Quantity:</span>
-                                <span>${order.quantity}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>Total Paid:</span>
-                                <span>$${order.total_amount.toFixed(2)}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>Order Date:</span>
-                                <span>${new Date(order.created_at).toLocaleDateString()}</span>
-                            </div>
-                            ${order.tracking_number ? `
-                                <div class="detail-row">
-                                    <span>Tracking:</span>
-                                    <span>${order.tracking_number}</span>
-                                </div>
-                            ` : ''}
+                            <div class="detail-row"><span>Total Paid:</span><span>$${order.total_amount.toFixed(2)}</span></div>
+                            <div class="detail-row"><span>Order Date:</span><span>${new Date(order.created_at).toLocaleDateString()}</span></div>
                         </div>
-                        
-                        <div class="order-actions">
-                            ${generateBuyerOrderActions(order)}
-                        </div>
+                        <div class="order-actions">${generateBuyerOrderActions(order)}</div>
                     </div>
                 `;
             });
-            
-            ordersHtml += '</div>';
-            container.innerHTML = ordersHtml;
+            html += '</div>';
+            container.innerHTML = html;
         }
-        
+
         function generateBuyerOrderActions(order) {
             const actions = [];
-            
-            switch (order.status) {
-                case 'pending':
-                    actions.push(`<button class="btn btn-success btn-sm" onclick="releaseFundsNow('${order.id}')">💰 Release Funds Now</button>`);
-                    actions.push(`<button class="btn btn-secondary btn-sm" onclick="contactSeller('${order.id}')">💬 Contact Seller</button>`);
-                    actions.push(`<button class="btn btn-danger btn-sm" onclick="cancelOrder('${order.id}')">❌ Cancel Order</button>`);
-                    break;
-                    
-                case 'confirmed':
-                    actions.push(`<button class="btn btn-success btn-sm" onclick="releaseFundsNow('${order.id}')">💰 Release Funds Now</button>`);
-                    actions.push(`<button class="btn btn-secondary btn-sm" onclick="contactSeller('${order.id}')">💬 Contact Seller</button>`);
-                    break;
-                    
-                case 'shipped':
-                    actions.push(`<button class="btn btn-success btn-sm" onclick="confirmDeliveryAndRelease('${order.id}')">✅ Confirm & Release Funds</button>`);
-                    actions.push(`<button class="btn btn-primary btn-sm" onclick="releaseFundsNow('${order.id}')">💰 Release Funds Now</button>`);
-                    actions.push(`<button class="btn btn-secondary btn-sm" onclick="trackOrder('${order.id}')">📦 Track Package</button>`);
-                    break;
-                    
-                case 'delivered':
-                    actions.push(`<button class="btn btn-success btn-sm" onclick="confirmDeliveryAndRelease('${order.id}')">✅ Confirm & Release Funds</button>`);
-                    actions.push(`<button class="btn btn-primary btn-sm" onclick="releaseFundsNow('${order.id}')">💰 Release Funds Now</button>`);
-                    actions.push(`<button class="btn btn-warning btn-sm" onclick="disputeOrder('${order.id}')">⚠️ Report Issue</button>`);
-                    break;
-                    
-                case 'release_requested':
-                    actions.push(`<button class="btn btn-success btn-sm" onclick="approveFundRelease('${order.id}')">✅ Approve Fund Release</button>`);
-                    actions.push(`<button class="btn btn-danger btn-sm" onclick="denyFundRelease('${order.id}')">❌ Deny Release</button>`);
-                    actions.push(`<button class="btn btn-warning btn-sm" onclick="disputeOrder('${order.id}')">⚠️ Report Issue</button>`);
-                    break;
-                    
-                case 'completed':
-                    actions.push(`<button class="btn btn-success btn-sm" disabled style="opacity: 0.6;">🎉 Transaction Complete</button>`);
-                    actions.push(`<button class="btn btn-secondary btn-sm" onclick="leaveReview('${order.id}')">⭐ Leave Review</button>`);
-                    break;
-                    
-                case 'cancelled':
-                    actions.push(`<button class="btn btn-secondary btn-sm" disabled style="opacity: 0.6;">❌ Cancelled</button>`);
-                    break;
+            if (order.status === 'release_requested') {
+                actions.push(`<button class="btn btn-success btn-sm" onclick="approveFundRelease('${order.id}')">✅ Approve Release</button>`);
+                actions.push(`<button class="btn btn-warning btn-sm" onclick="denyFundRelease('${order.id}')">⚠️ Deny Release</button>`);
+            } else if (order.status === 'completed') {
+                actions.push(`<button class="btn btn-secondary btn-sm" onclick="leaveReview('${order.id}')">⭐ Leave Review</button>`);
             }
-            
             return actions.join(' ');
         }
-        
-        function getOrderStatusColor(status) {
-            const colors = {
-                'pending': '#f59e0b',
-                'confirmed': '#3b82f6',
-                'processing': '#8b5cf6',
-                'shipped': '#06b6d4',
-                'delivered': '#10b981',
-                'release_requested': '#f97316',
-                'completed': '#059669',
-                'cancelled': '#6b7280',
-                'disputed': '#dc2626'
-            };
-            return colors[status] || '#6b7280';
-        }
-        
-        function formatOrderStatus(status) {
-            const statusMap = {
-                'pending': 'Pending',
-                'confirmed': 'Confirmed',
-                'processing': 'Processing',
-                'shipped': 'Shipped',
-                'delivered': 'Delivered',
-                'release_requested': 'Release Requested',
-                'completed': 'Completed',
-                'cancelled': 'Cancelled',
-                'disputed': 'Disputed'
-            };
-            return statusMap[status] || status;
-        }
-        
-        function filterBuyerOrders() {
-            const status = document.getElementById('statusFilter').value;
-            const filteredOrders = status ? buyerOrders.filter(o => o.status === status) : buyerOrders;
-            displayBuyerOrders(filteredOrders);
+
+        async function approveFundRelease(orderId) {
+            const confirmed = await showAppleNotification.confirm({
+                title: 'Approve Fund Release?',
+                message: 'This will complete the transaction and transfer your payment to the seller. This action cannot be undone.',
+                confirmText: 'Yes, Release Funds',
+                icon: 'ph-check-circle',
+                iconColor: 'var(--apple-green)'
+            });
+
+            if (confirmed) {
+                try {
+                    const response = await API.post('../api/orders/update-status.php', {
+                        orderId: orderId,
+                        newStatus: 'completed',
+                        escrowStatus: 'funds_released'
+                    });
+
+                    if (response.success) {
+                        showAppleNotification.success('Funds Released!', 'The transaction is now complete.');
+                        refreshBuyerOrders();
+                    } else {
+                        throw new Error(response.message);
+                    }
+                } catch (error) {
+                    showAppleNotification.error('Action Failed', error.message);
+                }
+            }
         }
         
         function refreshBuyerOrders() {
             const user = Auth.getCurrentUser();
-            loadBuyerOrders(user.id);
-            showNotification('Order history refreshed!', 'success');
+            if (user) loadBuyerOrders(user.id);
         }
-        
-        // WORKING buyer order functions
-        async function releaseFundsNow(orderId) {
-            if (!confirm('Release funds to seller immediately? This will complete the transaction.')) {
-                return;
-            }
-            
-            try {
-                showNotification('💰 Releasing funds to seller...', 'info');
-                
-                const response = await fetch('../api/orders/update-status.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        orderId: orderId,
-                        newStatus: 'completed'
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showNotification('🎉 Funds released! Transaction completed successfully.', 'success');
-                    refreshBuyerOrders();
-                } else {
-                    showNotification('Error releasing funds: ' + result.message, 'error');
-                }
-            } catch (error) {
-                showNotification('Error releasing funds: ' + error.message, 'error');
-            }
-        }
-        
-        async function confirmDeliveryAndRelease(orderId) {
-            if (!confirm('Confirm delivery and release funds to seller?')) {
-                return;
-            }
-            
-            try {
-                showNotification('✅ Confirming delivery and releasing funds...', 'info');
-                
-                const response = await fetch('../api/orders/update-status.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        orderId: orderId,
-                        newStatus: 'completed'
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showNotification('🎉 Delivery confirmed and funds released! Transaction completed.', 'success');
-                    refreshBuyerOrders();
-                } else {
-                    showNotification('Error confirming delivery: ' + result.message, 'error');
-                }
-            } catch (error) {
-                showNotification('Error confirming delivery: ' + error.message, 'error');
-            }
-        }
-        
-        async function cancelOrder(orderId) {
-            if (!confirm('Cancel this order? This will trigger an automatic refund.')) {
-                return;
-            }
-            
-            try {
-                showNotification('❌ Cancelling order...', 'info');
-                
-                const response = await fetch('../api/orders/update-status.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        orderId: orderId,
-                        newStatus: 'cancelled'
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showNotification('Order cancelled. Automatic refund processed.', 'success');
-                    refreshBuyerOrders();
-                } else {
-                    showNotification('Error cancelling order: ' + result.message, 'error');
-                }
-            } catch (error) {
-                showNotification('Error cancelling order: ' + error.message, 'error');
-            }
-        }
-        
-        async function approveFundRelease(orderId) {
-            if (!confirm('Approve fund release to seller? This will complete the transaction.')) {
-                return;
-            }
-            
-            try {
-                showNotification('✅ Approving fund release...', 'info');
-                
-                const response = await fetch('../api/orders/update-status.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        orderId: orderId,
-                        newStatus: 'completed',
-                        escrowStatus: 'funds_released'
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showNotification('💰 Fund release approved! Money transferred to seller. Transaction completed.', 'success');
-                    // Force refresh after short delay to ensure UI updates
-                    setTimeout(() => {
-                        refreshBuyerOrders();
-                    }, 1000);
-                } else {
-                    showNotification('Error approving release: ' + result.message, 'error');
-                }
-            } catch (error) {
-                showNotification('Error approving release: ' + error.message, 'error');
-            }
-        }
-        
-        async function denyFundRelease(orderId) {
-            const reason = prompt('Why are you denying the fund release? (Optional)');
-            
-            try {
-                showNotification('❌ Denying fund release...', 'info');
-                
-                const response = await fetch('../api/orders/update-status.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        orderId: orderId,
-                        newStatus: 'delivered',
-                        escrowStatus: 'funds_held',
-                        denyReason: reason || 'No reason provided'
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showNotification('❌ Fund release denied. Order status reverted to delivered. Seller has been notified.', 'warning');
-                    refreshBuyerOrders();
-                } else {
-                    showNotification('Error denying release: ' + result.message, 'error');
-                }
-                
-            } catch (error) {
-                showNotification('Error denying release: ' + error.message, 'error');
-            }
-        }
-        
-        // Placeholder functions for future features
-        function contactSeller(orderId) {
-            showNotification('💬 Seller contact system coming soon', 'info');
-        }
-        
-        function trackOrder(orderId) {
-            showNotification('📦 Package tracking system coming soon', 'info');
-        }
-        
-        function disputeOrder(orderId) {
-            showNotification('⚠️ Dispute system coming soon', 'info');
-        }
-        
-        function leaveReview(orderId) {
-            showNotification('⭐ Review system coming soon', 'info');
-        }
-        
-        function viewOrderDetails(orderId) {
-            showNotification('📋 Detailed order view coming soon', 'info');
-        }
-        
-        function showNotification(message, type = 'info') {
-            if (typeof window.showNotification === 'function') {
-                window.showNotification(message, type);
-            } else {
-                alert(message);
-            }
-        }
+
+        // Placeholder functions
+        function denyFundRelease(orderId) { showAppleNotification.warning('Release Denied', 'The seller has been notified. Please contact them or support to resolve the issue.'); }
+        function leaveReview(orderId) { showAppleNotification.info('Coming Soon', 'This would open a review submission form.'); }
+        function getOrderStatusColor(status) { return { completed: '#28a745', release_requested: '#f59e0b' }[status] || '#6c757d'; }
+        function formatOrderStatus(status) { return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()); }
     </script>
-    
-    <style>
-        .order-history-container { max-width: 1000px; margin: 0 auto; }
-        .orders-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .orders-filters { display: flex; gap: 10px; align-items: center; }
-        .buyer-orders-list { display: flex; flex-direction: column; gap: 20px; }
-        .order-card { background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; }
-        .order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-        .order-info h4 { margin: 0 0 5px 0; color: #333; }
-        .seller-info { color: #666; font-size: 0.9rem; margin: 0; }
-        .order-status { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-        .order-details { margin-bottom: 15px; }
-        .detail-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
-        .detail-row:last-child { border-bottom: none; }
-        .order-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
-        .empty-state, .error-state { text-align: center; padding: 40px; }
-        .loading-state { text-align: center; padding: 40px; color: #666; }
-    </style>
-
-    <!-- Apple-Inspired Mobile Navigation -->
-    <nav class="apple-bottom-nav">
-        <a href="../index.html" class="apple-nav-item">
-            <div class="apple-nav-icon">
-                <i class="ph ph-house"></i>
-            </div>
-            Home
-        </a>
-        <a href="../search/index.html" class="apple-nav-item">
-            <div class="apple-nav-icon">
-                <i class="ph ph-magnifying-glass"></i>
-            </div>
-            Browse
-        </a>
-        <a href="../listings/create.html" class="apple-nav-item">
-            <div class="apple-nav-icon">
-                <i class="ph ph-plus-circle"></i>
-            </div>
-            Sell
-        </a>
-        <a href="../dashboard/index.html" class="apple-nav-item">
-            <div class="apple-nav-icon">
-                <i class="ph ph-squares-four"></i>
-            </div>
-            Dashboard
-        </a>
-        <a href="history.html" class="apple-nav-item active">
-            <div class="apple-nav-icon">
-                <i class="ph ph-shopping-cart"></i>
-            </div>
-            Orders
-        </a>
-    </nav>
-
-    <!-- Apple-Inspired Floating Action Button -->
-    <button class="apple-fab" onclick="window.location.href='../search/index.html'" title="Browse Products">
-        <i class="ph ph-magnifying-glass" style="font-size: 24px;"></i>
-    </button>
 </body>
 </html>
