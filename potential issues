@@ -1,0 +1,395 @@
+🔎 File-by-file Issues, Missing Parts, and Enhancements
+Admin dashboard
+
+File: assets/js/pages/debug.html + api/admin/stats.php
+
+Issue: Analytics tab shows duplicate/bugged older code (a second, incorrect stats table).
+
+Fix: Remove the old code block rendering wrong stats. Keep only the correct stats view.
+
+Enhancement: Add a “last updated” timestamp so demo viewers know the stats are live.
+
+File: api/admin/settings.php vs api/admin/save-settings.php
+
+Issue: Duplicate/conflicting endpoints.
+
+Fix: Collapse into one file with clear GET (fetch settings) and POST (save settings). Remove the redundant copy.
+
+Order / Sales flow
+
+File: api/orders/update.php (or create api/orders/release.php)
+
+Issue: When seller requests release and buyer approves, order status doesn’t become "complete".
+
+Fix: Add explicit transition logic:
+
+if ($order['status'] === 'release_requested' && $buyerApproved) {
+    $order['status'] = 'complete';
+    $order['completed_at'] = date('c');
+}
+
+
+Also update listing’s escrow balance in orders.json so demo shows funds movement.
+
+File: assets/js/pages/orders.html
+
+Add button → “Approve Release” for buyer, with JS calling new API endpoint.
+
+Auth / Session flow
+
+File: api/auth/logout.php
+
+Issue: Logout from market browsing page bounces to dashboard, requiring another logout.
+
+Fix: After session_destroy(), add a Location: /index.html redirect or JSON { success:true, redirect:'/login.html' }.
+
+Enhancement: In assets/js/core/api.js, centralize logout redirect handling so it works the same on all pages.
+
+Listings / Market
+
+File: api/listings/create.php & api/listings/update.php
+
+Issue: Inconsistent image handling functions (processImages) and buggy upload dir paths.
+
+Fix: Extract processImages into core/UploadHelper.php, import it in both endpoints, unify path to /uploads/.
+
+File: api/listings/update-stock.php + api/orders/create.php
+
+Issue: Stock field inconsistency (sometimes listing.stock, sometimes listing.availability.stock).
+
+Fix: Normalize to listing.availability.stock. Update both endpoints.
+
+File: assets/js/pages/browse.html
+
+Enhancement: Some buttons (like “View seller profile” or “Filter”) don’t have handlers. Add placeholder alert('Coming soon') or simple API call to show flow.
+
+Frontend JS issues
+
+File: assets/js/modules/search.js
+
+Issue: Syntax bug: const searchData = { .filters, … }.
+
+Fix: Remove stray .; align key names to API (filters, page, limit).
+
+Enhancement: Display “No results found” message when empty.
+
+File: assets/js/core/api.js
+
+Issue: headers. typo in default options.
+
+Fix: Correct to:
+
+headers: {
+    'Content-Type': 'application/json'
+}
+
+
+Enhancement: Add a small delay spinner (document.body.classList.add('loading')) for better flow feel.
+
+General UX polish
+
+Navigation / Logout flow: unify across dashboard.html, browse.html, orders.html.
+
+Missing button actions:
+
+Seller → “Request Release” button (new API call).
+
+Buyer → “Approve Release” button (new API call).
+
+Admin → “Backup Now” button (already has endpoint, wire it with JS fetch + download link).
+
+Consistency of responses:
+
+Fix all APIs to return { success:true, data:... } so frontend doesn’t break when switching tabs.
+
+Files: api/listings/get.php, api/orders/get.php, api/admin/listings.php.
+
+Cleanup / Remove confusing leftovers
+
+Delete old/unused test-endpoint.php from production/demo build (keep in dev tools).
+
+Remove duplicate admin stats rendering code in analytics tab (see above).
+
+Consolidate multiple settings.php and save-settings.php to one endpoint.
+
+📌 Concrete “Where to Do What”
+
+Here’s the surgical todo list:
+
+Admin analytics bug
+
+Remove old stats rendering block in assets/js/pages/debug.html.
+
+Order completion on fund release
+
+Add order status transition in api/orders/update.php (or create api/orders/release.php).
+
+Add approve button in assets/js/pages/orders.html.
+
+Logout bug
+
+Fix redirect in api/auth/logout.php.
+
+Update assets/js/core/api.js to handle redirect from API responses.
+
+Image upload duplication
+
+Create core/UploadHelper.php with one processImages().
+
+Update listings/create.php & listings/update.php to use it.
+
+Stock field mismatch
+
+Normalize schema in api/listings/update-stock.php + api/orders/create.php.
+
+Frontend JS bugs
+
+Fix typo in assets/js/core/api.js.
+
+Fix syntax in assets/js/modules/search.js.
+
+Button wiring
+
+Add JS functions for missing buttons: Request/Approve release, Backup Now, Filter in browse page.
+
+Response standardization
+
+Update api/listings/get.php, api/orders/get.php, api/admin/listings.php to return consistent { success, data }.
+
+Cleanup duplicates
+
+Delete extra api/admin/settings.php copy.
+
+
+-----------------------------------------------------------------
+
+🗂 Kanban Roadmap
+Epic 1: Admin Dashboard Polish
+User Story 1.1:
+
+As an admin, I want to see clean, correct analytics so I can understand system data without distraction.
+
+Tasks:
+
+ Remove old/bugged analytics rendering in assets/js/pages/debug.html.
+
+ Keep only the new stats table from api/admin/stats.php.
+
+ Add a small “Last updated: <timestamp>” text.
+
+Acceptance Criteria:
+
+Only one analytics table is visible.
+
+Timestamp shows when stats were generated.
+
+User Story 1.2:
+
+As an admin, I want one settings endpoint so I’m not confused by duplicates.
+
+Tasks:
+
+ Delete duplicate api/admin/settings.php.
+
+ Merge logic from save-settings.php → settings.php (GET for read, POST for save).
+
+Acceptance Criteria:
+
+Settings load and save via one file.
+
+No duplicate endpoint references remain.
+
+Epic 2: Sales / Order Flow Completion
+User Story 2.1:
+
+As a seller, I want to request release of funds so I can get paid when the buyer approves.
+
+Tasks:
+
+ Add “Request Release” button in assets/js/pages/orders.html.
+
+ Wire button to api/orders/update.php (set status to release_requested).
+
+Acceptance Criteria:
+
+Seller clicks “Request Release” → Order shows status release_requested.
+
+User Story 2.2:
+
+As a buyer, I want to approve release so the order completes and seller is paid.
+
+Tasks:
+
+ Extend api/orders/update.php to set order status → complete if buyer approves.
+
+ Add “Approve Release” button in assets/js/pages/orders.html.
+
+ Update order JSON with completed_at timestamp.
+
+Acceptance Criteria:
+
+Buyer clicks “Approve Release” → Order status becomes complete for both parties.
+
+Completed orders display as “Completed” in dashboard.
+
+Epic 3: Authentication / Logout Flow
+User Story 3.1:
+
+As a user, I want to log out from any page in one click so I’m not forced to repeat actions.
+
+Tasks:
+
+ Fix api/auth/logout.php to destroy session and return JSON { success:true, redirect:'/login.html' }.
+
+ Update assets/js/core/api.js logout handler to redirect using response.redirect.
+
+ Test logout on browse.html, dashboard.html, and orders.html.
+
+Acceptance Criteria:
+
+Logout from any page redirects directly to login page.
+
+Session data is cleared.
+
+Epic 4: Listings Flow Consistency
+User Story 4.1:
+
+As a seller, I want image uploads to behave consistently so my listings always show correct images.
+
+Tasks:
+
+ Create core/UploadHelper.php with processImages().
+
+ Refactor api/listings/create.php & api/listings/update.php to use it.
+
+ Normalize upload path to /uploads/.
+
+Acceptance Criteria:
+
+New and updated listings display images consistently.
+
+All image uploads end up in /uploads/.
+
+User Story 4.2:
+
+As a user, I want consistent stock behavior so I know how many items are left.
+
+Tasks:
+
+ Standardize stock field → listing.availability.stock.
+
+ Update api/listings/update-stock.php & api/orders/create.php accordingly.
+
+Acceptance Criteria:
+
+Orders reduce availability.stock.
+
+UI shows the correct remaining stock.
+
+Epic 5: Frontend Cleanup
+User Story 5.1:
+
+As a user, I want search to work smoothly so I can find listings.
+
+Tasks:
+
+ Fix syntax error in assets/js/modules/search.js (.filters typo).
+
+ Align search filters with API keys.
+
+ Add “No results found” message.
+
+Acceptance Criteria:
+
+Search runs without JS errors.
+
+Empty searches show user-friendly message.
+
+User Story 5.2:
+
+As a user, I want the app to feel responsive when waiting for API calls.
+
+Tasks:
+
+ Fix headers. typo in assets/js/core/api.js.
+
+ Add global loading spinner while API requests are in-flight.
+
+Acceptance Criteria:
+
+No API errors due to header bug.
+
+Spinner shows on API requests.
+
+Epic 6: Missing Button Actions
+User Story 6.1:
+
+As an admin, I want the “Backup Now” button to actually create a backup so I feel the feature works.
+
+Tasks:
+
+ Wire button in admin.html to api/admin/backup.php.
+
+ Trigger download of zip file on success.
+
+Acceptance Criteria:
+
+Clicking “Backup Now” downloads a backup file.
+
+User Story 6.2:
+
+As a user, I want every major button to respond so the flow feels real.
+
+Tasks:
+
+ Add placeholder JS for buttons without handlers (e.g., filter in browse page, view seller profile).
+
+ Use alert('Coming soon…') or sample data.
+
+Acceptance Criteria:
+
+No button is dead/unresponsive.
+
+Epic 7: Response Consistency
+User Story 7.1:
+
+As a frontend developer, I want APIs to respond with the same envelope so my UI code is simple.
+
+Tasks:
+
+ Update api/listings/get.php, api/orders/get.php, api/admin/listings.php to always return { success, data }.
+
+ Update frontend calls accordingly.
+
+Acceptance Criteria:
+
+All API responses follow { success, data }.
+
+No frontend expects mismatched keys like listings vs data.
+
+Epic 8: Cleanup Dead Code
+User Story 8.1:
+
+As a maintainer, I want the codebase free of confusing leftovers so it’s easier to demo.
+
+Tasks:
+
+ Remove test-endpoint.php from production/demo build.
+
+ Remove duplicate settings.php as noted in Epic 1.2.
+
+Acceptance Criteria:
+
+No duplicate or unused files in API folder.
+
+📊 Suggested Kanban Columns
+
+Backlog (all tasks start here)
+
+In Progress
+
+Review / Demo Test
+
+Done
+
+Remove test-endpoint.php from demo build.
