@@ -40,6 +40,10 @@ try {
     $newStatus = $input['newStatus'] ?? null;
     $escrowStatus = $input['escrowStatus'] ?? null;
     
+    // Debug logging
+    $logger->log("🔍 DEBUG: Update status request - OrderID: {$orderId}, NewStatus: {$newStatus}, EscrowStatus: {$escrowStatus}");
+    $logger->log("🔍 DEBUG: Current user: " . json_encode($currentUser));
+    
     if (!$orderId || !$newStatus) {
         throw new Exception('Invalid order ID or status');
     }
@@ -50,13 +54,22 @@ try {
     
     // Find and update order
     $updated = false;
+    $logger->log("🔍 DEBUG: Searching through " . count($orders) . " orders for ID: {$orderId}");
+    
     foreach ($orders as &$order) {
+        $logger->log("🔍 DEBUG: Checking order ID: " . $order['id']);
         if ($order['id'] === $orderId) {
+            $logger->log("🔍 DEBUG: Found matching order! Current status: " . $order['status']);
+            $logger->log("🔍 DEBUG: Order buyerId: " . $order['buyerId'] . ", sellerId: " . $order['sellerId']);
+            $logger->log("🔍 DEBUG: Current user ID: " . $currentUser['id']);
+            
             // Verify user has permission to update this order
             if ($order['buyerId'] !== $currentUser['id'] && $order['sellerId'] !== $currentUser['id']) {
+                $logger->log("❌ DEBUG: Permission denied for user");
                 throw new Exception('Unauthorized to update this order');
             }
             
+            $logger->log("✅ DEBUG: Permission granted, updating order");
             $order['status'] = $newStatus;
             if ($escrowStatus) {
                 $order['escrow_status'] = $escrowStatus;
@@ -66,6 +79,7 @@ try {
             // Add completion timestamp when order is completed
             if ($newStatus === 'completed') {
                 $order['completed_at'] = date('c');
+                $logger->log("🔍 DEBUG: Added completion timestamp");
             }
             
             // Store deny reason if provided
@@ -75,7 +89,7 @@ try {
             }
             
             $updated = true;
-            $logger->log("Order status updated: {$orderId} → {$newStatus}" . ($escrowStatus ? " (escrow: {$escrowStatus})" : ""));
+            $logger->log("✅ DEBUG: Order status updated: {$orderId} → {$newStatus}" . ($escrowStatus ? " (escrow: {$escrowStatus})" : ""));
             break;
         }
     }
