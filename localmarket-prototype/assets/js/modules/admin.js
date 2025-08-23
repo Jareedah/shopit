@@ -223,13 +223,103 @@ const AdminPanel = (function() {
             }
         },
 
-        // Display analytics charts (disabled to preserve Apple-styled design)
+        // Display analytics charts with Apple-inspired design
         displayAnalyticsCharts(data) {
-            // Analytics charts are disabled to maintain the clean Apple-inspired design
-            // The analytics tab now shows professional "Coming Soon" placeholders
-            // This function is kept for future implementation when real charts are needed
             console.log('Analytics data loaded:', data);
-            console.log('Analytics charts display disabled - preserving Apple-styled placeholders');
+            
+            // Update User Registrations with real data
+            this.updateAppleChart('registrationsChart', {
+                title: 'User Registrations',
+                icon: 'ph-chart-line-up',
+                color: 'var(--apple-blue)',
+                data: data.registrations,
+                type: 'trend'
+            });
+            
+            // Update Listing Activity with real data
+            this.updateAppleChart('listingsChart', {
+                title: 'Listing Activity',
+                icon: 'ph-chart-bar',
+                color: 'var(--apple-green)',
+                data: data.listings,
+                type: 'trend'
+            });
+            
+            // Update Transaction Volume with real data
+            this.updateAppleChart('transactionsChart', {
+                title: 'Transaction Volume',
+                icon: 'ph-chart-pie',
+                color: 'var(--apple-orange)',
+                data: data.transactions,
+                type: 'trend'
+            });
+            
+            // Update Category Distribution with real data
+            this.updateAppleChart('categoriesChart', {
+                title: 'Category Distribution',
+                icon: 'ph-chart-donut',
+                color: 'var(--apple-purple)',
+                data: data.categories,
+                type: 'categories'
+            });
+        },
+        
+        // Update Apple-styled chart with real data
+        updateAppleChart(containerId, config) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            if (!config.data || config.data.length === 0) {
+                // Keep the beautiful "Coming Soon" design for empty data
+                container.innerHTML = `
+                    <div style="color: ${config.color}; font-size: 48px; margin-bottom: 16px;">
+                        <i class="${config.icon}"></i>
+                    </div>
+                    <p style="color: var(--apple-text-secondary); font-size: 15px;">No Data Available</p>
+                    <p style="color: var(--apple-text-tertiary); font-size: 13px;">Check back later</p>
+                `;
+                return;
+            }
+            
+            if (config.type === 'trend') {
+                // Show trend data with Apple-styled metrics
+                const total = config.data.reduce((sum, item) => sum + item.value, 0);
+                const recent = config.data.slice(-7).reduce((sum, item) => sum + item.value, 0);
+                const trend = recent > 0 ? '+' + recent : recent;
+                
+                container.innerHTML = `
+                    <div style="color: ${config.color}; font-size: 48px; margin-bottom: 16px;">
+                        <i class="${config.icon}"></i>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <div style="color: var(--apple-text-primary); font-size: 32px; font-weight: 600; margin-bottom: 4px;">${total}</div>
+                        <p style="color: var(--apple-text-secondary); font-size: 15px; margin-bottom: 8px;">Total Records</p>
+                        <div style="color: ${recent > 0 ? 'var(--apple-green)' : 'var(--apple-text-tertiary)'}; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                            <i class="ph ${recent > 0 ? 'ph-trend-up' : 'ph-minus'}"></i>
+                            ${trend} this week
+                        </div>
+                    </div>
+                `;
+            } else if (config.type === 'categories') {
+                // Show category data with Apple-styled breakdown
+                const topCategory = config.data[0];
+                const totalCategories = config.data.length;
+                
+                container.innerHTML = `
+                    <div style="color: ${config.color}; font-size: 48px; margin-bottom: 16px;">
+                        <i class="${config.icon}"></i>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <div style="color: var(--apple-text-primary); font-size: 24px; font-weight: 600; margin-bottom: 4px;">${totalCategories}</div>
+                        <p style="color: var(--apple-text-secondary); font-size: 15px; margin-bottom: 8px;">Active Categories</p>
+                        ${topCategory ? `
+                            <div style="color: var(--apple-text-tertiary); font-size: 13px;">
+                                Top: ${topCategory.label} (${topCategory.percentage}%)
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
         },
 
         // Get color for category
