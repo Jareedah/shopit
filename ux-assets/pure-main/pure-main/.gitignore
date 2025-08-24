@@ -1,7 +1,0 @@
-.DS_Store
-.nyc_output/
-artifacts/
-build/
-coverage/
-node_modules/
-release/
