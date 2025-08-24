@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopit - Revolutionizing Local Commerce Through Mobile-First Innovation</title>
+    <meta name="description" content="Discover Shopit, the next evolution in local commerce. A sophisticated, mobile-first marketplace platform that connects communities with enterprise-grade tools and user experiences.">
+    
+    <!-- Material Design 3 - BeerCSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/beercss@3.11.33/dist/cdn/beer.min.css">
+    
+    <!-- Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="assets/css/shopit-theme.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%236366f1' d='M7 4V2C7 1.45 7.45 1 8 1H16C16.55 1 17 1.45 17 2V4H20C20.55 4 21 4.45 21 5S20.55 6 20 6H19V19C19 20.1 18.1 21 17 21H7C5.9 21 5 20.1 5 19V6H4C3.45 6 3 5.55 3 5S3.45 4 4 4H7ZM9 3V4H15V3H9ZM7 6V19H17V6H7Z'/%3E%3C/svg%3E">
+    
+    <!-- Meta Tags for Social Sharing -->
+    <meta property="og:title" content="Shopit - Revolutionizing Local Commerce">
+    <meta property="og:description" content="Mobile-first marketplace platform connecting communities with enterprise-grade tools">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://shopit.com">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Shopit - Revolutionizing Local Commerce">
+    <meta name="twitter:description" content="Mobile-first marketplace platform connecting communities">
+</head>
+<body class="light">
+    <!-- Navigation -->
+    <nav class="sticky top primary-container">
+        <div class="max">
+            <a href="#home" class="button transparent circle large">
+                <i class="material-symbols-outlined">shopping_bag</i>
+            </a>
+            <h6 class="max">Shopit</h6>
+            <button class="transparent circle large" onclick="toggleTheme()">
+                <i class="material-symbols-outlined">dark_mode</i>
+            </button>
+            <button class="transparent circle large" onclick="toggleMenu()">
+                <i class="material-symbols-outlined">menu</i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenu" class="overlay">
+        <div class="overlay-content">
+            <button class="close-btn" onclick="toggleMenu()">&times;</button>
+            <a href="#prototype" onclick="toggleMenu()">Current Prototype</a>
+            <a href="#future" onclick="toggleMenu()">Future Capabilities</a>
+            <a href="#business" onclick="toggleMenu()">Business Strategy</a>
+            <a href="#demo" onclick="toggleMenu()">Live Demo</a>
+            <a href="#contact" onclick="toggleMenu()">Partner With Us</a>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="hero-background">
+            <div class="hero-gradient"></div>
+        </div>
+        <div class="hero-content max">
+            <div class="hero-text">
+                <div class="hero-badge">
+                    <span class="material-symbols-outlined">rocket_launch</span>
+                    <span>Prototype Demonstration</span>
+                </div>
+                <h1 class="hero-title">
+                    Revolutionizing <span class="gradient-text">Local Commerce</span>
+                </h1>
+                <p class="hero-subtitle">
+                    A sophisticated, mobile-first marketplace platform that connects communities while providing enterprise-grade tools and user experiences.
+                </p>
+                <div class="hero-actions">
+                    <button class="button large primary" onclick="scrollToSection('demo')">
+                        <i class="material-symbols-outlined">play_circle</i>
+                        <span>Watch Live Demo</span>
+                    </button>
+                    <button class="button large secondary" onclick="scrollToSection('contact')">
+                        <i class="material-symbols-outlined">handshake</i>
+                        <span>Partner With Us</span>
+                    </button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="phone-mockup">
+                    <div class="phone-frame">
+                        <div class="phone-screen">
+                            <div class="app-interface">
+                                <div class="app-header">
+                                    <div class="app-logo">
+                                        <i class="material-symbols-outlined">shopping_bag</i>
+                                        <span>Shopit</span>
+                                    </div>
+                                    <div class="location-badge">
+                                        <i class="material-symbols-outlined">location_on</i>
+                                        <span>New York</span>
+                                    </div>
+                                </div>
+                                <div class="search-bar">
+                                    <i class="material-symbols-outlined">search</i>
+                                    <span>Find local products & services...</span>
+                                </div>
+                                <div class="featured-items">
+                                    <div class="item-card">
+                                        <div class="item-image"></div>
+                                        <div class="item-info">
+                                            <h6>iPhone 13 Pro</h6>
+                                            <p>$650 • 0.5 km away</p>
+                                        </div>
+                                    </div>
+                                    <div class="item-card">
+                                        <div class="item-image"></div>
+                                        <div class="item-info">
+                                            <h6>House Cleaning</h6>
+                                            <p>$120 • 1.2 km away</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Important Notice -->
+        <div class="notice-section">
+            <div class="max">
+                <div class="notice-card">
+                    <div class="notice-icon">
+                        <i class="material-symbols-outlined">info</i>
+                    </div>
+                    <div class="notice-content">
+                        <h6>Prototype Demonstration</h6>
+                        <p>This showcases our sophisticated demonstration platform designed to illustrate core marketplace concepts. While fully functional, it includes intentional simplifications for easy demonstration and discussion.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Value Propositions -->
+    <section id="value-props" class="section">
+        <div class="max">
+            <div class="section-header">
+                <h2>Core Value Proposition</h2>
+                <p>Transforming local commerce with enterprise-grade solutions</p>
+            </div>
+            <div class="value-grid">
+                <div class="value-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="value-icon">
+                        <i class="material-symbols-outlined">security</i>
+                    </div>
+                    <h5>For Users</h5>
+                    <p>Secure, convenient local commerce with professional tools and comprehensive escrow protection</p>
+                    <ul class="value-list">
+                        <li>15-stage escrow system</li>
+                        <li>Professional seller tools</li>
+                        <li>Location-based discovery</li>
+                        <li>Mobile-first experience</li>
+                    </ul>
+                </div>
+                <div class="value-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="value-icon">
+                        <i class="material-symbols-outlined">smartphone</i>
+                    </div>
+                    <h5>For Mobile Device Companies</h5>
+                    <p>Pre-installed value that enhances device utility and creates competitive advantages</p>
+                    <ul class="value-list">
+                        <li>Day-one utility for users</li>
+                        <li>Hardware showcase opportunities</li>
+                        <li>Revenue sharing model</li>
+                        <li>Ecosystem lock-in benefits</li>
+                    </ul>
+                </div>
+                <div class="value-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="value-icon">
+                        <i class="material-symbols-outlined">community</i>
+                    </div>
+                    <h5>For Communities</h5>
+                    <p>Strengthened local economies and enhanced neighborhood connections</p>
+                    <ul class="value-list">
+                        <li>Local business support</li>
+                        <li>Community engagement</li>
+                        <li>Economic growth</li>
+                        <li>Trust building</li>
+                    </ul>
+                </div>
+                <div class="value-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="value-icon">
+                        <i class="material-symbols-outlined">trending_up</i>
+                    </div>
+                    <h5>For Businesses</h5>
+                    <p>Multiple revenue streams and scalable growth opportunities</p>
+                    <ul class="value-list">
+                        <li>Transaction fees (2-5%)</li>
+                        <li>Premium services</li>
+                        <li>Financial products</li>
+                        <li>Partnership revenue</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Demo Section -->
+    <section id="demo" class="demo-section">
+        <div class="max">
+            <div class="section-header">
+                <h2>See Shopit in Action</h2>
+                <p>Experience the complete prototype demonstration</p>
+            </div>
+            <div class="demo-container">
+                <div class="video-wrapper">
+                    <div class="video-placeholder" id="videoPlaceholder">
+                        <div class="video-overlay">
+                            <button class="play-button" onclick="loadVideo()">
+                                <i class="material-symbols-outlined">play_circle</i>
+                            </button>
+                            <div class="video-info">
+                                <h5>Complete Prototype Walkthrough</h5>
+                                <p>See all features in action: user registration, listing creation, search & discovery, secure transactions, and administrative controls</p>
+                            </div>
+                        </div>
+                        <div class="video-thumbnail"></div>
+                    </div>
+                    <div id="videoContainer" class="video-container" style="display: none;">
+                        <!-- YouTube video will be loaded here -->
+                    </div>
+                </div>
+                <div class="demo-features">
+                    <h5>What You'll See in the Demo</h5>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <i class="material-symbols-outlined">person_add</i>
+                            <span>Friction-free user registration</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="material-symbols-outlined">add_business</i>
+                            <span>Professional listing creation</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="material-symbols-outlined">search</i>
+                            <span>Location-based search & discovery</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="material-symbols-outlined">shopping_cart</i>
+                            <span>Secure transaction processing</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="material-symbols-outlined">shield</i>
+                            <span>15-stage escrow protection</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="material-symbols-outlined">admin_panel_settings</i>
+                            <span>Comprehensive admin controls</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Current Prototype Features -->
+    <section id="prototype" class="section">
+        <div class="max">
+            <div class="section-header">
+                <h2>Current Prototype Experience</h2>
+                <p>Explore the core features and user journeys</p>
+            </div>
+            
+            <!-- Feature Tabs -->
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab active" data-tab="getting-started">Getting Started</button>
+                    <button class="tab" data-tab="seller">Seller Experience</button>
+                    <button class="tab" data-tab="buyer">Buyer Experience</button>
+                    <button class="tab" data-tab="trust">Trust & Safety</button>
+                    <button class="tab" data-tab="mobile">Mobile-First</button>
+                    <button class="tab" data-tab="admin">Admin Controls</button>
+                </div>
+                
+                <!-- Tab Contents -->
+                <div class="tab-content active" id="getting-started">
+                    <div class="feature-showcase">
+                        <div class="feature-text">
+                            <h3>The First Impression</h3>
+                            <p>Users are welcomed by a clean, professional interface that immediately communicates trust and simplicity. The onboarding process gets users engaged in under 60 seconds.</p>
+                            <div class="feature-highlights">
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">speed</i>
+                                    <div>
+                                        <h6>Friction-Free Registration</h6>
+                                        <p>Simple username selection with optional profile information</p>
+                                    </div>
+                                </div>
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">flash_on</i>
+                                    <div>
+                                        <h6>Immediate Access</h6>
+                                        <p>No email verification delays or complex password requirements</p>
+                                    </div>
+                                </div>
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">person</i>
+                                    <div>
+                                        <h6>Personal Touch</h6>
+                                        <p>Optional location and contact information for local connections</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="feature-visual">
+                            <div class="mockup-container">
+                                <div class="browser-mockup">
+                                    <div class="browser-header">
+                                        <div class="browser-controls">
+                                            <span></span><span></span><span></span>
+                                        </div>
+                                        <div class="address-bar">shopit.local/auth/register.html</div>
+                                    </div>
+                                    <div class="browser-content">
+                                        <div class="registration-form">
+                                            <h4>Welcome to Shopit</h4>
+                                            <div class="form-field">
+                                                <label>Username</label>
+                                                <input type="text" placeholder="Choose a unique username">
+                                            </div>
+                                            <div class="form-field">
+                                                <label>Full Name (Optional)</label>
+                                                <input type="text" placeholder="Your full name">
+                                            </div>
+                                            <div class="form-field">
+                                                <label>Location (Optional)</label>
+                                                <input type="text" placeholder="City, State">
+                                            </div>
+                                            <button class="register-btn">Get Started</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="seller">
+                    <div class="feature-showcase">
+                        <div class="feature-text">
+                            <h3>Professional Listing Creation</h3>
+                            <p>Transform anyone into a professional seller with tools that rival enterprise e-commerce platforms. Our streamlined process reduces listing creation time by 70%.</p>
+                            <div class="feature-highlights">
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">camera_alt</i>
+                                    <div>
+                                        <h6>Professional Photography</h6>
+                                        <p>One-tap camera capture with automatic optimization</p>
+                                    </div>
+                                </div>
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">location_on</i>
+                                    <div>
+                                        <h6>Smart Location Detection</h6>
+                                        <p>GPS-powered location services with manual override</p>
+                                    </div>
+                                </div>
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">inventory</i>
+                                    <div>
+                                        <h6>Inventory Management</h6>
+                                        <p>Stock tracking and availability controls</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="feature-visual">
+                            <div class="mockup-container">
+                                <div class="phone-mockup-small">
+                                    <div class="phone-screen-small">
+                                        <div class="listing-form">
+                                            <h5>Create Listing</h5>
+                                            <div class="image-upload">
+                                                <i class="material-symbols-outlined">add_a_photo</i>
+                                                <span>Add Photos</span>
+                                            </div>
+                                            <div class="form-fields">
+                                                <input placeholder="Product title">
+                                                <textarea placeholder="Description"></textarea>
+                                                <input placeholder="Price">
+                                                <select>
+                                                    <option>Electronics</option>
+                                                    <option>Services</option>
+                                                    <option>Home & Garden</option>
+                                                </select>
+                                            </div>
+                                            <button class="publish-btn">Publish Listing</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="buyer">
+                    <div class="feature-showcase">
+                        <div class="feature-text">
+                            <h3>Intelligent Discovery Engine</h3>
+                            <p>Our search and discovery system makes finding the perfect local offering effortless and engaging with location-aware filtering and real-time results.</p>
+                            <div class="feature-highlights">
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">near_me</i>
+                                    <div>
+                                        <h6>Location-Aware Search</h6>
+                                        <p>Automatic radius-based filtering (1-50km customizable)</p>
+                                    </div>
+                                </div>
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">tune</i>
+                                    <div>
+                                        <h6>Multi-Criteria Filtering</h6>
+                                        <p>Price, category, tags, availability, and seller ratings</p>
+                                    </div>
+                                </div>
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">map</i>
+                                    <div>
+                                        <h6>Map Visualization</h6>
+                                        <p>Interactive map showing listing locations and distances</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="feature-visual">
+                            <div class="mockup-container">
+                                <div class="search-interface">
+                                    <div class="search-header">
+                                        <div class="search-bar-demo">
+                                            <i class="material-symbols-outlined">search</i>
+                                            <input placeholder="Find local products & services...">
+                                        </div>
+                                        <div class="filters">
+                                            <button class="filter-chip">Electronics</button>
+                                            <button class="filter-chip">< 5km</button>
+                                            <button class="filter-chip">$0-$500</button>
+                                        </div>
+                                    </div>
+                                    <div class="search-results">
+                                        <div class="result-item">
+                                            <div class="result-image"></div>
+                                            <div class="result-info">
+                                                <h6>iPhone 13 Pro</h6>
+                                                <p>$650 • 0.5km away</p>
+                                                <div class="rating">★★★★★</div>
+                                            </div>
+                                        </div>
+                                        <div class="result-item">
+                                            <div class="result-image"></div>
+                                            <div class="result-info">
+                                                <h6>MacBook Pro</h6>
+                                                <p>$1,200 • 1.2km away</p>
+                                                <div class="rating">★★★★☆</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="trust">
+                    <div class="feature-showcase">
+                        <div class="feature-text">
+                            <h3>15-Stage Escrow System</h3>
+                            <p>Our sophisticated escrow system provides unprecedented security for local transactions, rivaling enterprise-level financial platforms with comprehensive buyer and seller protection.</p>
+                            <div class="feature-highlights">
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">shield</i>
+                                    <div>
+                                        <h6>Secure Fund Holding</h6>
+                                        <p>Funds held securely until delivery confirmation</p>
+                                    </div>
+                                </div>
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">gavel</i>
+                                    <div>
+                                        <h6>Dispute Resolution</h6>
+                                        <p>72-hour dispute window with professional mediation</p>
+                                    </div>
+                                </div>
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">verified</i>
+                                    <div>
+                                        <h6>Dynamic Workflows</h6>
+                                        <p>Context-aware interface based on transaction stage</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="feature-visual">
+                            <div class="mockup-container">
+                                <div class="escrow-flow">
+                                    <h5>Escrow Process</h5>
+                                    <div class="flow-steps">
+                                        <div class="step active">
+                                            <div class="step-number">1</div>
+                                            <div class="step-info">
+                                                <h6>Payment</h6>
+                                                <p>Funds secured</p>
+                                            </div>
+                                        </div>
+                                        <div class="step active">
+                                            <div class="step-number">2</div>
+                                            <div class="step-info">
+                                                <h6>Seller Notified</h6>
+                                                <p>Prepare item</p>
+                                            </div>
+                                        </div>
+                                        <div class="step current">
+                                            <div class="step-number">3</div>
+                                            <div class="step-info">
+                                                <h6>Delivery</h6>
+                                                <p>In progress</p>
+                                            </div>
+                                        </div>
+                                        <div class="step">
+                                            <div class="step-number">4</div>
+                                            <div class="step-info">
+                                                <h6>Confirmation</h6>
+                                                <p>Pending</p>
+                                            </div>
+                                        </div>
+                                        <div class="step">
+                                            <div class="step-number">5</div>
+                                            <div class="step-info">
+                                                <h6>Release Funds</h6>
+                                                <p>Complete</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="mobile">
+                    <div class="feature-showcase">
+                        <div class="feature-text">
+                            <h3>Native Mobile Experience</h3>
+                            <p>Built from the ground up for mobile devices, recognizing that local commerce happens on-the-go. Every interaction is optimized for touch and mobile hardware.</p>
+                            <div class="feature-highlights">
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">touch_app</i>
+                                    <div>
+                                        <h6>Touch-First Interface</h6>
+                                        <p>Large, accessible buttons and swipe gestures</p>
+                                    </div>
+                                </div>
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">photo_camera</i>
+                                    <div>
+                                        <h6>Camera Integration</h6>
+                                        <p>Professional photo capture with optimization</p>
+                                    </div>
+                                </div>
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">gps_fixed</i>
+                                    <div>
+                                        <h6>GPS Services</h6>
+                                        <p>Accurate location detection with privacy controls</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="feature-visual">
+                            <div class="mockup-container">
+                                <div class="mobile-features">
+                                    <div class="feature-demo">
+                                        <div class="phone-outline">
+                                            <div class="camera-interface">
+                                                <div class="camera-viewfinder">
+                                                    <div class="focus-ring"></div>
+                                                    <div class="camera-overlay">
+                                                        <div class="camera-controls">
+                                                            <button class="camera-btn">📸</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p>Professional photo capture</p>
+                                    </div>
+                                    <div class="feature-demo">
+                                        <div class="phone-outline">
+                                            <div class="location-interface">
+                                                <div class="map-view">
+                                                    <div class="location-pin">📍</div>
+                                                    <div class="location-info">
+                                                        <p>Manhattan, NY</p>
+                                                        <p>Accuracy: ±5m</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p>GPS location services</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="admin">
+                    <div class="feature-showcase">
+                        <div class="feature-text">
+                            <h3>Comprehensive Admin Panel</h3>
+                            <p>Enterprise-level administrative tools that enable effective platform management and growth optimization with real-time analytics and user management.</p>
+                            <div class="feature-highlights">
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">people</i>
+                                    <div>
+                                        <h6>User Management</h6>
+                                        <p>Complete oversight with activity monitoring</p>
+                                    </div>
+                                </div>
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">moderation</i>
+                                    <div>
+                                        <h6>Content Moderation</h6>
+                                        <p>Automated quality monitoring and approval workflows</p>
+                                    </div>
+                                </div>
+                                <div class="highlight">
+                                    <i class="material-symbols-outlined">analytics</i>
+                                    <div>
+                                        <h6>System Analytics</h6>
+                                        <p>Real-time metrics and performance insights</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="feature-visual">
+                            <div class="mockup-container">
+                                <div class="admin-dashboard">
+                                    <div class="dashboard-header">
+                                        <h5>Admin Dashboard</h5>
+                                        <div class="dashboard-stats">
+                                            <div class="stat">
+                                                <span class="stat-number">1,247</span>
+                                                <span class="stat-label">Active Users</span>
+                                            </div>
+                                            <div class="stat">
+                                                <span class="stat-number">89</span>
+                                                <span class="stat-label">Listings Today</span>
+                                            </div>
+                                            <div class="stat">
+                                                <span class="stat-number">$12,450</span>
+                                                <span class="stat-label">Revenue</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="dashboard-charts">
+                                        <div class="chart-container">
+                                            <div class="chart-placeholder">
+                                                <div class="chart-bars">
+                                                    <div class="bar" style="height: 60%"></div>
+                                                    <div class="bar" style="height: 80%"></div>
+                                                    <div class="bar" style="height: 45%"></div>
+                                                    <div class="bar" style="height: 90%"></div>
+                                                    <div class="bar" style="height: 70%"></div>
+                                                </div>
+                                            </div>
+                                            <p>User Growth</p>
+                                        </div>
+                                        <div class="chart-container">
+                                            <div class="chart-placeholder">
+                                                <div class="pie-chart">
+                                                    <div class="pie-segment" style="--percentage: 40%"></div>
+                                                </div>
+                                            </div>
+                                            <p>Categories</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Future Capabilities -->
+    <section id="future" class="section future-section">
+        <div class="max">
+            <div class="section-header">
+                <h2>Future System Capabilities</h2>
+                <p>Advanced features that will transform Shopit into an enterprise-scale platform</p>
+            </div>
+            
+            <div class="future-grid">
+                <div class="future-card" data-aos="fade-up">
+                    <div class="future-icon">
+                        <i class="material-symbols-outlined">psychology</i>
+                    </div>
+                    <h4>AI & Machine Learning</h4>
+                    <p>Intelligent personalization, fraud detection, and market intelligence</p>
+                    <div class="future-features">
+                        <div class="feature-tag">Smart Recommendations</div>
+                        <div class="feature-tag">Predictive Analytics</div>
+                        <div class="feature-tag">Fraud Prevention</div>
+                    </div>
+                </div>
+                
+                <div class="future-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="future-icon">
+                        <i class="material-symbols-outlined">business</i>
+                    </div>
+                    <h4>Enterprise Solutions</h4>
+                    <p>Business-grade features, API ecosystem, and white-label solutions</p>
+                    <div class="future-features">
+                        <div class="feature-tag">Multi-User Management</div>
+                        <div class="feature-tag">API Platform</div>
+                        <div class="feature-tag">White-Label Options</div>
+                    </div>
+                </div>
+                
+                <div class="future-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="future-icon">
+                        <i class="material-symbols-outlined">language</i>
+                    </div>
+                    <h4>Global Expansion</h4>
+                    <p>Multi-language support, international payments, and global logistics</p>
+                    <div class="future-features">
+                        <div class="feature-tag">Multi-Language</div>
+                        <div class="feature-tag">Global Payments</div>
+                        <div class="feature-tag">International Shipping</div>
+                    </div>
+                </div>
+                
+                <div class="future-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="future-icon">
+                        <i class="material-symbols-outlined">account_balance</i>
+                    </div>
+                    <h4>Financial Services</h4>
+                    <p>Comprehensive payment ecosystem and advanced financial tools</p>
+                    <div class="future-features">
+                        <div class="feature-tag">Multiple Payment Methods</div>
+                        <div class="feature-tag">Business Loans</div>
+                        <div class="feature-tag">Insurance Services</div>
+                    </div>
+                </div>
+                
+                <div class="future-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="future-icon">
+                        <i class="material-symbols-outlined">smartphone</i>
+                    </div>
+                    <h4>Native Mobile Apps</h4>
+                    <p>iOS and Android applications with device-specific optimizations</p>
+                    <div class="future-features">
+                        <div class="feature-tag">Native Performance</div>
+                        <div class="feature-tag">Biometric Auth</div>
+                        <div class="feature-tag">Offline Capabilities</div>
+                    </div>
+                </div>
+                
+                <div class="future-card" data-aos="fade-up" data-aos-delay="500">
+                    <div class="future-icon">
+                        <i class="material-symbols-outlined">ar</i>
+                    </div>
+                    <h4>Emerging Technologies</h4>
+                    <p>AR/VR integration, blockchain, and next-generation features</p>
+                    <div class="future-features">
+                        <div class="feature-tag">AR Product Views</div>
+                        <div class="feature-tag">Blockchain Verification</div>
+                        <div class="feature-tag">Voice Integration</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Business Strategy -->
+    <section id="business" class="section business-section">
+        <div class="max">
+            <div class="section-header">
+                <h2>Business Strategy & Market Opportunity</h2>
+                <p>Strategic framework for mobile device integration and market success</p>
+            </div>
+            
+            <div class="strategy-container">
+                <!-- Market Opportunity -->
+                <div class="strategy-block">
+                    <div class="strategy-content">
+                        <div class="strategy-text">
+                            <h3>$2.3 Trillion Market Opportunity</h3>
+                            <p>The local commerce market represents a massive, underserved opportunity that traditional e-commerce platforms have failed to capture effectively.</p>
+                            <div class="market-stats">
+                                <div class="stat-item">
+                                    <h4>25%</h4>
+                                    <p>Annual growth in mobile-first commerce</p>
+                                </div>
+                                <div class="stat-item">
+                                    <h4>78%</h4>
+                                    <p>Consumers prefer local transactions with security</p>
+                                </div>
+                                <div class="stat-item">
+                                    <h4>89%</h4>
+                                    <p>Local businesses need better digital tools</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="strategy-visual">
+                            <div class="market-chart">
+                                <div class="chart-title">Local Commerce Growth</div>
+                                <div class="growth-visualization">
+                                    <div class="year-bar">
+                                        <span>2024</span>
+                                        <div class="bar" style="width: 60%">$2.3T</div>
+                                    </div>
+                                    <div class="year-bar">
+                                        <span>2025</span>
+                                        <div class="bar" style="width: 75%">$2.9T</div>
+                                    </div>
+                                    <div class="year-bar">
+                                        <span>2026</span>
+                                        <div class="bar" style="width: 90%">$3.6T</div>
+                                    </div>
+                                    <div class="year-bar">
+                                        <span>2027</span>
+                                        <div class="bar" style="width: 100%">$4.5T</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Device Integration -->
+                <div class="strategy-block">
+                    <div class="strategy-content reverse">
+                        <div class="strategy-visual">
+                            <div class="integration-mockup">
+                                <div class="device-showcase">
+                                    <div class="device">
+                                        <div class="device-screen">
+                                            <div class="preinstalled-apps">
+                                                <div class="app-icon shopit-icon">
+                                                    <i class="material-symbols-outlined">shopping_bag</i>
+                                                </div>
+                                                <div class="app-icon">📱</div>
+                                                <div class="app-icon">📧</div>
+                                                <div class="app-icon">🌐</div>
+                                            </div>
+                                            <div class="value-badge">Pre-installed</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="strategy-text">
+                            <h3>Mobile Device Integration Strategy</h3>
+                            <p>Pre-installed application strategy provides immediate value to device purchasers while creating sustainable competitive advantages.</p>
+                            <div class="integration-benefits">
+                                <div class="benefit-item">
+                                    <i class="material-symbols-outlined">flash_on</i>
+                                    <div>
+                                        <h6>Day-One Utility</h6>
+                                        <p>Immediate access to local marketplace</p>
+                                    </div>
+                                </div>
+                                <div class="benefit-item">
+                                    <i class="material-symbols-outlined">hardware</i>
+                                    <div>
+                                        <h6>Hardware Showcase</h6>
+                                        <p>Demonstrates camera, GPS, and performance</p>
+                                    </div>
+                                </div>
+                                <div class="benefit-item">
+                                    <i class="material-symbols-outlined">trending_up</i>
+                                    <div>
+                                        <h6>Revenue Sharing</h6>
+                                        <p>Ongoing income stream through transactions</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue Model -->
+                <div class="strategy-block">
+                    <div class="strategy-content">
+                        <div class="strategy-text">
+                            <h3>Freemium Revenue Model</h3>
+                            <p>Multiple revenue streams reduce dependency risk while creating scalable growth opportunities through value-added services.</p>
+                            <div class="revenue-streams">
+                                <div class="stream-item">
+                                    <div class="stream-icon">
+                                        <i class="material-symbols-outlined">percent</i>
+                                    </div>
+                                    <div class="stream-info">
+                                        <h6>Transaction Fees</h6>
+                                        <p>2-5% commission on completed sales</p>
+                                    </div>
+                                </div>
+                                <div class="stream-item">
+                                    <div class="stream-icon">
+                                        <i class="material-symbols-outlined">star</i>
+                                    </div>
+                                    <div class="stream-info">
+                                        <h6>Premium Services</h6>
+                                        <p>Enhanced visibility and professional tools</p>
+                                    </div>
+                                </div>
+                                <div class="stream-item">
+                                    <div class="stream-icon">
+                                        <i class="material-symbols-outlined">account_balance</i>
+                                    </div>
+                                    <div class="stream-info">
+                                        <h6>Financial Services</h6>
+                                        <p>Loans, insurance, and payment processing</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="strategy-visual">
+                            <div class="revenue-chart">
+                                <div class="chart-title">Revenue Projection</div>
+                                <div class="revenue-breakdown">
+                                    <div class="revenue-segment transactions">
+                                        <span>45%</span>
+                                        <label>Transaction Fees</label>
+                                    </div>
+                                    <div class="revenue-segment premium">
+                                        <span>30%</span>
+                                        <label>Premium Services</label>
+                                    </div>
+                                    <div class="revenue-segment financial">
+                                        <span>25%</span>
+                                        <label>Financial Services</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact/Partnership Section -->
+    <section id="contact" class="contact-section">
+        <div class="max">
+            <div class="contact-container">
+                <div class="contact-content">
+                    <div class="contact-text">
+                        <h2>Ready to Discuss Your Shopit Integration?</h2>
+                        <p>The local commerce revolution is beginning. Position your mobile device ecosystem at the forefront of this transformation through strategic Shopit integration.</p>
+                        
+                        <div class="contact-benefits">
+                            <div class="benefit">
+                                <i class="material-symbols-outlined">integration_instructions</i>
+                                <span>Custom integration opportunities</span>
+                            </div>
+                            <div class="benefit">
+                                <i class="material-symbols-outlined">location_city</i>
+                                <span>Market-specific adaptations</span>
+                            </div>
+                            <div class="benefit">
+                                <i class="material-symbols-outlined">handshake</i>
+                                <span>Partnership terms and revenue sharing</span>
+                            </div>
+                            <div class="benefit">
+                                <i class="material-symbols-outlined">schedule</i>
+                                <span>Technical implementation timeline</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-form-container">
+                        <form class="contact-form" id="partnershipForm">
+                            <h4>Start Your Partnership Journey</h4>
+                            
+                            <div class="form-group">
+                                <label for="company">Company Name</label>
+                                <input type="text" id="company" name="company" required>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="name">Your Name</label>
+                                    <input type="text" id="name" name="name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="title">Job Title</label>
+                                    <input type="text" id="title" name="title" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="email">Email Address</label>
+                                    <input type="email" id="email" name="email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">Phone Number</label>
+                                    <input type="tel" id="phone" name="phone">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="interest">Primary Interest</label>
+                                <select id="interest" name="interest" required>
+                                    <option value="">Select your primary interest</option>
+                                    <option value="device-integration">Mobile Device Integration</option>
+                                    <option value="white-label">White-Label Solutions</option>
+                                    <option value="api-partnership">API Partnership</option>
+                                    <option value="investment">Investment Opportunity</option>
+                                    <option value="pilot-program">Pilot Program</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="message">Tell us about your goals</label>
+                                <textarea id="message" name="message" rows="4" placeholder="What are you hoping to achieve with Shopit integration?"></textarea>
+                            </div>
+                            
+                            <button type="submit" class="submit-button">
+                                <span>Start Partnership Discussion</span>
+                                <i class="material-symbols-outlined">arrow_forward</i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="max">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <i class="material-symbols-outlined">shopping_bag</i>
+                        <span>Shopit</span>
+                    </div>
+                    <p>Revolutionizing local commerce through mobile-first marketplace innovation.</p>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="link-group">
+                        <h6>Platform</h6>
+                        <a href="#prototype">Current Prototype</a>
+                        <a href="#future">Future Capabilities</a>
+                        <a href="#demo">Live Demo</a>
+                    </div>
+                    <div class="link-group">
+                        <h6>Business</h6>
+                        <a href="#business">Strategy</a>
+                        <a href="#contact">Partnerships</a>
+                        <a href="#contact">Integration</a>
+                    </div>
+                    <div class="link-group">
+                        <h6>Resources</h6>
+                        <a href="#demo">Documentation</a>
+                        <a href="#contact">Support</a>
+                        <a href="#contact">Contact</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Shopit. All rights reserved. Built for demonstration and partnership discussions.</p>
+                <div class="footer-meta">
+                    <span>Version 1.0 - Comprehensive Platform Manual</span>
+                    <span>Ready for Client Presentation</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/beercss@3.11.33/dist/cdn/beer.min.js"></script>
+    <script src="assets/js/main.js"></script>
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100
+        });
+    </script>
+</body>
+</html>
